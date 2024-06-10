@@ -2,9 +2,9 @@ pandas
 streamlit
 streamlit_echarts
 numpy
-mysql
 datetime
 workalendar
 openpyxl
 jupyter
 mysql-connector-python
+mysql

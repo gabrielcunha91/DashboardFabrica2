@@ -7,4 +7,3 @@ workalendar
 openpyxl
 jupyter
 mysql-connector-python
-mysql

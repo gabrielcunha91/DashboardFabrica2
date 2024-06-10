@@ -1,0 +1,10 @@
+pandas
+streamlit
+streamlit_echarts
+numpy
+mysql
+mysql-connector-python
+datetime
+workalendar
+openpyxl
+jupyter

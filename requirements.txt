@@ -2,7 +2,6 @@ pandas
 streamlit
 streamlit_echarts
 numpy
-datetime
 workalendar
 openpyxl
 jupyter

@@ -7,3 +7,4 @@ workalendar
 openpyxl
 jupyter
 mysql-connector-python
+threading

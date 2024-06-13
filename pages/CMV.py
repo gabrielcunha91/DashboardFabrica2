@@ -3,15 +3,28 @@ import pandas as pd
 from utils.queries import *
 from utils.functions import *
 from utils.components import *
+from utils.user import logout
 
+st.set_page_config(
+  layout = 'wide',
+  page_title = 'CMV',
+  initial_sidebar_state="collapsed"
+)  
 pd.set_option('future.no_silent_downcasting', True)
 
+if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
+  st.switch_page('Login.py')
+
+
 def main():
-  st.set_page_config(
-    layout = 'wide',
-    page_title = 'CMV'
-  )
-  st.title('CMV')
+  config_sidebar()
+  col, colx = st.columns([5, 1])
+  with col:
+    st.title('CMV')
+  with colx:
+    if st.button("Logout"):
+      logout()
+  
   st.divider()
 
   lojasComDados = preparar_dados_lojas(GET_FATURAM_ZIG_ALIM_BEB_MENSAL())

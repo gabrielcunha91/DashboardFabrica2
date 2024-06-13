@@ -3,14 +3,26 @@ import pandas as pd
 from utils.queries import *
 from utils.functions import *
 from utils.components import *
+from utils.user import logout
+
+st.set_page_config(
+  layout = 'wide',
+  page_title = 'Despesas',
+  initial_sidebar_state="collapsed"
+)
+
+if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
+  st.switch_page('Login.py')
 
 
 def main():
-  st.set_page_config(
-    layout = 'wide',
-    page_title = 'Despesas'
-  )
-  st.title('Despesas')
+  config_sidebar()
+  col, colx = st.columns([5, 1])
+  with col:
+    st.title('Despesas')
+  with colx:
+    if st.button("Logout"):
+      logout()
   st.divider()
 
   lojasComDados = preparar_dados_lojas(GET_RECEIT_EXTRAORD())

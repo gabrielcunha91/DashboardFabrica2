@@ -13,6 +13,17 @@ from utils.queries import *
 
 ####### DADOS GERAIS #######
 
+def config_sidebar():
+  if st.session_state['loggedIn']:
+    st.sidebar.title("Menu")
+    st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
+    st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
+    st.sidebar.page_link("pages/Despesas.py", label="Despesas")
+    st.sidebar.page_link("pages/CMV.py", label="CMV")
+  else:
+    st.sidebar.write("Por favor, faça login para acessar o menu.")
+
+
 def preparar_dados_lojas(df):
   DfLojas = df.copy()
   LojasComDados = DfLojas['Loja'].unique().tolist()

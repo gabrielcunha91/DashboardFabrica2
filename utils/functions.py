@@ -247,6 +247,8 @@ def faturam_receit_extraord(df):
   agrupado = df.groupby(['Classificação']).agg(agg_funct).reset_index()
   agrupado['Quantia'] = df.groupby(['Classificação']).size().values
   agrupado = agrupado.sort_values(by='Quantia', ascending=False) 
+  agrupado = format_columns_brazilian(agrupado, ['Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 'Categ. Patrocínio', 'Categ. Taxa de serviço', 'Valor Total'])
+
   return agrupado
 
 
@@ -282,6 +284,8 @@ def config_despesas_por_classe(df):
   df['Valor Realizado'] = df['Valor Realizado'].astype(float)
 
   df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado']
+
+  df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.'])
   return df
 
 def config_despesas_detalhado(df):
@@ -296,6 +300,7 @@ def config_despesas_detalhado(df):
   df.fillna({'Valor': 0}, inplace=True)
   df['Valor'] = df['Valor'].astype(float)
   valorTotal = df['Valor'].sum()
+  df = format_columns_brazilian(df, ['Valor'])
   return df, valorTotal
 
 

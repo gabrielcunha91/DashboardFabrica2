@@ -1,6 +1,3 @@
-# Ignore all files in the .streamlit directory
-.streamlit/*
-
 # Except for the config.toml file
 !.streamlit/config.toml
 

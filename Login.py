@@ -9,17 +9,6 @@ st.set_page_config(
   layout="centered",
 )
 
-
-def handle_login(userName, password):
-    #user data deve conter o usuario
-    if user_data := login(userName, password):
-        st.session_state['loggedIn'] = True
-    else:
-        # mudar pra falso depois
-        st.session_state['loggedIn'] = False
-        st.error("Email ou senha inválidos!!")
-
-
 def main():
   st.markdown("""
     <style>

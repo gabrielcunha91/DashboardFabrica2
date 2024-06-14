@@ -1,0 +1,6 @@
+1. Refatoramento: Toda tarefa repetitiva que possa ser universal terá uma função em functions
+    1.1. Formatação de data (feito!)
+    1.2. Arrumar a cmv
+    1.3.
+2. Colocar td em format_brazilian para melhor visualizzação
+3. Fazer uma função para baixar as tabelas em excel (? - perguntar se precisa)

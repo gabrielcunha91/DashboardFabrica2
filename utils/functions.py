@@ -4,12 +4,6 @@ from workalendar.america import Brazil
 from datetime import datetime, timedelta
 from utils.queries import *
 
-    #################################################################
-    # COISAS A FAZER:                                               #
-    # - Mudar os números com vírgula (ponto p virgula e vice-versa) #
-    #################################################################
-
-
 
 ####### DADOS GERAIS #######
 
@@ -22,7 +16,6 @@ def config_sidebar():
     st.sidebar.page_link("pages/CMV.py", label="CMV")
   else:
     st.sidebar.write("Por favor, faça login para acessar o menu.")
-
 
 def preparar_dados_lojas(df):
   DfLojas = df.copy()
@@ -81,7 +74,6 @@ def filtrar_por_fornecedor(dataframe, fornecedores_selecionados):
     dataframe = dataframe[dataframe['Fornecedor'].isin(fornecedores_selecionados)]
   return dataframe
 
-
 def format_brazilian(num):
   if pd.isna(num):
     return num
@@ -93,6 +85,10 @@ def format_columns_brazilian(df, numeric_columns):
       df[col] = df[col].apply(format_brazilian)
   return df
 
+def format_date_brazilian(df, date_column):
+  df[date_column] = pd.to_datetime(df[date_column])
+  df[date_column] = df[date_column].dt.strftime('%d-%m-%Y')
+  return df
 
 ####### PÁGINA FATURAMENTO ZIG #######
 
@@ -113,6 +109,9 @@ def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
                                                     'Valor Bruto Venda': 'Valor Bruto Venda', 'Desconto':'Desconto', 
                                                     'Valor Líquido Venda': 'Valor Líquido Venda', 'Categoria': 'Categoria', 
                                                     'Tipo': 'Tipo'})
+  
+  FaturamentoZig = format_date_brazilian(FaturamentoZig, 'Data da Venda')
+
   FaturamentoZig = pd.DataFrame(FaturamentoZig)
   return FaturamentoZig
 
@@ -164,9 +163,6 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamentoFaturamento = pd.concat([OrcamentoFaturamento, NovaLinha], ignore_index=True)
   
   OrcamentoFaturamento = pd.DataFrame(OrcamentoFaturamento)
-  # cols = ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento']
-  # for col in cols:
-  #   OrcamentoFaturamento[col] = OrcamentoFaturamento[col].apply(format_brazilian)
   return OrcamentoFaturamento
 
 def top_dez(dataframe, categoria):
@@ -233,8 +229,8 @@ def config_receit_extraord(lojas_selecionadas, data_inicio, data_fim):
                                                     'Categ_Couvert': 'Categ. Couvert', 'Categ_Locacao': 'Categ. Locação', 
                                                     'Categ_Patroc': 'Categ. Patrocínio', 'Categ_Taxa_Serv': 'Categ. Taxa de serviço', 
                                                     'Valor_Total': 'Valor Total', 'Data_Evento': 'Data Evento'})
-  ReceitExtraord['Data Evento'] = pd.to_datetime(ReceitExtraord['Data Evento'])
-  ReceitExtraord['Data Evento'] = ReceitExtraord['Data Evento'].dt.strftime('%d-%m-%Y')
+
+  ReceitExtraord = format_date_brazilian(ReceitExtraord, 'Data Evento')
   ReceitExtraord = pd.DataFrame(ReceitExtraord)
   return ReceitExtraord
 
@@ -247,6 +243,7 @@ def faturam_receit_extraord(df):
   agrupado['Quantia'] = df.groupby(['Classificação']).size().values
   agrupado = agrupado.sort_values(by='Quantia', ascending=False) 
   return agrupado
+
 
 
 
@@ -287,10 +284,9 @@ def config_despesas_detalhado(df):
   df = df.rename(columns = {'Loja': 'Loja', 'Plano_de_Contas' : 'Plano de Contas', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Evento': 'Data Emissão',
                              'Data_Vencimento': 'Data Vencimento', 'Descricao': 'Descrição', 'Status': 'Status', 'Valor_Liquido': 'Valor'})
 
-  ############# MUDANDO AS DTAS PRO FORMATO NORMAL -> FAZER UMA FUNÇÃO PRA ISSO!!!!!#############
-  df['Data Emissão'] = df['Data Emissão'].dt.strftime('%d-%m-%Y')
-  df['Data Vencimento'] = pd.to_datetime(df['Data Vencimento'])
-  df['Data Vencimento'] = df['Data Vencimento'].dt.strftime('%d-%m-%Y')
+  df = format_date_brazilian(df, 'Data Emissão')
+  df = format_date_brazilian(df, 'Data Vencimento')
+
   df['Valor'] = pd.to_numeric(df['Valor'], errors='coerce')
   df.fillna({'Valor': 0}, inplace=True)
   df['Valor'] = df['Valor'].astype(float)
@@ -344,9 +340,8 @@ def config_tabela_CMV(df):
                           'Faturam_Bruto_Bebidas': 'Faturam. Bebidas', 'Estoque_Inicial_Bebidas': 'Estoque Inicial Bebidas', 
                          'Estoque_Final_Bebidas': 'Estoque Final Bebidas', 'Estoque_Inicial_Descart_Hig_Limp': 'Estoque Inicial Limp/Hig', 
                          'Estoque_Final_Descart_Hig_Limp': 'Estoque Final Limp/Hig'}, inplace=True)
-  newDF['Mês'] = pd.to_datetime(newDF['Mês'])
-  newDF['Mês'] = newDF['Mês'].dt.strftime('%d-%m-%Y')
-
+  
+  newDF = format_date_brazilian(newDF, 'Mês')
   return newDF
 
 def config_tabela_compras(df):
@@ -362,9 +357,7 @@ def config_tabela_compras(df):
                           'BlueMe_Sem_Pedido_Bebidas': 'BlueMe S/ Pedido Bebidas', 'BlueMe_Com_Pedido_Valor_Liq_Bebidas': 'BlueMe C/ Pedido Bebidas'},
                           inplace=True)
 
-  newDF['Mês'] = pd.to_datetime(newDF['Mês'])
-  newDF['Mês'] = newDF['Mês'].dt.strftime('%d-%m-%Y')
-
+  newDF = format_date_brazilian(newDF, 'Mês')
   return newDF
 
 def config_tabela_transferencias(df):
@@ -378,9 +371,7 @@ def config_tabela_transferencias(df):
                           'Entrada_Transf_Bebidas': 'Entrada Transf. Bebidas', 'Saida_Transf_Bebidas': 'Saida Transf. Bebidas', 
                           'Consumo_Interno': 'Consumo Interno', 'Quebras_e_Perdas': 'Quebras e Perdas'}, inplace=True)
 
-  newDF['Mês'] = pd.to_datetime(newDF['Mês'])
-  newDF['Mês'] = newDF['Mês'].dt.strftime('%d-%m-%Y')
-
+  newDF = format_date_brazilian(newDF, 'Mês')
   return newDF
 
 def config_insumos_blueme_sem_pedido(df, data_inicio, data_fim):
@@ -388,8 +379,7 @@ def config_insumos_blueme_sem_pedido(df, data_inicio, data_fim):
   df = df.drop(['ID_Loja', 'Primeiro_Dia_Mes'], axis=1)
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Emissao')
 
-  df['Data_Emissao'] = pd.to_datetime(df['Data_Emissao'])
-  df['Data_Emissao'] = df['Data_Emissao'].dt.strftime('%d-%m-%Y')
+  df = format_date_brazilian(df, 'Data_Emissao')
 
   df.rename(columns = {'tdr_ID': 'tdr ID', 'Loja': 'Loja', 'Fornecedor': 'Fornecedor', 'Plano_de_Contas': 'Classificacao',
                        'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão', 'Valor_Liquido': 'Valor Líquido'}, inplace=True)
@@ -402,8 +392,7 @@ def config_insumos_blueme_com_pedido(df, data_inicio, data_fim):
   df = df.drop(['ID_Loja', 'Primeiro_Dia_Mes'], axis=1)
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Emissao')
 
-  df['Data_Emissao'] = pd.to_datetime(df['Data_Emissao'])
-  df['Data_Emissao'] = df['Data_Emissao'].dt.strftime('%d-%m-%Y')
+  df = format_date_brazilian(df, 'Data_Emissao')
 
   df.rename(columns = {'tdr_ID': 'tdr ID', 'Loja': 'Loja', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão',
                        'Valor_Liquido': 'Valor Líquido', 'Valor_Insumos': 'Valor Insumos', 'Valor_Liq_Alimentos': 'Valor Líq. Alimentos',

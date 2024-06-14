@@ -65,7 +65,7 @@ def Grafico_Donut(df):
 
 
 def faturam_por_dia(df):
-  df['Data da Venda'] = pd.to_datetime(df['Data da Venda']).dt.date.astype(str)
+  df['Data da Venda'] = df['Data da Venda'].astype(str)
 
   # Preparar os dados para o gráfico de área empilhada
   df = df.groupby(['Data da Venda', 'Categoria'])['Valor Líquido Venda'].sum().reset_index()

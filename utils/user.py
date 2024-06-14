@@ -11,7 +11,6 @@ def login(userName: str, password: str) -> bool:
     "loginSource": 1,
   }
 
-  # trocar para nova api do epm
   login = requests.post('https://apps.blueprojects.com.br/fb/Security/Login',json=login_data).json()
     
   if "error" in login:
@@ -26,3 +25,12 @@ def login(userName: str, password: str) -> bool:
 def logout():
   st.session_state['loggedIn'] = False
   st.switch_page('Login.py')
+
+
+def handle_login(userName, password):
+  #user data deve conter o usuario
+  if user_data := login(userName, password):
+    st.session_state['loggedIn'] = True
+  else:
+    st.session_state['loggedIn'] = False
+    st.error("Email ou senha inválidos!!")

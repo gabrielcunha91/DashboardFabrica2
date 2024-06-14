@@ -33,12 +33,14 @@ def main():
 
   threading.Thread(target=config_Faturamento_zig)
   OrcamentoFaturamento = config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim) 
+  orcamfatformatado = OrcamentoFaturamento.copy()
+  orcamfatformatado = format_columns_brazilian(orcamfatformatado, ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento'])
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 7])
     with col1:
       st.subheader("Faturamento Zig:")
-      st.dataframe(OrcamentoFaturamento, width=700, hide_index=True)
+      st.dataframe(orcamfatformatado, width=700, hide_index=True)
     with col2:
       st.subheader("Valores Líquidos:")
       Grafico_Donut(OrcamentoFaturamento)

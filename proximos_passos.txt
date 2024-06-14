@@ -3,4 +3,4 @@
     1.2. Arrumar a cmv
     1.3.
 2. Colocar td em format_brazilian para melhor visualizzação
-3. Fazer uma função para baixar as tabelas em excel (? - perguntar se precisa)
+3. Fazer o cálculo do preço do estoque (pensar nisso)

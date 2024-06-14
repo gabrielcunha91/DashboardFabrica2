@@ -4,7 +4,6 @@ from workalendar.america import Brazil
 from datetime import datetime, timedelta
 from utils.queries import *
 
-
 ####### DADOS GERAIS #######
 
 def config_sidebar():
@@ -75,9 +74,13 @@ def filtrar_por_fornecedor(dataframe, fornecedores_selecionados):
   return dataframe
 
 def format_brazilian(num):
-  if pd.isna(num):
+  try:
+    # Convertendo para float
+    num = float(num)
+    return f"{num:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+  except (ValueError, TypeError):
+    # Em caso de falha na conversão, retorna o valor original
     return num
-  return f"{num:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 def format_columns_brazilian(df, numeric_columns):
   for col in numeric_columns:
@@ -111,7 +114,6 @@ def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
                                                     'Tipo': 'Tipo'})
   
   FaturamentoZig = format_date_brazilian(FaturamentoZig, 'Data da Venda')
-
   FaturamentoZig = pd.DataFrame(FaturamentoZig)
   return FaturamentoZig
 
@@ -185,6 +187,8 @@ def top_dez(dataframe, categoria):
   max_valor_liq_venda = topDez['Valor Líquido Venda'].max()
   max_valor_bru_venda = topDez['Valor Bruto Venda'].max()
 
+  topDez = format_columns_brazilian(topDez, ['Preço Unitário', 'Desconto'])
+  
   st.data_editor(
     topDez,
     width=1080,
@@ -204,6 +208,7 @@ def top_dez(dataframe, categoria):
         max_value=max_valor_bru_venda,
       ),
     },
+    disabled=True,
     hide_index=True,
   )
   return topDez

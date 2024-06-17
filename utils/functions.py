@@ -13,6 +13,7 @@ def config_sidebar():
     st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
     st.sidebar.page_link("pages/Despesas.py", label="Despesas")
     st.sidebar.page_link("pages/CMV.py", label="CMV")
+    # st.sidebar.page_link("pages/Pareto.py", label="Pareto")
   else:
     st.sidebar.write("Por favor, faça login para acessar o menu.")
 

@@ -41,6 +41,7 @@ def main():
       st.dataframe(config_despesas_por_classe(Despesas), height=500, width=1080, hide_index=True)
 
   despesaDetalhada, valorTotal = config_despesas_detalhado(Despesas)
+  valorTotal = format_brazilian(valorTotal)
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 15, 1])

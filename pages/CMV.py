@@ -32,29 +32,7 @@ def main():
   lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()
 
-  df1 = GET_FATURAM_ZIG_ALIM_BEB_MENSAL()
-  df2 = GET_ESTOQUES_POR_CATEG_AGRUPADOS()
-  df3 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO()  
-  df4 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_coM_PEDIDO()
-  df5 = GET_TRANSF_ESTOQUE_AGRUPADOS()  
-  df6 = GET_PERDAS_E_CONSUMO_AGRUPADOS()
-
-  df3 = df3[df3['ID_Loja'] != 296]
-
-  df1 = filtrar_por_lojas(df1, lojas_selecionadas)
-  df1 = filtrar_por_datas(df1, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df2 = filtrar_por_lojas(df2, lojas_selecionadas)
-  df2 = filtrar_por_datas(df2, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df3 = filtrar_por_lojas(df3, lojas_selecionadas)
-  df3 = filtrar_por_datas(df3, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df4 = filtrar_por_lojas(df4, lojas_selecionadas)
-  df4 = filtrar_por_datas(df4, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df5 = filtrar_por_lojas(df5, lojas_selecionadas)
-  df5 = filtrar_por_datas(df5, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df6 = filtrar_por_lojas(df6, lojas_selecionadas)
-  df6 = filtrar_por_datas(df6, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-
-  dfFinal = merge_dataframes(df1, df2, df3, df4, df5, df6)
+  dfFinal = config_tabelas_iniciais_cmv(lojas_selecionadas, data_inicio, data_fim)
  
   FaturamBrutoAliment = dfFinal['Faturam_Bruto_Aliment'].sum()
   FaturamBrutoBebidas = dfFinal['Faturam_Bruto_Bebidas'].sum()

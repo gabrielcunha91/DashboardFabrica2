@@ -8,6 +8,7 @@ from utils.user import logout
 st.set_page_config(
   layout = 'wide',
   page_title = 'Despesas',
+  page_icon=':money_with_wings:',
   initial_sidebar_state="collapsed"
 )
 

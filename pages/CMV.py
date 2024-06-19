@@ -8,6 +8,7 @@ from utils.user import logout
 st.set_page_config(
   layout = 'wide',
   page_title = 'CMV',
+  page_icon=':⚖',
   initial_sidebar_state="collapsed"
 )  
 pd.set_option('future.no_silent_downcasting', True)

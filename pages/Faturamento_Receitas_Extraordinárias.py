@@ -8,6 +8,7 @@ from utils.user import logout
 st.set_page_config(
   layout = 'wide',
   page_title = 'Faturamento Extraordinário',
+  page_icon='💎',
   initial_sidebar_state="collapsed"
 )
 

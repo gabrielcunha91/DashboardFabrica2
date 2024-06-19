@@ -9,6 +9,7 @@ import threading
 st.set_page_config(
   layout = 'wide',
   page_title = 'Faturamento Zig',
+  page_icon=':moneybag:',
   initial_sidebar_state="collapsed"
 )
 

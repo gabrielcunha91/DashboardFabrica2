@@ -20,14 +20,35 @@ def criar_seletores(LojasComDados, data_inicio_default, data_fim_default):
   return lojas_selecionadas, data_inicio, data_fim
 
 
-def Grafico_Donut(df): 
-  ########## REVER DPS: ##########
-  # Aplicar CSS para mover o gráfico para cima 
-  # st.markdown(
-  #   "<style>#grafico_donut { margin-top: -50px; }</style>", 
-  #   unsafe_allow_html=True
-  # )
+def criar_seletores_pareto(LojasComDados, data_inicio_default, data_fim_default, tab_index):
+  col1, col2, col3 = st.columns([2, 1, 1])
 
+  # Adiciona seletores
+  with col1:
+    lojas_selecionadas = st.multiselect(
+      label='Selecione Lojas', 
+      options=LojasComDados, 
+      key=f'lojas_multiselect_{tab_index}'
+    )
+  with col2:
+    data_inicio = st.date_input(
+      'Data de Início', 
+      value=data_inicio_default, 
+      key=f'data_inicio_input_{tab_index}', 
+      format="DD/MM/YYYY"
+    )
+  with col3:
+    data_fim = st.date_input(
+      'Data de Fim', 
+      value=data_fim_default, 
+      key=f'data_fim_input_{tab_index}', 
+      format="DD/MM/YYYY"
+    )
+
+  return lojas_selecionadas, data_inicio, data_fim
+
+
+def Grafico_Donut(df): 
   # Extrair dados do DataFrame
   data = []
   for index, row in df.iterrows():
@@ -135,3 +156,55 @@ def plotar_grafico(df):
     ]
   }
   st_echarts(options=option)
+
+
+
+def diagrama_pareto_por_categ_avaliada(df, categoria, key):
+  df = df.head(10)
+  # Configuração do gráfico
+  options = {
+    "title": {
+      "text": "",
+      "left": "center"
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "axisPointer": {
+        "type": "shadow"
+      }
+    },
+    "xAxis": [
+      {
+        "type": "category",
+        "data": df['Nome Produto'].tolist()
+      }
+    ],
+    "yAxis": [
+      {
+        "type": "value",
+        "name": categoria
+      },
+      {
+        "type": "value",
+        "name": "Porcentagem Acumulada",
+        "axisLabel": {
+          "formatter": "{value} %"
+        }
+      }
+    ],
+    "series": [
+      {
+        "name": categoria,
+        "type": "bar",
+        "data": df[categoria].tolist()
+      },
+      {
+        "name": "Porcentagem Acumulada",
+        "type": "line",
+        "yAxisIndex": 1,
+        "data": df['Porcentagem Acumulada'].tolist()
+      }
+    ]
+  }
+  st_echarts(options=options, key=key)
+

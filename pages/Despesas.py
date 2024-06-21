@@ -50,9 +50,8 @@ def main():
       st.subheader("Despesas Detalhadas:")
       st.dataframe(despesaDetalhada, height=500, width=1250, hide_index=True)
       
-    col0, col1, col2 = st.columns([1, 10, 3])
-    with col2:
-      st.write('Valor Total = R$', valorTotal)
+    row1 = st.columns([1, 10, 3])
+    row1[2] = st.write('Valor Total = R$', valorTotal)
 
 
 if __name__ == '__main__':

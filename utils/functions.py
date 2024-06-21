@@ -3,6 +3,7 @@ import pandas as pd
 from workalendar.america import Brazil
 from datetime import datetime, timedelta
 from utils.queries import *
+from utils.components import *
 
 ####### DADOS GERAIS #######
 
@@ -13,7 +14,7 @@ def config_sidebar():
     st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
     st.sidebar.page_link("pages/Despesas.py", label="Despesas")
     st.sidebar.page_link("pages/CMV.py", label="CMV")
-    # st.sidebar.page_link("pages/Pareto.py", label="Pareto")
+    st.sidebar.page_link("pages/Pareto_Geral.py", label="Pareto")
   else:
     st.sidebar.write("Por favor, faça login para acessar o menu.")
 
@@ -52,12 +53,16 @@ def preparar_dados_fornecedores(dataframe):
 def filtrar_por_datas(dataframe, data_inicio, data_fim, categoria):
   data_inicio = pd.Timestamp(data_inicio)
   data_fim = pd.Timestamp(data_fim)
-  dataframe[categoria] = pd.to_datetime(dataframe[categoria])
-  dataframe = dataframe[
-    (dataframe[categoria] >= data_inicio) &
-    (dataframe[categoria] <= data_fim)
+  
+  # Ensure the 'categoria' column is converted to datetime correctly
+  dataframe.loc[:, categoria] = pd.to_datetime(dataframe[categoria])
+  
+  # Apply the filter using .loc to avoid SettingWithCopyWarning
+  dataframe_filtered = dataframe.loc[
+      (dataframe[categoria] >= data_inicio) & (dataframe[categoria] <= data_fim)
   ]
-  return dataframe
+  
+  return dataframe_filtered
 
 def filtrar_por_lojas(dataframe, lojas_selecionadas):
   if lojas_selecionadas:
@@ -436,3 +441,58 @@ def config_insumos_blueme_com_pedido(df, data_inicio, data_fim):
                        'Valor_Liq_Bebidas': 'Valor Líq. Bebidas', 'Valor_Liq_Descart_Hig_Limp': 'Valor Líq. Hig/Limp.', 
                        'Valor_Liq_Outros': 'Valor Líq. Outros'}, inplace=True)
   return df
+
+
+
+
+#########################  DIAGRAMA DE PARETO  ############################
+
+def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
+  df = df.sort_values(by='Nome Produto', ascending=False)
+
+  df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
+  df = filtrar_por_lojas(df, lojas_selecionadas)
+
+  df['Quantidade'] = df['Quantidade'].astype(str)
+  df['Valor Total'] = df['Valor Total'].astype(str)
+  df['Quantidade'] = df['Quantidade'].str.replace(',', '.').astype(float)
+  df['Valor Total'] = df['Valor Total'].str.replace(',', '.').astype(float)
+  df['Fator de Proporção'] = df['Fator de Proporção'].astype(float)
+
+  df = df.groupby(['Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
+    'Quantidade': 'sum',
+    'Valor Total': 'sum',
+    'Unidade de Medida': 'first',
+    'Fator de Proporção': 'first',
+    'Fornecedor': 'first'
+  })
+
+  df['Quantidade Ajustada'] = df['Quantidade'] * df['Fator de Proporção']
+  df['Valor Unitário'] = df['Valor Total'] / df['Quantidade']
+  df['Valor Unit. Ajustado'] = df['Valor Total'] / df['Quantidade Ajustada']
+
+  df['Quantidade'] = df['Quantidade'].round(2)
+  df['Quantidade Ajustada'] = df['Quantidade Ajustada'].round(2)
+  df['Valor Total'] = df['Valor Total'].round(2)
+  df['Valor Unitário'] = df['Valor Unitário'].round(2)
+  df['Valor Unit. Ajustado'] = df['Valor Unit. Ajustado'].round(2)
+
+  return df
+
+
+def config_por_categ_avaliada(df, categoria):
+  df.sort_values(by=categoria, ascending=False, inplace=True)
+  df['Porcentagem Acumulada'] = df[categoria].cumsum() / df[categoria].sum() * 100
+  df['Porcentagem'] = (df[categoria] / df[categoria].sum()) * 100
+  return df
+
+
+def preparar_filtros(tabIndex):
+  lojasComDados = preparar_dados_lojas(GET_FATURAM_ZIG_ALIM_BEB_MENSAL())
+  data_inicio_default, data_fim_default = preparar_dados_datas()
+  lojas_selecionadas, data_inicio, data_fim = criar_seletores_pareto(lojasComDados, data_inicio_default, data_fim_default, tab_index=tabIndex)
+  st.divider()
+  return lojas_selecionadas, data_inicio, data_fim
+
+
+

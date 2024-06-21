@@ -573,33 +573,6 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
 
 ######################## PARETO ##############################
 
-# @st.cache_data
-# def GET_COMPRAS_PRODUTOS_QUANTIA():
-#   return dataframe_query(f'''
-#   SELECT 	
-#   	te.NOME_FANTASIA AS 'Loja', 
-#   	tf.FANTASY_NAME AS 'Fornecedor', 
-#   	tin5.DESCRICAO AS 'Nome Produto', 
-# 	  tin.DESCRICAO AS 'Categoria',
-#   	tdri.QUANTIDADE AS 'Quantidade',
-#   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
-#   	tdri.VALOR AS 'Valor', 
-#   	tdr.COMPETENCIA AS 'Data Compra',
-#   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
-#   FROM T_DESPESA_RAPIDA_ITEM tdri
-#   LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tdri.FK_INSUMO = tice.FK_INSUMO_COMPRA
-#   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tice.FK_INSUMO_ESTOQUE = tin5.ID
-#   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
-#   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
-#   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
-#   LEFT JOIN T_LOJAS tl ON tdr.FK_LOJA = tl.ID 
-#   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
-#   WHERE tdr.COMPETENCIA > '2024-01-01'
-# ''')
-
 @st.cache_data
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   return dataframe_query(f'''
@@ -610,7 +583,7 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
 	tin.DESCRICAO AS 'Categoria',
   	tdri.QUANTIDADE AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
-  	tdri.VALOR AS 'Valor', 
+  	tdri.VALOR AS 'Valor Total', 
   	tdr.COMPETENCIA AS 'Data Compra',
   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri
@@ -637,7 +610,7 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE():
 	  tin.DESCRICAO AS 'Categoria',
   	tdri.QUANTIDADE AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
-  	tdri.VALOR AS 'Valor', 
+  	tdri.VALOR AS 'Valor Total', 
   	tdr.COMPETENCIA AS 'Data Compra',
   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri

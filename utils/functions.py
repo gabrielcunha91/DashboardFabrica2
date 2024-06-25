@@ -174,7 +174,6 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   return OrcamentoFaturamento
 
 
-
 def top_dez(dataframe, categoria):
   df = dataframe[dataframe['Categoria'] == categoria]
 
@@ -241,41 +240,47 @@ def top_dez(dataframe, categoria):
 ####### PÁGINA FATURAMENTO RECEITAS EXTRAORDINÁRIAS #######
 
 def config_receit_extraord(lojas_selecionadas, data_inicio, data_fim):
-  ReceitExtraord = GET_RECEIT_EXTRAORD()
+  df = GET_RECEIT_EXTRAORD()
 
   classificacoes = preparar_dados_classificacoes(GET_CLSSIFICACAO())
-  ReceitExtraord = ReceitExtraord[ReceitExtraord['Classificacao'].isin(classificacoes)]
+  df = df[df['Classificacao'].isin(classificacoes)]
 
-  ReceitExtraord = filtrar_por_datas(ReceitExtraord, data_inicio, data_fim, 'Data_Evento')
-  ReceitExtraord = filtrar_por_lojas(ReceitExtraord, lojas_selecionadas)
+  df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Evento')
+  df = filtrar_por_lojas(df, lojas_selecionadas)
 
-  ReceitExtraord = pd.DataFrame(ReceitExtraord)
-  ReceitExtraord.drop(['Loja', 'ID_Evento'], axis=1, inplace=True)
+  df = pd.DataFrame(df)
+  df.drop(['Loja', 'ID_Evento'], axis=1, inplace=True)
 
-  ReceitExtraord = ReceitExtraord.rename(columns = {'ID_receita': 'ID', 'Cliente' : 'Cliente', 'Classificacao': 'Classificação', 
-                                                    'Nome_Evento': 'Nome do Evento', 'Categ_AB': 'Categ. AB', 
-                                                    'Categ_Aluguel': 'Categ. Aluguel', 'Categ_Artist': 'Categ. Artista', 
-                                                    'Categ_Couvert': 'Categ. Couvert', 'Categ_Locacao': 'Categ. Locação', 
-                                                    'Categ_Patroc': 'Categ. Patrocínio', 'Categ_Taxa_Serv': 'Categ. Taxa de serviço', 
-                                                    'Valor_Total': 'Valor Total', 'Data_Evento': 'Data Evento'})
+  df = df.rename(columns = {'ID_receita': 'ID', 'Cliente' : 'Cliente', 'Classificacao': 'Classificação', 
+                            'Nome_Evento': 'Nome do Evento', 'Categ_AB': 'Categ. AB', 
+                            'Categ_Aluguel': 'Categ. Aluguel', 'Categ_Artist': 'Categ. Artista', 
+                            'Categ_Couvert': 'Categ. Couvert', 'Categ_Locacao': 'Categ. Locação', 
+                            'Categ_Patroc': 'Categ. Patrocínio', 'Categ_Taxa_Serv': 'Categ. Taxa de serviço', 
+                            'Valor_Total': 'Valor Total', 'Data_Evento': 'Data Evento'})
 
-  ReceitExtraord = format_date_brazilian(ReceitExtraord, 'Data Evento')
-  ReceitExtraord = pd.DataFrame(ReceitExtraord)
-  return ReceitExtraord
+  df = format_date_brazilian(df, 'Data Evento')
+  df = pd.DataFrame(df)
+  return df
+
 
 def faturam_receit_extraord(df):
   df = df.drop(['ID', 'Cliente', 'Data Evento', 'Nome do Evento'], axis=1)
   colunas_a_somar = ['Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 
-                     'Categ. Patrocínio', 'Categ. Taxa de serviço', 'Valor Total']
+                      'Categ. Patrocínio', 'Categ. Taxa de serviço', 'Valor Total']
   agg_funct = {col: 'sum' for col in colunas_a_somar}
   agrupado = df.groupby(['Classificação']).agg(agg_funct).reset_index()
   agrupado['Quantia'] = df.groupby(['Classificação']).size().values
   agrupado = agrupado.sort_values(by='Quantia', ascending=False) 
-  agrupado = format_columns_brazilian(agrupado, ['Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 'Categ. Patrocínio', 'Categ. Taxa de serviço', 'Valor Total'])
 
-  return agrupado
+  totais = agrupado[colunas_a_somar + ['Quantia']].sum()
 
+  df_totais = pd.DataFrame(totais, columns=['Totais']).reset_index().rename(columns={'index': 'Categoria'})
+  df_totais_transposed = df_totais.set_index('Categoria').T
+  df_totais_transposed_formatted = format_columns_brazilian(df_totais_transposed, colunas_a_somar)
 
+  agrupado = format_columns_brazilian(agrupado, colunas_a_somar + ['Valor Total'])
+
+  return agrupado, df_totais_transposed_formatted
 
 
 ####### PÁGINA DESPESAS #######

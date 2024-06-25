@@ -31,7 +31,7 @@ def main():
   st.divider()
 
   ReceitExtraord = config_receit_extraord(lojas_selecionadas, data_inicio, data_fim)
-  FaturamReceitExtraord = faturam_receit_extraord(ReceitExtraord)
+  FaturamReceitExtraord, Totais = faturam_receit_extraord(ReceitExtraord)
   df_agrupado = ReceitExtraord.groupby('Data Evento').agg({'Valor Total': 'sum', 'ID': 'count'}).reset_index()
   df_agrupado.rename(columns={'ID': 'Quantidade de Eventos'}, inplace=True)
 
@@ -41,6 +41,9 @@ def main():
     with col1:
       st.subheader("Faturamento Receitas Extaordinárias:")
       st.dataframe(FaturamReceitExtraord, width=1080, hide_index=True)
+      st.write("Faturamento Extraordinário Total:")
+      st.dataframe(Totais, width=1080, hide_index=True)
+
   st.divider()
 
   classificacoes = preparar_dados_classificacoes(GET_CLSSIFICACAO())

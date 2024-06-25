@@ -173,6 +173,8 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamentoFaturamento = pd.DataFrame(OrcamentoFaturamento)
   return OrcamentoFaturamento
 
+
+
 def top_dez(dataframe, categoria):
   df = dataframe[dataframe['Categoria'] == categoria]
 
@@ -193,23 +195,39 @@ def top_dez(dataframe, categoria):
   max_valor_liq_venda = topDez['Valor Líquido Venda'].max()
   max_valor_bru_venda = topDez['Valor Bruto Venda'].max()
 
-  topDez = format_columns_brazilian(topDez, ['Preço Unitário', 'Desconto'])
+  topDez['Comparação Valor Líq.'] = topDez['Valor Líquido Venda']
+  topDez['Comparação Valor Bruto'] = topDez['Valor Bruto Venda']
+
+  # Aplicar a formatação brasileira nas colunas
+  topDez['Valor Líquido Venda'] = topDez['Valor Líquido Venda'].apply(format_brazilian)
+  topDez['Valor Bruto Venda'] = topDez['Valor Bruto Venda'].apply(format_brazilian)
   
+  topDez = format_columns_brazilian(topDez, ['Preço Unitário', 'Desconto'])
+  topDez['Quantia comprada'] = topDez['Quantia comprada'].apply(lambda x: str(x))
+
+  # Reordenar as colunas
+  colunas_ordenadas = [
+    'Nome Produto', 'Preço Unitário', 'Quantia comprada',
+    'Comparação Valor Bruto', 'Valor Bruto Venda', 'Desconto',
+    'Comparação Valor Líq.', 'Valor Líquido Venda'
+  ]
+  topDez = topDez.reindex(columns=colunas_ordenadas)
+
   st.data_editor(
     topDez,
     width=1080,
     column_config={
-      "Valor Líquido Venda": st.column_config.ProgressColumn(
-        "Valor Líquido Venda",
+      "Comparação Valor Líq.": st.column_config.ProgressColumn(
+        "Comparação Valor Líq.",
         help="O Valor Líquido da Venda do produto em reais",
-        format="R$%f",
+        format=" ",  # Não exibir o valor na barra
         min_value=0,
         max_value=max_valor_liq_venda,
       ),
-      "Valor Bruto Venda": st.column_config.ProgressColumn(
-        "Valor Bruto Venda",
+      "Comparação Valor Bruto": st.column_config.ProgressColumn(
+        "Comparação Valor Bruto",
         help="O Valor Bruto da Venda do produto em reais",
-        format="R$%f",
+        format=" ",  # Não exibir o valor na barra
         min_value=0,
         max_value=max_valor_bru_venda,
       ),

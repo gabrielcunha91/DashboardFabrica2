@@ -1,6 +1,11 @@
 1. Refatoramento: Toda tarefa repetitiva que possa ser universal terá uma função em functions
-    1.1. Formatação de data (feito!)
+    1.1. Filtrar por classificação: substituirá todos os "filtrar por" parecidos (lojas, classificação e fornecedor)
     1.2. Arrumar a cmv
     1.3.
-2. Colocar td em format_brazilian para melhor visualizzação
-3. Fazer o cálculo do preço do estoque (pensar nisso)
+2. Página CMV:
+    2.1. Mês do cmv está como primeiro dia do mês, mudar para o nome ou numero do mes sem o dia
+    2.2. Insumos blueme com pedido: adicionar uma coluna de diferença entre valor liq e valor insumos (para identificar possíveis erros)
+3. Pareto:
+    3.1. eixo do nome do produto está invadindo o eixo y (nao sei se é consertável)
+    3.2. valor unitario da comparação -> mudar pra formato brasileiro
+    

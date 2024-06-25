@@ -99,6 +99,7 @@ def format_date_brazilian(df, date_column):
   df[date_column] = df[date_column].dt.strftime('%d-%m-%Y')
   return df
 
+
 ####### PÁGINA FATURAMENTO ZIG #######
 
 def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
@@ -312,9 +313,10 @@ def config_despesas_por_classe(df):
   df['Orçamento'] = df['Orçamento'].astype(float)
   df['Valor Realizado'] = df['Valor Realizado'].astype(float)
 
-  df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado']
+  df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado'] 
 
   df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.'])
+
   return df
 
 def config_despesas_detalhado(df):

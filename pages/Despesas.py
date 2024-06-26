@@ -26,7 +26,7 @@ def main():
       logout()
   st.divider()
 
-  lojasComDados = preparar_dados_lojas(GET_RECEIT_EXTRAORD())
+  lojasComDados = preparar_dados_classe_selecionada(GET_RECEIT_EXTRAORD(), 'Loja')
   data_inicio_default, data_fim_default = preparar_dados_datas()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()

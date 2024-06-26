@@ -25,7 +25,7 @@ def main():
       logout()
   st.divider()
 
-  lojasComDados = preparar_dados_lojas(GET_RECEIT_EXTRAORD())
+  lojasComDados = preparar_dados_classe_selecionada(GET_RECEIT_EXTRAORD(), 'Loja')
   data_inicio_default, data_fim_default = preparar_dados_datas()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()
@@ -44,27 +44,20 @@ def main():
       st.write("Faturamento Extraordinário Total:")
       st.dataframe(Totais, width=1080, hide_index=True)
 
-  st.divider()
 
-  classificacoes = preparar_dados_classificacoes(GET_CLSSIFICACAO())
-  classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
-  DfFiltrado = filtrar_por_classe_selecionada(ReceitExtraord, 'Classificação', classificacoes_selecionadas)
-  DfFiltrado = format_columns_brazilian(DfFiltrado, ['Valor Total', 'Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 'Categ. Patrocínio', 'Categ. Taxa de serviço'])
-
-  st.divider()
+  classificacoes = preparar_dados_classe_selecionada(GET_CLSSIFICACAO(), 'Classificacao')
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 15, 1])
     with col1:
-      st.subheader("Detalhamento de acordo com a classificação selecionada:")
+      col3, col4 = st.columns([2, 1])
+      with col3:
+        st.subheader("Detalhamento de acordo com a classificação selecionada:")
+      with col4:
+        classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
+      DfFiltrado = filtrar_por_classe_selecionada(ReceitExtraord, 'Classificação', classificacoes_selecionadas)
+      DfFiltrado = format_columns_brazilian(DfFiltrado, ['Valor Total', 'Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 'Categ. Patrocínio', 'Categ. Taxa de serviço'])
       st.dataframe(DfFiltrado, hide_index=True)
-
-  with st.container(border=True):
-    col0, col1, col2 = st.columns([1, 15, 1])
-    with col1:
-      st.subheader("Análise Por Dia:")
-      plotar_grafico(df_agrupado)
-
 
 
 if __name__ == '__main__':

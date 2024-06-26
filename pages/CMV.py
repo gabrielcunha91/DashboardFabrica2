@@ -28,7 +28,7 @@ def main():
   
   st.divider()
 
-  lojasComDados = preparar_dados_lojas(GET_FATURAM_ZIG_ALIM_BEB_MENSAL())
+  lojasComDados = preparar_dados_classe_selecionada(GET_FATURAM_ZIG_ALIM_BEB_MENSAL(), 'Loja')
   data_inicio_default, data_fim_default = preparar_dados_datas()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()
@@ -125,9 +125,9 @@ def main():
 
   insumosSemPedido = config_insumos_blueme_sem_pedido(GET_INSUMOS_BLUE_ME_SEM_PEDIDO(), data_inicio, data_fim)
   insumosComPedido = config_insumos_blueme_com_pedido(GET_INSUMOS_BLUE_ME_COM_PEDIDO(), data_inicio, data_fim)
-  classificacoes = preparar_dados_classificacoes(insumosSemPedido)
-  forneceforesSemPedido = preparar_dados_fornecedores(insumosSemPedido) 
-  fornecedoresComPedido = preparar_dados_fornecedores(insumosComPedido)
+  classificacoes = preparar_dados_classe_selecionada(insumosSemPedido, 'Classificacao')
+  forneceforesSemPedido = preparar_dados_classe_selecionada(insumosSemPedido, 'Fornecedor') 
+  fornecedoresComPedido = preparar_dados_classe_selecionada(insumosSemPedido, 'Fornecedor') 
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
@@ -140,7 +140,7 @@ def main():
         insumosSemPedido.rename(columns = {'Classificacao': 'Classificação'}, inplace=True)
         insumosSemPedido = filtrar_por_classe_selecionada(insumosSemPedido, 'Classificação', classificacoes_selecionadas)
       with col6:
-        fornecedores_selecionadss = st.multiselect(label='Selecione Fornecedores', options=forneceforesSemPedido)
+        fornecedores_selecionadss = st.multiselect(label='Selecione Fornecedores', options=forneceforesSemPedido, key=1)
         insumosSemPedido = filtrar_por_classe_selecionada(insumosSemPedido, 'Fornecedor', fornecedores_selecionadss)
       st.dataframe(insumosSemPedido, width=1200, hide_index=True)
   with st.container(border=True):
@@ -150,7 +150,7 @@ def main():
       with col4:
         st.subheader('Insumos BlueMe com Pedido')
       with col5:
-        fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedoresComPedido)
+        fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedoresComPedido, key=2)
         insumosComPedido = filtrar_por_classe_selecionada(insumosComPedido, 'Fornecedor', fornecedores_selecionados)
       st.dataframe(insumosComPedido, width=1200, hide_index=True)
 

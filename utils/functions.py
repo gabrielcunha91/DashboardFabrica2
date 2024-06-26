@@ -18,12 +18,6 @@ def config_sidebar():
   else:
     st.sidebar.write("Por favor, faça login para acessar o menu.")
 
-def preparar_dados_lojas(df):
-  DfLojas = df.copy()
-  LojasComDados = DfLojas['Loja'].unique().tolist()
-  LojasComDados.sort(key=str.lower)
-  return LojasComDados
-
 def preparar_dados_datas():
   # Inicializa o calendário do Brasil
   cal = Brazil()
@@ -40,15 +34,12 @@ def preparar_dados_datas():
   
   return data_inicio_default, data_fim_default
 
-def preparar_dados_classificacoes(dataframe):
-  classificacoes = dataframe
-  classificacoes = classificacoes['Classificacao'].unique().tolist()
-  return classificacoes
 
-def preparar_dados_fornecedores(dataframe):
-  fornecedores = dataframe
-  fornecedores = fornecedores['Fornecedor'].unique().tolist()
-  return fornecedores
+def preparar_dados_classe_selecionada(df, classe):
+  dfCopia = df.copy()
+  dados = dfCopia[classe].unique().tolist()
+  dados.sort(key=str.lower)
+  return dados
 
 def filtrar_por_datas(dataframe, data_inicio, data_fim, categoria):
   data_inicio = pd.Timestamp(data_inicio)
@@ -240,7 +231,7 @@ def top_dez(dataframe, categoria):
 def config_receit_extraord(lojas_selecionadas, data_inicio, data_fim):
   df = GET_RECEIT_EXTRAORD()
 
-  classificacoes = preparar_dados_classificacoes(GET_CLSSIFICACAO())
+  classificacoes = preparar_dados_classe_selecionada(GET_CLSSIFICACAO(), 'Classificacao')
   df = df[df['Classificacao'].isin(classificacoes)]
 
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Evento')
@@ -518,7 +509,7 @@ def config_por_categ_avaliada(df, categoria):
 
 
 def preparar_filtros(tabIndex):
-  lojasComDados = preparar_dados_lojas(GET_FATURAM_ZIG_ALIM_BEB_MENSAL())
+  lojasComDados = preparar_dados_classe_selecionada(GET_FATURAM_ZIG_ALIM_BEB_MENSAL(), 'Loja')
   data_inicio_default, data_fim_default = preparar_dados_datas()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores_pareto(lojasComDados, data_inicio_default, data_fim_default, tab_index=tabIndex)
   st.divider()

@@ -46,10 +46,21 @@ def main():
   despesaDetalhada, valorTotal = config_despesas_detalhado(Despesas)
   valorTotal = format_brazilian(valorTotal)
 
+  classificacoes = preparar_dados_classe_selecionada(despesaDetalhada, 'Plano de Contas')
+
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 15, 1])
     with col1:
-      st.subheader("Despesas Detalhadas:")
+      col3, col4, col5 = st.columns([2, 1, 1])
+      with col3:
+        st.subheader("Despesas Detalhadas:")
+      with col4:
+        classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
+        despesaDetalhada = filtrar_por_classe_selecionada(despesaDetalhada, 'Plano de Contas', classificacoes_selecionadas)
+      with col5:
+        fornecedores = preparar_dados_classe_selecionada(despesaDetalhada, 'Fornecedor')
+        fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores)
+        despesaDetalhada = filtrar_por_classe_selecionada(despesaDetalhada, 'Fornecedor', fornecedores_selecionados)
       st.dataframe(despesaDetalhada, height=500, width=1250, hide_index=True)
       st.write('Valor Total = R$', valorTotal)
 

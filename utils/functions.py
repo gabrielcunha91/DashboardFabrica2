@@ -38,6 +38,7 @@ def preparar_dados_datas():
 def preparar_dados_classe_selecionada(df, classe):
   dfCopia = df.copy()
   dados = dfCopia[classe].unique().tolist()
+  dados = [dado for dado in dados if dado is not None]
   dados.sort(key=str.lower)
   return dados
 

@@ -64,6 +64,5 @@ def main():
       st.dataframe(despesaDetalhada, height=500, width=1250, hide_index=True)
       st.write('Valor Total = R$', valorTotal)
 
-
 if __name__ == '__main__':
   main()

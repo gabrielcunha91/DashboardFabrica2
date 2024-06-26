@@ -577,6 +577,8 @@ def create_columns_comparativo(df):
   df['Valor Unitário'] = df['Valor Unitário'].round(2)
   df = df.drop(['Valor Total', 'Quantidade', 'Loja'], axis=1)
 
+  df['Valor Unitário'] = df['Valor Unitário'].apply(format_brazilian)
+
   return df
 
 

@@ -48,7 +48,7 @@ def main():
 
   classificacoes = preparar_dados_classificacoes(GET_CLSSIFICACAO())
   classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
-  DfFiltrado = filtrar_por_classificacao(ReceitExtraord, classificacoes_selecionadas)
+  DfFiltrado = filtrar_por_classe_selecionada(ReceitExtraord, 'Classificação', classificacoes_selecionadas)
   DfFiltrado = format_columns_brazilian(DfFiltrado, ['Valor Total', 'Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 'Categ. Patrocínio', 'Categ. Taxa de serviço'])
 
   st.divider()

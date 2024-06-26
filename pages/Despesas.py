@@ -33,7 +33,7 @@ def main():
 
   Despesas = GET_DESPESAS()
   Despesas = filtrar_por_datas(Despesas, data_inicio, data_fim, 'Data_Evento')
-  Despesas = filtrar_por_lojas(Despesas, lojas_selecionadas)
+  Despesas = filtrar_por_classe_selecionada(Despesas, 'Loja', lojas_selecionadas)
   despesasConfig = config_despesas_por_classe(Despesas)
   despesasConfigStyled = despesasConfig.style.applymap(highlight_values, subset=['Orçamento - Realiz.'])
 

@@ -64,20 +64,12 @@ def filtrar_por_datas(dataframe, data_inicio, data_fim, categoria):
   
   return dataframe_filtered
 
-def filtrar_por_lojas(dataframe, lojas_selecionadas):
-  if lojas_selecionadas:
-    dataframe = dataframe[dataframe['Loja'].isin(lojas_selecionadas)]
+
+def filtrar_por_classe_selecionada(dataframe, classe, valores_selecionados):
+  if valores_selecionados:
+    dataframe = dataframe[dataframe[classe].isin(valores_selecionados)]
   return dataframe
 
-def filtrar_por_classificacao(dataframe, classificacoes_selecionadas):
-  if classificacoes_selecionadas:
-    dataframe = dataframe[dataframe['Classificação'].isin(classificacoes_selecionadas)]
-  return dataframe
-
-def filtrar_por_fornecedor(dataframe, fornecedores_selecionados):
-  if fornecedores_selecionados:
-    dataframe = dataframe[dataframe['Fornecedor'].isin(fornecedores_selecionados)]
-  return dataframe
 
 def format_brazilian(num):
   try:
@@ -112,7 +104,7 @@ def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
 
   categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço']
   FaturamentoZig = FaturamentoZig[FaturamentoZig['Categoria'].isin(categorias_desejadas)]
-  FaturamentoZig = filtrar_por_lojas(FaturamentoZig, lojas_selecionadas)
+  FaturamentoZig = filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
   FaturamentoZig = pd.DataFrame(FaturamentoZig)
 
   FaturamentoZig.drop(['Loja', 'Data_Evento'], axis=1, inplace=True)
@@ -151,7 +143,7 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
 
   # Agora filtra  
   OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
-  OrcamentoFaturamento = filtrar_por_lojas(OrcamentoFaturamento, lojas_selecionadas)
+  OrcamentoFaturamento = filtrar_por_classe_selecionada(OrcamentoFaturamento, 'Loja',lojas_selecionadas)
   OrcamentoFaturamento = pd.DataFrame(OrcamentoFaturamento)
 
   # Exclui colunas que não serão usadas na análise, agrupa tuplas de valores de categoria iguais e renomeia as colunas restantes
@@ -252,7 +244,7 @@ def config_receit_extraord(lojas_selecionadas, data_inicio, data_fim):
   df = df[df['Classificacao'].isin(classificacoes)]
 
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Evento')
-  df = filtrar_por_lojas(df, lojas_selecionadas)
+  df = filtrar_por_classe_selecionada(df, 'Loja', lojas_selecionadas)
 
   df = pd.DataFrame(df)
   df.drop(['Loja', 'ID_Evento'], axis=1, inplace=True)
@@ -290,40 +282,6 @@ def faturam_receit_extraord(df):
 
 
 ####### PÁGINA DESPESAS #######
-
-# def config_despesas_por_classe(df):
-#   df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
-#   df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
-#     'Orcamento': 'sum',
-#     'ID': 'count',
-#     'Valor_Liquido': 'sum'
-# }).rename(columns={'ID': 'Qtd_Lancamentos'})
-
-#   formatted_rows = []
-#   current_category = None
-
-#   for _, row in df.iterrows():
-#     if row['Class_Plano_de_Contas'] != current_category:
-#       current_category = row['Class_Plano_de_Contas']
-#       formatted_rows.append({'Class_Plano_de_Contas': current_category, 'Plano_de_Contas': '', 'Qtd_Lancamentos': '', 'Orcamento': '', 'Valor_Liquido': ''})
-#     formatted_rows.append({'Class_Plano_de_Contas': '', 'Plano_de_Contas': row['Plano_de_Contas'], 'Qtd_Lancamentos': row['Qtd_Lancamentos'], 'Orcamento': row['Orcamento'], 'Valor_Liquido': row['Valor_Liquido']})
-
-#   df = pd.DataFrame(formatted_rows)
-#   df = df.rename(columns = {'Class_Plano_de_Contas': 'Classe Plano de Contas', 'Plano_de_Contas' : 'Plano de Contas', 'Qtd_Lancamentos': 'Qtd. de Lançamentos', 
-#                             'Orcamento': 'Orçamento', 'Valor_Liquido': 'Valor Realizado'})
-  
-#   df['Orçamento'] = pd.to_numeric(df['Orçamento'], errors='coerce')
-#   df['Valor Realizado'] = pd.to_numeric(df['Valor Realizado'], errors='coerce')
-#   df.fillna({'Orçamento': 0, 'Valor Realizado': 0}, inplace=True)
-#   df['Orçamento'] = df['Orçamento'].astype(float)
-#   df['Valor Realizado'] = df['Valor Realizado'].astype(float)
-
-#   df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado'] 
-
-#   df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.'])
-#   return df
-
-
 
 def config_despesas_por_classe(df):
   df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
@@ -426,17 +384,17 @@ def config_tabelas_iniciais_cmv(lojas_selecionadas, data_inicio, data_fim):
 
   df3 = df3[df3['ID_Loja'] != 296]
 
-  df1 = filtrar_por_lojas(df1, lojas_selecionadas)
+  df1 = filtrar_por_classe_selecionada(df1, 'Loja' , lojas_selecionadas)
   df1 = filtrar_por_datas(df1, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df2 = filtrar_por_lojas(df2, lojas_selecionadas)
+  df2 = filtrar_por_classe_selecionada(df2, 'Loja' , lojas_selecionadas)
   df2 = filtrar_por_datas(df2, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df3 = filtrar_por_lojas(df3, lojas_selecionadas)
+  df3 = filtrar_por_classe_selecionada(df3, 'Loja' , lojas_selecionadas)
   df3 = filtrar_por_datas(df3, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df4 = filtrar_por_lojas(df4, lojas_selecionadas)
+  df4 = filtrar_por_classe_selecionada(df4, 'Loja' , lojas_selecionadas)
   df4 = filtrar_por_datas(df4, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df5 = filtrar_por_lojas(df5, lojas_selecionadas)
+  df5 = filtrar_por_classe_selecionada(df5, 'Loja' , lojas_selecionadas)
   df5 = filtrar_por_datas(df5, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df6 = filtrar_por_lojas(df6, lojas_selecionadas)
+  df6 = filtrar_por_classe_selecionada(df6, 'Loja' , lojas_selecionadas)
   df6 = filtrar_por_datas(df6, data_inicio, data_fim, 'Primeiro_Dia_Mes')
 
   dfFinal = merge_dataframes(df1, df2, df3, df4, df5, df6)
@@ -523,7 +481,7 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df = df.sort_values(by='Nome Produto', ascending=False)
 
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
-  df = filtrar_por_lojas(df, lojas_selecionadas)
+  df = filtrar_por_classe_selecionada(df, 'Loja' , lojas_selecionadas)
 
   df['Quantidade'] = df['Quantidade'].astype(str)
   df['Valor Total'] = df['Valor Total'].astype(str)

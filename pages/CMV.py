@@ -138,10 +138,10 @@ def main():
       with col5:
         classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
         insumosSemPedido.rename(columns = {'Classificacao': 'Classificação'}, inplace=True)
-        insumosSemPedido = filtrar_por_classificacao(insumosSemPedido, classificacoes_selecionadas)
+        insumosSemPedido = filtrar_por_classe_selecionada(insumosSemPedido, 'Classificação', classificacoes_selecionadas)
       with col6:
         fornecedores_selecionadss = st.multiselect(label='Selecione Fornecedores', options=forneceforesSemPedido)
-        insumosSemPedido = filtrar_por_fornecedor(insumosSemPedido, fornecedores_selecionadss)
+        insumosSemPedido = filtrar_por_classe_selecionada(insumosSemPedido, 'Fornecedor', fornecedores_selecionadss)
       st.dataframe(insumosSemPedido, width=1200, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
@@ -151,7 +151,7 @@ def main():
         st.subheader('Insumos BlueMe com Pedido')
       with col5:
         fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedoresComPedido)
-        insumosComPedido = filtrar_por_fornecedor(insumosComPedido, fornecedores_selecionados)
+        insumosComPedido = filtrar_por_classe_selecionada(insumosComPedido, 'Fornecedor', fornecedores_selecionados)
       st.dataframe(insumosComPedido, width=1200, hide_index=True)
 
 

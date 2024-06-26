@@ -34,12 +34,14 @@ def main():
   Despesas = GET_DESPESAS()
   Despesas = filtrar_por_datas(Despesas, data_inicio, data_fim, 'Data_Evento')
   Despesas = filtrar_por_lojas(Despesas, lojas_selecionadas)
-  
+  despesasConfig = config_despesas_por_classe(Despesas)
+  despesasConfigStyled = despesasConfig.style.applymap(highlight_values, subset=['Orçamento - Realiz.'])
+
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
       st.subheader("Despesas por Classe:")
-      st.dataframe(config_despesas_por_classe(Despesas), height=500, width=1080, hide_index=True)
+      st.dataframe(despesasConfigStyled, height=500, width=1080, hide_index=True)
 
   despesaDetalhada, valorTotal = config_despesas_detalhado(Despesas)
   valorTotal = format_brazilian(valorTotal)
@@ -49,9 +51,7 @@ def main():
     with col1:
       st.subheader("Despesas Detalhadas:")
       st.dataframe(despesaDetalhada, height=500, width=1250, hide_index=True)
-      
-    row1 = st.columns([1, 10, 3])
-    row1[2] = st.write('Valor Total = R$', valorTotal)
+      st.write('Valor Total = R$', valorTotal)
 
 
 if __name__ == '__main__':

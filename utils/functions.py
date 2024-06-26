@@ -100,6 +100,11 @@ def format_date_brazilian(df, date_column):
   return df
 
 
+def highlight_values(val):
+    color = 'red' if '-' in val else 'green'
+    return f'color: {color}'
+
+
 ####### PÁGINA FATURAMENTO ZIG #######
 
 def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
@@ -286,13 +291,47 @@ def faturam_receit_extraord(df):
 
 ####### PÁGINA DESPESAS #######
 
+# def config_despesas_por_classe(df):
+#   df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
+#   df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
+#     'Orcamento': 'sum',
+#     'ID': 'count',
+#     'Valor_Liquido': 'sum'
+# }).rename(columns={'ID': 'Qtd_Lancamentos'})
+
+#   formatted_rows = []
+#   current_category = None
+
+#   for _, row in df.iterrows():
+#     if row['Class_Plano_de_Contas'] != current_category:
+#       current_category = row['Class_Plano_de_Contas']
+#       formatted_rows.append({'Class_Plano_de_Contas': current_category, 'Plano_de_Contas': '', 'Qtd_Lancamentos': '', 'Orcamento': '', 'Valor_Liquido': ''})
+#     formatted_rows.append({'Class_Plano_de_Contas': '', 'Plano_de_Contas': row['Plano_de_Contas'], 'Qtd_Lancamentos': row['Qtd_Lancamentos'], 'Orcamento': row['Orcamento'], 'Valor_Liquido': row['Valor_Liquido']})
+
+#   df = pd.DataFrame(formatted_rows)
+#   df = df.rename(columns = {'Class_Plano_de_Contas': 'Classe Plano de Contas', 'Plano_de_Contas' : 'Plano de Contas', 'Qtd_Lancamentos': 'Qtd. de Lançamentos', 
+#                             'Orcamento': 'Orçamento', 'Valor_Liquido': 'Valor Realizado'})
+  
+#   df['Orçamento'] = pd.to_numeric(df['Orçamento'], errors='coerce')
+#   df['Valor Realizado'] = pd.to_numeric(df['Valor Realizado'], errors='coerce')
+#   df.fillna({'Orçamento': 0, 'Valor Realizado': 0}, inplace=True)
+#   df['Orçamento'] = df['Orçamento'].astype(float)
+#   df['Valor Realizado'] = df['Valor Realizado'].astype(float)
+
+#   df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado'] 
+
+#   df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.'])
+#   return df
+
+
+
 def config_despesas_por_classe(df):
   df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
   df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
     'Orcamento': 'sum',
     'ID': 'count',
-    'Valor_Liquido': 'sum'
-}).rename(columns={'ID': 'Qtd_Lancamentos'})
+      'Valor_Liquido': 'sum'
+  }).rename(columns={'ID': 'Qtd_Lancamentos'})
 
   formatted_rows = []
   current_category = None
@@ -300,22 +339,30 @@ def config_despesas_por_classe(df):
   for _, row in df.iterrows():
     if row['Class_Plano_de_Contas'] != current_category:
       current_category = row['Class_Plano_de_Contas']
-      formatted_rows.append({'Class_Plano_de_Contas': current_category, 'Plano_de_Contas': '', 'Qtd_Lancamentos': '', 'Orcamento': '', 'Valor_Liquido': ''})
+      formatted_rows.append({'Class_Plano_de_Contas': current_category, 'Plano_de_Contas': '', 'Qtd_Lancamentos': None, 'Orcamento': None, 'Valor_Liquido': None})
     formatted_rows.append({'Class_Plano_de_Contas': '', 'Plano_de_Contas': row['Plano_de_Contas'], 'Qtd_Lancamentos': row['Qtd_Lancamentos'], 'Orcamento': row['Orcamento'], 'Valor_Liquido': row['Valor_Liquido']})
 
   df = pd.DataFrame(formatted_rows)
-  df = df.rename(columns = {'Class_Plano_de_Contas': 'Classe Plano de Contas', 'Plano_de_Contas' : 'Plano de Contas', 'Qtd_Lancamentos': 'Qtd. de Lançamentos', 
-                            'Orcamento': 'Orçamento', 'Valor_Liquido': 'Valor Realizado'})
-  
+  df = df.rename(columns={'Class_Plano_de_Contas': 'Classe Plano de Contas', 'Plano_de_Contas': 'Plano de Contas', 'Qtd_Lancamentos': 'Qtd. de Lançamentos', 
+                          'Orcamento': 'Orçamento', 'Valor_Liquido': 'Valor Realizado'})
+
   df['Orçamento'] = pd.to_numeric(df['Orçamento'], errors='coerce')
   df['Valor Realizado'] = pd.to_numeric(df['Valor Realizado'], errors='coerce')
   df.fillna({'Orçamento': 0, 'Valor Realizado': 0}, inplace=True)
   df['Orçamento'] = df['Orçamento'].astype(float)
   df['Valor Realizado'] = df['Valor Realizado'].astype(float)
 
-  df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado'] 
+  df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado']
 
   df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.'])
+
+  # Converter 'Qtd. de Lançamentos' para int e substituir valores nas linhas das classes
+  df['Qtd. de Lançamentos'] = df['Qtd. de Lançamentos'].fillna(0).astype(int)
+  df.loc[df['Plano de Contas'] == '', 'Qtd. de Lançamentos'] = ''
+
+  # Remover zeros nas linhas das classes
+  for col in ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.']:
+    df.loc[df['Plano de Contas'] == '', col] = ''
 
   return df
 

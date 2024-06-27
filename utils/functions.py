@@ -331,9 +331,8 @@ def config_despesas_detalhado(df):
   df['Valor'] = pd.to_numeric(df['Valor'], errors='coerce')
   df.fillna({'Valor': 0}, inplace=True)
   df['Valor'] = df['Valor'].astype(float)
-  valorTotal = df['Valor'].sum()
-  df = format_columns_brazilian(df, ['Valor'])
-  return df, valorTotal
+  
+  return df
 
 
 

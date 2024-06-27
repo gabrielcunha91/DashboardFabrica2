@@ -280,8 +280,10 @@ def config_despesas_por_classe(df):
   df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
     'Orcamento': 'sum',
     'ID': 'count',
-      'Valor_Liquido': 'sum'
+    'Valor_Liquido': 'sum'
   }).rename(columns={'ID': 'Qtd_Lancamentos'})
+
+  df['Orcamento'] = df['Orcamento'] / df['Qtd_Lancamentos']
 
   formatted_rows = []
   current_category = None
@@ -313,6 +315,8 @@ def config_despesas_por_classe(df):
   # Remover zeros nas linhas das classes
   for col in ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.']:
     df.loc[df['Plano de Contas'] == '', col] = ''
+
+  
 
   return df
 

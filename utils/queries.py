@@ -163,10 +163,74 @@ def GET_CLSSIFICACAO():
   GROUP BY trec.CLASSIFICACAO 
 ''')
 
+# def GET_DESPESAS():
+#   #'Data_Evento' é, na realidade, a data da emissão, eu só coloquei esse nome pra ficar mais fácil de programar
+#   return dataframe_query(f'''
+#   SELECT * FROM (
+#     SELECT 
+#       tdr.ID AS ID,
+#       tl.NOME AS Loja,
+#       tf.CORPORATE_NAME AS Fornecedor,
+#       tdr.NF AS Doc_Serie,
+#       STR_TO_DATE(tdr.COMPETENCIA, '%Y-%m-%d') AS Data_Evento,
+#       STR_TO_DATE(tdr.VENCIMENTO, '%Y-%m-%d') AS Data_Vencimento,
+#       tdr.OBSERVACAO AS Descricao,
+#       tdr.VALOR_LIQUIDO AS Valor_Liquido,
+#       tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
+#       tcpdc.DESCRICAO AS Class_Plano_de_Contas,
+#       to2.VALOR AS Orcamento,
+#       CASE 
+#           WHEN tdr.FK_Status = 'Provisionado' THEN 'Provisionado'
+#           ELSE 'Real'
+#       END AS Status
+#     FROM T_DESPESA_RAPIDA tdr
+#     JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
+#     LEFT JOIN T_LOJAS tl ON te.FK_LOJA = tl.ID
+#     LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
+#     LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
+#     LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
+#     LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
+#     LEFT JOIN T_ORCAMENTOS to2 ON tapdc.FK_CLASSIFICACAO_GRUPO_2 = to2.FK_CLASSIFICACAO_2 
+#       AND MONTH(CAST(tdr.COMPETENCIA AS DATE)) = to2.MES
+#       AND to2.FK_EMPRESA = te.ID
+#     WHERE tdr.FK_DESPESA_TEKNISA IS NULL
+#       AND tdr.COMPETENCIA >= '2024-01-01 00:00:00'
+#       AND NOT EXISTS (
+#         SELECT 1
+#         FROM T_DESPESA_RAPIDA_ITEM tdri
+#         WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID
+#       )
+#     UNION ALL
+#     SELECT 
+#       tcap.ID AS ID,
+#       tl.NOME AS Loja,
+#       tcap.FORNECEDOR_RAZAO_SOCIAL AS Fornecedor,
+#       tcap.DOC_SERIE AS Doc_Serie,
+#       CAST(tcap.DATA_EMISSAO AS DATE) AS Data_Emissao,
+#       CAST(tcap.DATA_VENCIMENTO AS DATE) AS Data_Vencimento,
+#       tcap.DESCRICAO AS Descricao,
+#       tcap.VALOR_LIQUIDO AS Valor_Liquido,
+#       tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
+#       tcpdc.DESCRICAO AS Class_Plano_de_Contas,
+#       to2.VALOR AS Orcamento,
+#       tcap.STATUS_NF AS Status
+#     FROM T_TEKNISA_CONTAS_A_PAGAR tcap
+#     JOIN T_LOJAS tl ON tcap.EMPRESA = tl.TEKNISA_CONTAS_A_PAGAR_NOME
+#     JOIN T_EMPRESAS te ON te.FK_LOJA = tl.ID
+#     LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tcap.TIPO_DE_CONTA = tapdc.TIPO_DE_CONTA_TEKNISA
+#     LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
+#     LEFT JOIN T_ORCAMENTOS to2 ON tapdc.FK_CLASSIFICACAO_GRUPO_2 = to2.FK_CLASSIFICACAO_2 
+#       AND MONTH(CAST(tcap.DATA_EMISSAO AS DATE)) = to2.MES
+#       AND to2.FK_EMPRESA = te.ID
+#     WHERE tcap.DATA_EMISSAO >= '2024-01-01 00:00:00'
+#       AND tcap.STATUS_NF = 'Real'
+#   ) AS despesas
+#   WHERE Class_Plano_de_Contas IS NOT NULL;
+#   ''')
+
 def GET_DESPESAS():
   #'Data_Evento' é, na realidade, a data da emissão, eu só coloquei esse nome pra ficar mais fácil de programar
   return dataframe_query(f'''
-  SELECT * FROM (
     SELECT 
       tdr.ID AS ID,
       tl.NOME AS Loja,
@@ -198,36 +262,8 @@ def GET_DESPESAS():
       AND NOT EXISTS (
         SELECT 1
         FROM T_DESPESA_RAPIDA_ITEM tdri
-        WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID
-      )
-    UNION ALL
-    SELECT 
-      tcap.ID AS ID,
-      tl.NOME AS Loja,
-      tcap.FORNECEDOR_RAZAO_SOCIAL AS Fornecedor,
-      tcap.DOC_SERIE AS Doc_Serie,
-      CAST(tcap.DATA_EMISSAO AS DATE) AS Data_Emissao,
-      CAST(tcap.DATA_VENCIMENTO AS DATE) AS Data_Vencimento,
-      tcap.DESCRICAO AS Descricao,
-      tcap.VALOR_LIQUIDO AS Valor_Liquido,
-      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
-      tcpdc.DESCRICAO AS Class_Plano_de_Contas,
-      to2.VALOR AS Orcamento,
-      tcap.STATUS_NF AS Status
-    FROM T_TEKNISA_CONTAS_A_PAGAR tcap
-    JOIN T_LOJAS tl ON tcap.EMPRESA = tl.TEKNISA_CONTAS_A_PAGAR_NOME
-    JOIN T_EMPRESAS te ON te.FK_LOJA = tl.ID
-    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tcap.TIPO_DE_CONTA = tapdc.TIPO_DE_CONTA_TEKNISA
-    LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
-    LEFT JOIN T_ORCAMENTOS to2 ON tapdc.FK_CLASSIFICACAO_GRUPO_2 = to2.FK_CLASSIFICACAO_2 
-      AND MONTH(CAST(tcap.DATA_EMISSAO AS DATE)) = to2.MES
-      AND to2.FK_EMPRESA = te.ID
-    WHERE tcap.DATA_EMISSAO >= '2024-01-01 00:00:00'
-      AND tcap.STATUS_NF = 'Real'
-  ) AS despesas
-  WHERE Class_Plano_de_Contas IS NOT NULL;
-  ''')
-
+        WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID);
+''')
 
 
 ############################### A PARTIT DAQUI É TD DO CMV ####################################

@@ -310,6 +310,7 @@ def config_despesas_por_classe(df):
 
   # Converter 'Qtd. de Lançamentos' para int e substituir valores nas linhas das classes
   df['Qtd. de Lançamentos'] = df['Qtd. de Lançamentos'].fillna(0).astype(int)
+  df['Qtd. de Lançamentos'] = df['Qtd. de Lançamentos'].astype(str)
   df.loc[df['Plano de Contas'] == '', 'Qtd. de Lançamentos'] = ''
 
   # Remover zeros nas linhas das classes
@@ -465,6 +466,7 @@ def config_insumos_blueme_com_pedido(df, data_inicio, data_fim):
                        'Valor_Liquido': 'Valor Líquido', 'Valor_Insumos': 'Valor Insumos', 'Valor_Liq_Alimentos': 'Valor Líq. Alimentos',
                        'Valor_Liq_Bebidas': 'Valor Líq. Bebidas', 'Valor_Liq_Descart_Hig_Limp': 'Valor Líq. Hig/Limp.', 
                        'Valor_Liq_Outros': 'Valor Líq. Outros'}, inplace=True)
+  # df['Insumos - V. Líq'] = df['Valor Insumos'] - df['Valor Líquido']
   return df
 
 

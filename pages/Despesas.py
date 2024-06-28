@@ -35,7 +35,7 @@ def main():
   Despesas = filtrar_por_datas(Despesas, data_inicio, data_fim, 'Data_Evento')
   Despesas = filtrar_por_classe_selecionada(Despesas, 'Loja', lojas_selecionadas)
   despesasConfig = config_despesas_por_classe(Despesas)
-  despesasConfigStyled = despesasConfig.style.applymap(highlight_values, subset=['Orçamento - Realiz.'])
+  despesasConfigStyled = despesasConfig.style.map(highlight_values, subset=['Orçamento - Realiz.'])
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])

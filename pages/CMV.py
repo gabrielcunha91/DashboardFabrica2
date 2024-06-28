@@ -142,7 +142,11 @@ def main():
       with col6:
         fornecedores_selecionadss = st.multiselect(label='Selecione Fornecedores', options=forneceforesSemPedido, key=1)
         insumosSemPedido = filtrar_por_classe_selecionada(insumosSemPedido, 'Fornecedor', fornecedores_selecionadss)
+      valorTotal = insumosSemPedido['Valor Líquido'].sum()
+      valorTotal = format_brazilian(valorTotal)
+      insumosSemPedido = format_columns_brazilian(insumosSemPedido, ['Valor Líquido'])
       st.dataframe(insumosSemPedido, width=1200, hide_index=True)
+      st.write('Valor Líquido Total = R$', valorTotal)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
@@ -153,7 +157,6 @@ def main():
         fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedoresComPedido, key=2)
         insumosComPedido = filtrar_por_classe_selecionada(insumosComPedido, 'Fornecedor', fornecedores_selecionados)
       st.dataframe(insumosComPedido, width=1200, hide_index=True)
-
 
 if __name__ == '__main__':
   main()

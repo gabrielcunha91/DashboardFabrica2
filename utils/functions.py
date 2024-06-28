@@ -475,9 +475,6 @@ def config_insumos_blueme_com_pedido(df, data_inicio, data_fim):
                 'Valor Líq. Bebidas', 'Valor Líq. Hig/Limp.', 'Valor Líq. Outros']
   df = df[nova_ordem]
 
-  cols = ['Valor Líquido', 'Valor Insumos', 'Insumos - V. Líq']
-  df = format_columns_brazilian(df, cols)
-
   return df
 
 

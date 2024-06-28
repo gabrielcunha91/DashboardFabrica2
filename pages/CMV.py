@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from babel.dates import format_date
 from utils.queries import *
 from utils.functions import *
 from utils.components import *
@@ -116,12 +117,20 @@ def main():
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
       st.subheader('Compras')
-      st.dataframe(config_tabela_compras(dfFinal), width=1200, hide_index=True)
+      dfcompras = config_tabela_compras(dfFinal.copy())
+      dfcompras['Mês'] = pd.to_datetime(dfcompras['Mês'], format='%d-%m-%Y')
+      # Formatando a data para "nome do mês/ano"
+      dfcompras['Mês'] = dfcompras['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
+      st.dataframe(dfcompras, width=1200, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
       st.subheader('Transferências e gastos extras')
-      st.dataframe(config_tabela_transferencias(dfFinal), width=1200, hide_index=True)
+      dfTransf = config_tabela_transferencias(dfFinal.copy())
+      dfTransf['Mês'] = pd.to_datetime(dfTransf['Mês'], format='%d-%m-%Y')
+      # Formatando a data para "nome do mês/ano"
+      dfTransf['Mês'] = dfTransf['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
+      st.dataframe(dfTransf, width=1200, hide_index=True)
 
   insumosSemPedido = config_insumos_blueme_sem_pedido(GET_INSUMOS_BLUE_ME_SEM_PEDIDO(), data_inicio, data_fim)
   insumosComPedido = config_insumos_blueme_com_pedido(GET_INSUMOS_BLUE_ME_COM_PEDIDO(), data_inicio, data_fim)
@@ -156,7 +165,12 @@ def main():
       with col5:
         fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedoresComPedido, key=2)
         insumosComPedido = filtrar_por_classe_selecionada(insumosComPedido, 'Fornecedor', fornecedores_selecionados)
+      valorTotal = insumosComPedido['Valor Líquido'].sum()
+      cols = ['Valor Líquido', 'Valor Insumos', 'Insumos - V. Líq']
+      valorTotal = format_brazilian(valorTotal)
+      insumosComPedido = format_columns_brazilian(insumosComPedido, cols)
       st.dataframe(insumosComPedido, width=1200, hide_index=True)
+      st.write('Valor Líquido Total = R$', valorTotal)
 
 if __name__ == '__main__':
   main()

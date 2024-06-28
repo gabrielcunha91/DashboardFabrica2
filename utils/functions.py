@@ -530,13 +530,13 @@ def preparar_filtros(tabIndex):
   return lojas_selecionadas, data_inicio, data_fim
 
 
-
 def config_tabela_para_pareto(dfNomeEstoque, dfNomeCompras, categoria, key):
   lojas_selecionadas, data_inicio, data_fim = preparar_filtros(key)
   dfNomeEstoque = config_compras_quantias(dfNomeEstoque, data_inicio, data_fim, lojas_selecionadas)
   dfNomeCompras = config_compras_quantias(dfNomeCompras, data_inicio, data_fim, lojas_selecionadas)
 
   dfNomeEstoque = dfNomeEstoque[dfNomeEstoque['Categoria'] == categoria]
+  dfNomeCompras = dfNomeCompras[dfNomeCompras['Categoria'] == categoria]
   return dfNomeEstoque, dfNomeCompras
 
 

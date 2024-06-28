@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from streamlit_echarts import st_echarts
 from utils.queries import *
 from utils.functions import *
 from utils.components import *
@@ -12,11 +11,8 @@ st.set_page_config(
   initial_sidebar_state="collapsed"
 )
 
-
 if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
   st.switch_page('Login.py')
-
-
 
 def main ():
   config_sidebar()

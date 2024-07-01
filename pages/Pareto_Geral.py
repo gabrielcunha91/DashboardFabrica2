@@ -18,7 +18,7 @@ def main ():
   config_sidebar()
   streamlit_style = """
     <style>
-    iframe[title="streamlit_echarts.st_echarts"]{ height: 270px;} 
+    iframe[title="streamlit_echarts.st_echarts"]{ height: 300px;} 
    </style>
     """
   st.markdown(streamlit_style, unsafe_allow_html=True)

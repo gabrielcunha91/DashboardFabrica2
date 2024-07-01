@@ -159,52 +159,108 @@ def plotar_grafico(df):
 
 
 
-def diagrama_pareto_por_categ_avaliada(df, categoria, key):
-  df = df.head(10)
-  # Configuração do gráfico
-  options = {
-    "title": {
-      "text": "",
-      "left": "center"
-    },
-    "tooltip": {
-      "trigger": "axis",
-      "axisPointer": {
-        "type": "shadow"
-      }
-    },
-    "xAxis": [
-      {
-        "type": "category",
-        "data": df['Nome Produto'].tolist()
-      }
-    ],
-    "yAxis": [
-      {
-        "type": "value",
-        "name": categoria
-      },
-      {
-        "type": "value",
-        "name": "Porcentagem Acumulada",
-        "axisLabel": {
-          "formatter": "{value} %"
-        }
-      }
-    ],
-    "series": [
-      {
-        "name": categoria,
-        "type": "bar",
-        "data": df[categoria].tolist()
-      },
-      {
-        "name": "Porcentagem Acumulada",
-        "type": "line",
-        "yAxisIndex": 1,
-        "data": df['Porcentagem Acumulada'].tolist()
-      }
-    ]
-  }
-  st_echarts(options=options, key=key)
+# def diagrama_pareto_por_categ_avaliada(df, categoria, key):
+#   df = df.head(10)
+#   # Configuração do gráfico
+#   options = {
+#     "title": {
+#       "text": "",
+#       "left": "center"
+#     },
+#     "tooltip": {
+#       "trigger": "axis",
+#       "axisPointer": {
+#         "type": "shadow"
+#       }
+#     },
+#     "xAxis": [
+#       {
+#         "type": "category",
+#         "data": df['Nome Produto'].tolist()
+#       }
+#     ],
+#     "yAxis": [
+#       {
+#         "type": "value",
+#         "name": categoria
+#       },
+#       {
+#         "type": "value",
+#         "name": "Porcentagem Acumulada",
+#         "axisLabel": {
+#           "formatter": "{value} %"
+#         }
+#       }
+#     ],
+#     "series": [
+#       {
+#         "name": categoria,
+#         "type": "bar",
+#         "data": df[categoria].tolist()
+#       },
+#       {
+#         "name": "Porcentagem Acumulada",
+#         "type": "line",
+#         "yAxisIndex": 1,
+#         "data": df['Porcentagem Acumulada'].tolist()
+#       }
+#     ]
+#   }
+#   st_echarts(options=options, key=key)
 
+
+def diagrama_pareto_por_categ_avaliada(df, categoria, key):
+    df = df.head(10)
+    # Configuração do gráfico
+    options = {
+        "title": {
+            "text": "",
+            "left": "center"
+        },
+        "tooltip": {
+            "trigger": "axis",
+            "axisPointer": {
+                "type": "shadow"
+            }
+        },
+        "grid": {
+            "top": 30,
+            "bottom": 150  # Aumenta a margem inferior para evitar cortes nas labels
+        },
+        "xAxis": [
+            {
+                "type": "category",
+                "data": df['Nome Produto'].apply(lambda x: x[:25] + '...' if len(x) > 25 else x).tolist(),
+                "axisLabel": {
+                    "rotate": 45,  # Inclina as labels do eixo x em 45 graus
+                }
+            }
+        ],
+        "yAxis": [
+            {
+                "type": "value",
+                "name": categoria
+            },
+            {
+                "type": "value",
+                "name": "Porcentagem Acumulada",
+                "axisLabel": {
+                    "formatter": "{value} %"
+                }
+            }
+        ],
+        "series": [
+            {
+                "name": categoria,
+                "type": "bar",
+                "data": df[categoria].tolist()
+            },
+            {
+                "name": "Porcentagem Acumulada",
+                "type": "line",
+                "yAxisIndex": 1,
+                "data": df['Porcentagem Acumulada'].tolist()
+            }
+        ],
+    }
+    st_echarts(options=options, key=key)

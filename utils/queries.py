@@ -613,6 +613,7 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   return dataframe_query(f'''
   SELECT 	
+  	tin5.ID AS 'ID Produto',
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
   	tin5.DESCRICAO AS 'Nome Produto', 
@@ -640,6 +641,7 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE():
   return dataframe_query(f'''
     SELECT 	
+  	tin5.ID AS 'ID Produto',
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
   	tin5.DESCRICAO AS 'Nome Produto', 

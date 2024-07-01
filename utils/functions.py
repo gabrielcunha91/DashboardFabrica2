@@ -482,10 +482,25 @@ def config_insumos_blueme_com_pedido(df, data_inicio, data_fim):
 
 #########################  DIAGRAMA DE PARETO  ############################
 
+def config_media_anterior(df, data_inicio, data_fim, lojas_selecionadas):
+  df2 = df.copy()
+  primeiro_dia_dois_meses_antes = data_inicio.replace(day=1) - timedelta(days=1)
+  primeiro_dia_dois_meses_antes = primeiro_dia_dois_meses_antes.replace(month=(primeiro_dia_dois_meses_antes.month - 2) % 12 + 1, day=1)
+  data_inicio = primeiro_dia_dois_meses_antes
+
+  df2 = filtrar_por_datas(df2, data_inicio, data_fim, 'Data Compra')
+  df2['V. Unit. 3 Meses Ant.'] = df2['Valor Total'] / df2['Quantidade']
+
+  df2 = df2.groupby(['ID Produto', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
+    'V. Unit. 3 Meses Ant.': 'first',
+  })
+
+  return df2
+
+
+
 def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df = df.sort_values(by='Nome Produto', ascending=False)
-
-  df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
   df = filtrar_por_classe_selecionada(df, 'Loja' , lojas_selecionadas)
 
   df['Quantidade'] = df['Quantidade'].astype(str)
@@ -494,13 +509,20 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df['Valor Total'] = df['Valor Total'].str.replace(',', '.').astype(float)
   df['Fator de Proporção'] = df['Fator de Proporção'].astype(float)
 
-  df = df.groupby(['Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
+  df2 = config_media_anterior(df, data_inicio, data_fim, lojas_selecionadas)
+
+  df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
+
+  df = df.groupby(['ID Produto', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
     'Quantidade': 'sum',
     'Valor Total': 'sum',
     'Unidade de Medida': 'first',
     'Fator de Proporção': 'first',
     'Fornecedor': 'first'
   })
+
+  df = df.merge(df2, how='left', on=['ID Produto', 'Nome Produto', 'Loja', 'Categoria'])
+  df = df.sort_values(by='Nome Produto', ascending=True)
 
   df['Quantidade Ajustada'] = df['Quantidade'] * df['Fator de Proporção']
   df['Valor Unitário'] = df['Valor Total'] / df['Quantidade']
@@ -511,8 +533,14 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df['Valor Total'] = df['Valor Total'].round(2)
   df['Valor Unitário'] = df['Valor Unitário'].round(2)
   df['Valor Unit. Ajustado'] = df['Valor Unit. Ajustado'].round(2)
+  df['V. Unit. 3 Meses Ant.'] = df['V. Unit. 3 Meses Ant.'].round(2)
+  nova_ordem = ['ID Produto', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário', 'V. Unit. 3 Meses Ant.',
+                 'Quantidade Ajustada', 'Valor Unit. Ajustado', 'Fator de Proporção', 'Fornecedor']
+  df = df[nova_ordem]
 
   return df
+
+
 
 
 def config_por_categ_avaliada(df, categoria):

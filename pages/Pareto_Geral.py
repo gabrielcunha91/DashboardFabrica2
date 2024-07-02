@@ -49,6 +49,7 @@ def main ():
 
   with tab4:
     st.title('Comparativo de Valores Unitários entre Lojas')
+    comparativo_valor_mais_baixo(dfComparativo)
     comparativo_entre_lojas(dfComparativo)
 
 

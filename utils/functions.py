@@ -607,7 +607,8 @@ def create_columns_comparativo(df):
   df.loc[:,'Valor Total'] = df['Valor Total'].astype(str)
   df.loc[:,'Quantidade'] = df['Quantidade'].str.replace(',', '.').astype(float)
   df.loc[:, 'Valor Total'] = df['Valor Total'].str.replace(',', '.').astype(float)
-  df = df.groupby(['Nome Produto', 'Loja'], as_index=False).agg({
+  df = df[df['Quantidade'] > 0]
+  df = df.groupby(['ID Produto', 'Nome Produto', 'Loja'], as_index=False).agg({
     'Valor Total': 'sum',
     'Quantidade': 'sum',
     'Fornecedor': 'first',
@@ -616,9 +617,7 @@ def create_columns_comparativo(df):
 
   df['Valor Unitário'] = df['Valor Total'] / df['Quantidade']
   df['Valor Unitário'] = df['Valor Unitário'].round(2)
-  df = df.drop(['Valor Total', 'Quantidade', 'Loja'], axis=1)
-
-  df['Valor Unitário'] = df['Valor Unitário'].apply(format_brazilian)
+  df = df.drop(['Valor Total'], axis=1)
 
   return df
 
@@ -626,56 +625,102 @@ def create_columns_comparativo(df):
 def comparativo_entre_lojas(df):
   data_inicio_default, data_fim_default = preparar_dados_datas()
   # Seletores para loja e produto
-  lojas = df['Loja'].unique()
-  col, col1 = st.columns(2)
-  with col:
-    loja1 = st.selectbox('Selecione a primeira loja:', lojas)
-  with col1:
-    loja2 = st.selectbox('Selecione a segunda loja:', lojas)
+  with st.container(border=True):
+    st.subheader('Comparativo individual por lojas selecionadas e produto selecionado')
+    lojas = df['Loja'].unique()
+    col, col1 = st.columns(2)
+    with col:
+      loja1 = st.selectbox('Selecione a primeira loja:', lojas)
+    with col1:
+      loja2 = st.selectbox('Selecione a segunda loja:', lojas)
 
-  col, col1, col2, col3 = st.columns([3, 2, 1, 1])
-  with col:
-    search_term = st.text_input('Pesquise parte do nome de um produto:', '')
-    # Filtrando produtos com base no termo de pesquisa
-    if search_term:
-      produtos_filtrados = df[df['Nome Produto'].str.contains(search_term, case=False, na=False)]['Nome Produto'].unique()
+    col, col1, col2, col3 = st.columns([3, 2, 1, 1])
+    with col:
+      search_term = st.text_input('Pesquise parte do nome de um produto:', '')
+      # Filtrando produtos com base no termo de pesquisa
+      if search_term:
+        produtos_filtrados = df[df['Nome Produto'].str.contains(search_term, case=False, na=False)]['Nome Produto'].unique()
+      else:
+        produtos_filtrados = df['Nome Produto'].unique()
+    with col1:
+      # Seletor de produto com base na pesquisa
+      if len(produtos_filtrados) > 0:
+        produto_selecionado = st.selectbox('Selecione o produto com base na pesquisa:', produtos_filtrados)
+      else:
+        produto_selecionado = None
+        st.warning('Nenhum produto encontrado.')
+    with col2:
+      data_inicio = st.date_input('Data de Início', value=data_inicio_default, key='data_inicio_input', format="DD/MM/YYYY")
+    with col3:
+      data_fim = st.date_input('Data de Fim', value=data_fim_default, key='data_fim_input', format="DD/MM/YYYY")
+
+    data_inicio = pd.to_datetime(data_inicio)
+    data_fim = pd.to_datetime(data_fim)
+
+    # Filtrando os dataframes com base nas seleções
+    if produto_selecionado:
+      df_loja1 = df[(df['Loja'] == loja1) & (df['Nome Produto'] == produto_selecionado)]
+      df_loja2 = df[(df['Loja'] == loja2) & (df['Nome Produto'] == produto_selecionado)]
+
+      filtrar_por_datas(df_loja1, data_inicio, data_fim, 'Data Compra')
+      filtrar_por_datas(df_loja2, data_inicio, data_fim, 'Data Compra')
+
+      df_loja1 = create_columns_comparativo(df_loja1)
+      df_loja2 = create_columns_comparativo(df_loja2)
+
+      df_loja1 = df_loja1.drop(['Loja', 'Quantidade'], axis=1)
+      df_loja2 = df_loja2.drop(['Loja', 'Quantidade'], axis=1)
+
+      df_loja1 = df_loja1.rename(columns = {'Unidade de Medida': 'Unid. Medida'})
+      df_loja2 = df_loja2.rename(columns = {'Unidade de Medida': 'Unid. Medida'})
+
+      df_loja1['Valor Unitário'] = df_loja1['Valor Unitário'].apply(format_brazilian)
+      df_loja2['Valor Unitário'] = df_loja2['Valor Unitário'].apply(format_brazilian)
+
+      # Exibindo os dataframes filtrados lado a lado
+      with st.container(border=True):
+        col1, col2 = st.columns(2)
+        with col1:
+          st.subheader(f'{loja1}')
+          st.dataframe(df_loja1, hide_index=True)
+
+        with col2:
+          st.subheader(f'{loja2}')
+          st.dataframe(df_loja2, hide_index=True)
     else:
-      produtos_filtrados = df['Nome Produto'].unique()
-  with col1:
-    # Seletor de produto com base na pesquisa
-    if len(produtos_filtrados) > 0:
-      produto_selecionado = st.selectbox('Selecione o produto com base na pesquisa:', produtos_filtrados)
-    else:
-      produto_selecionado = None
-      st.warning('Nenhum produto encontrado.')
-  with col2:
-    data_inicio = st.date_input('Data de Início', value=data_inicio_default, key='data_inicio_input', format="DD/MM/YYYY")
-  with col3:
-    data_fim = st.date_input('Data de Fim', value=data_fim_default, key='data_fim_input', format="DD/MM/YYYY")
+        st.info('Selecione um produto para visualizar os dados.')
 
-  data_inicio = pd.to_datetime(data_inicio)
-  data_fim = pd.to_datetime(data_fim)
+def comparativo_valor_mais_baixo(df1):
+  df = df1.copy()
+  data_inicio_default, data_fim_default = preparar_dados_datas()
+  with st.container(border=True):
+    st.subheader('Comparação de valor unitário pago pela loja selecionada e loja que paga menor preço')
+    lojas = df['Loja'].unique()
+    col, col1, col2 = st.columns([5, 3, 3])
+    with col:
+      loja1 = st.selectbox('Selecione uma loja:', lojas)
+    with col1:
+      data_inicio = st.date_input('Data de Início', value=data_inicio_default, key='data_inicio_input2', format="DD/MM/YYYY")
+    with col2:
+      data_fim = st.date_input('Data de Fim', value=data_fim_default, key='data_fim_input2', format="DD/MM/YYYY")
 
-  # Filtrando os dataframes com base nas seleções
-  if produto_selecionado:
-    df_loja1 = df[(df['Loja'] == loja1) & (df['Nome Produto'] == produto_selecionado)]
-    df_loja2 = df[(df['Loja'] == loja2) & (df['Nome Produto'] == produto_selecionado)]
+    data_inicio = pd.to_datetime(data_inicio)
+    data_fim = pd.to_datetime(data_fim)
+    
+    filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
 
-    filtrar_por_datas(df_loja1, data_inicio, data_fim, 'Data Compra')
-    filtrar_por_datas(df_loja2, data_inicio, data_fim, 'Data Compra')
+    df2 = df.copy()
+    df2 = create_columns_comparativo(df2)
+    df_min = df2.loc[df2.groupby('Nome Produto')['Valor Unitário'].idxmin()]
+    df_min = df_min.rename(columns={'Loja': 'Loja Menor Preço', 'Quantidade': 'Qttd. Menor Preço', 'Fornecedor': 'Forn. Menor Preço', 'Valor Unitário': 'Menor V. Unit.'})
+    #st.dataframe(df_min)
 
-    df_loja1 = create_columns_comparativo(df_loja1)
-    df_loja2 = create_columns_comparativo(df_loja2)
+    df = df[df['Loja'] == loja1]
+    df = create_columns_comparativo(df)
 
-    # Exibindo os dataframes filtrados lado a lado
-    with st.container(border=True):
-      col1, col2 = st.columns(2)
-      with col1:
-        st.subheader(f'{loja1}')
-        st.dataframe(df_loja1, hide_index=True)
-
-      with col2:
-        st.subheader(f'{loja2}')
-        st.dataframe(df_loja2, hide_index=True)
-  else:
-      st.info('Selecione um produto para visualizar os dados.')
+    newdf = df.merge(df_min, how='left', on=['ID Produto', 'Nome Produto', 'Unidade de Medida'])
+    newdf = newdf.drop(['Unidade de Medida', 'Loja'], axis=1)
+    newdf['Diferença Preços'] = newdf['Valor Unitário'] - newdf['Menor V. Unit.']
+    newdf = newdf.sort_values(by='Diferença Preços', ascending=False).reset_index(drop=True)
+    newdf = format_columns_brazilian(newdf, ['PValor Unitário', 'Menor V. Unit.', 'Diferença Preços'])
+    st.dataframe(newdf, hide_index=True)

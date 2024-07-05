@@ -8,6 +8,10 @@ from utils.components import *
 
 ####### DADOS GERAIS #######
 
+def get_username():
+    return st.session_state.get('userName', 'Usuário desconhecido')
+
+
 def config_sidebar():
   if st.session_state['loggedIn']:
     st.sidebar.title("Menu")
@@ -16,6 +20,8 @@ def config_sidebar():
     st.sidebar.page_link("pages/Despesas.py", label="Despesas")
     st.sidebar.page_link("pages/CMV.py", label="CMV")
     st.sidebar.page_link("pages/Pareto_Geral.py", label="Pareto")
+    # st.sidebar.page_link("pages/Projecao_fluxo_caixa.py", label="Projeção Fluxo de Caixa")
+    # st.sidebar.page_link("pages/Conciliacao_fluxo_caixa.py", label="Conciliação Fluxo de Caixa")
   else:
     st.sidebar.write("Por favor, faça login para acessar o menu.")
 
@@ -690,63 +696,6 @@ def comparativo_entre_lojas(df):
           st.dataframe(df_loja2, hide_index=True)
     else:
         st.info('Selecione um produto para visualizar os dados.')
-
-# def comparativo_valor_mais_baixo(df1):
-#   df = df1.copy()
-#   data_inicio_default, data_fim_default = preparar_dados_datas()
-#   with st.container(border=True):
-#     st.subheader('Comparação de valor unitário pago pela loja selecionada e loja que paga menor preço')
-#     lojas = df['Loja'].unique()
-#     col, col1, col2 = st.columns([5, 3, 3])
-#     with col:
-#       loja1 = st.selectbox('Selecione uma loja:', lojas)
-#     with col1:
-#       data_inicio = st.date_input('Data de Início', value=data_inicio_default, key='data_inicio_input2', format="DD/MM/YYYY")
-#     with col2:
-#       data_fim = st.date_input('Data de Fim', value=data_fim_default, key='data_fim_input2', format="DD/MM/YYYY")
-
-#     col3, col4, col5 = st.columns([5, 3, 3])
-#     with col3:
-#       search_term = st.text_input('Pesquise parte do nome de um produto:', '', key='input_pesquisa_menor_preco')
-#       # Filtrando produtos com base no termo de pesquisa
-#       if search_term:
-#         produtos_filtrados = df[df['Nome Produto'].str.contains(search_term, case=False, na=False)]['Nome Produto'].unique()
-#       else:
-#         produtos_filtrados = df['Nome Produto'].unique()
-#       produtos_filtrados = np.append(produtos_filtrados, 'Todos')
-#     with col4:
-#       # Seletor de produto com base na pesquisa
-#       if len(produtos_filtrados) > 0:
-#         produto_selecionado = st.multiselect('Selecione produtos com base na pesquisa:', produtos_filtrados, key='input_prod_menor_preco')
-#       else:
-#         produto_selecionado = None
-#         st.warning('Nenhum produto encontrado.')
-
-#     data_inicio = pd.to_datetime(data_inicio)
-#     data_fim = pd.to_datetime(data_fim)
-    
-#     filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
-
-#     df2 = df.copy()
-#     df2 = create_columns_comparativo(df2)
-#     df_min = df2.loc[df2.groupby('Nome Produto')['Valor Unitário'].idxmin()]
-#     df_min = df_min.rename(columns={'Loja': 'Loja Menor Preço', 'Quantidade': 'Qtd. Menor Preço', 'Fornecedor': 'Forn. Menor Preço', 'Valor Unitário': 'Menor V. Unit.'})
-#     #st.dataframe(df_min)
-
-#     df = df[df['Loja'] == loja1]
-#     df = create_columns_comparativo(df)
-
-#     newdf = df.merge(df_min, how='left', on=['ID Produto', 'Nome Produto', 'Unidade de Medida'])
-
-#     if produto_selecionado and produto_selecionado != 'Todos':
-#       newdf = newdf[newdf['Nome Produto'] == produto_selecionado]
-
-#     newdf = newdf.drop(['Unidade de Medida', 'Loja'], axis=1)
-#     newdf['Diferença Preços'] = newdf['Valor Unitário'] - newdf['Menor V. Unit.']
-#     newdf = newdf.sort_values(by='Diferença Preços', ascending=False).reset_index(drop=True)
-#     newdf = newdf.rename(columns={'ID Produto': 'ID Prod.'})
-#     newdf = format_columns_brazilian(newdf, ['Valor Unitário', 'Menor V. Unit.', 'Diferença Preços'])
-#     st.dataframe(newdf, hide_index=True)
 
 
 

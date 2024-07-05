@@ -31,6 +31,7 @@ def handle_login(userName, password):
   #user data deve conter o usuario
   if user_data := login(userName, password):
     st.session_state['loggedIn'] = True
+    st.session_state['userName'] = userName 
   else:
     st.session_state['loggedIn'] = False
     st.error("Email ou senha inválidos!!")

@@ -29,7 +29,7 @@ def main():
   
   st.divider()
 
-  lojasComDados = preparar_dados_classe_selecionada(GET_FATURAM_ZIG_ALIM_BEB_MENSAL(), 'Loja')
+  lojasComDados = preparar_dados_lojas_user()
   data_inicio_default, data_fim_default = preparar_dados_datas()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()

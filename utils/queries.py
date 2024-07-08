@@ -37,6 +37,50 @@ def dataframe_query(query):
   dataframe = pd.DataFrame(resultado, columns=nomeColunas)
   return dataframe
 
+
+########### Permissions #############
+
+@st.cache_data
+def GET_PERMISSIONS(email):
+  emailStr = f"'{email}'"
+  return dataframe_query(f''' 
+  SELECT 
+	  tg.POSICAO AS 'Permissao'
+  FROM
+	  ADMIN_USERS au 
+	  LEFT JOIN T_GRUPO_USUARIO tgu ON au.ID = tgu.FK_USUARIO 
+	  LEFT JOIN T_GRUPO tg ON tgu.FK_GRUPO = tg.id
+  WHERE au.LOGIN = {emailStr}
+  ''')
+
+@st.cache_data
+def GET_LOJAS_USER(email):
+  emailStr = f"'{email}'"
+  return dataframe_query(f'''
+  SELECT 
+	  au.LOGIN AS 'Login',
+	  te.NOME_FANTASIA AS 'Loja'
+  FROM
+  	ADMIN_USERS au 
+	  LEFT JOIN T_USUARIOS_EMPRESAS tue ON au.ID = tue.FK_USUARIO 
+	  LEFT JOIN T_EMPRESAS te ON tue.FK_EMPRESA = te.ID
+	  LEFT JOIN T_LOJAS tl ON te.ID = tl.ID
+  WHERE au.LOGIN = {emailStr}
+  ''')
+
+@st.cache_data
+def GET_USERNAME(email):
+  emailStr = f"'{email}'"
+  return dataframe_query(f'''
+  SELECT 
+	  au.FULL_NAME AS 'Nome'
+  FROM
+  	ADMIN_USERS au 
+  WHERE au.LOGIN = {emailStr}
+  ''')
+
+######## Faturamento zig #########
+
 @st.cache_data
 def GET_FATURAM_ZIG_AGREGADO():
   return dataframe_query(f''' 
@@ -124,6 +168,8 @@ def GET_FATURAM_ZIG(data_inicial, data_final):
 
 
 
+############### Receitas extraordinárias ################
+
 @st.cache_data
 def GET_RECEIT_EXTRAORD():
   #'Data_Evento' é, na realidade, a data da competencia, eu só coloquei esse nome pra ficar mais fácil de programar
@@ -164,6 +210,7 @@ def GET_CLSSIFICACAO():
 ''')
 
 
+############## Despesas ################
 
 def GET_DESPESAS():
   #'Data_Evento' é, na realidade, a data da emissão, eu só coloquei esse nome pra ficar mais fácil de programar

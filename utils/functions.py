@@ -8,20 +8,40 @@ from utils.components import *
 
 ####### DADOS GERAIS #######
 
-def get_username():
-    return st.session_state.get('userName', 'Usuário desconhecido')
+def config_permissoes_user():
+  username = st.session_state.get('userName', 'Usuário desconhecido')
+  dfpermissao = GET_PERMISSIONS(username)
+  permissao = dfpermissao['Permissao'].tolist()
+  nomeUser = GET_USERNAME(username)
+  nomeUser = nomeUser['Nome'].tolist()
+  str1 = " "
+  nomeUser = str1.join(nomeUser)
+  return permissao, nomeUser
 
 
 def config_sidebar():
+  permissao, username = config_permissoes_user()
+  st.sidebar.header(f"Bem-vindo(a) {username}!")
   if st.session_state['loggedIn']:
-    st.sidebar.title("Menu")
-    st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
-    st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
-    st.sidebar.page_link("pages/Despesas.py", label="Despesas")
-    st.sidebar.page_link("pages/CMV.py", label="CMV")
-    st.sidebar.page_link("pages/Pareto_Geral.py", label="Pareto")
-    # st.sidebar.page_link("pages/Projecao_fluxo_caixa.py", label="Projeção Fluxo de Caixa")
-    # st.sidebar.page_link("pages/Conciliacao_fluxo_caixa.py", label="Conciliação Fluxo de Caixa")
+    if 'Administrador' in permissao:
+      st.sidebar.title("Menu")
+      st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
+      st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
+      st.sidebar.page_link("pages/Despesas.py", label="Despesas")
+      st.sidebar.page_link("pages/CMV.py", label="CMV")
+      st.sidebar.page_link("pages/Pareto_Geral.py", label="Pareto")
+      st.sidebar.page_link("pages/Projecao_fluxo_caixa.py", label="Projeção Fluxo de Caixa")
+      st.sidebar.page_link("pages/Conciliacao_fluxo_caixa.py", label="Conciliação Fluxo de Caixa")
+    elif 'Aprovador' in permissao:
+      st.sidebar.title("Menu")
+      st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
+      st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
+      st.sidebar.page_link("pages/Despesas.py", label="Despesas")
+      st.sidebar.page_link("pages/CMV.py", label="CMV")
+      st.sidebar.page_link("pages/Pareto_Geral.py", label="Pareto")
+    else:
+      st.sidebar.title("Menu")
+      st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
   else:
     st.sidebar.write("Por favor, faça login para acessar o menu.")
 
@@ -41,6 +61,12 @@ def preparar_dados_datas():
   
   return data_inicio_default, data_fim_default
 
+
+def preparar_dados_lojas_user():
+  username = st.session_state.get('userName', 'Usuário desconhecido')
+  dflojas = GET_LOJAS_USER(username)
+  lojas = dflojas['Loja'].tolist()
+  return lojas
 
 def preparar_dados_classe_selecionada(df, classe):
   dfCopia = df.copy()
@@ -558,7 +584,7 @@ def config_por_categ_avaliada(df, categoria):
 
 
 def preparar_filtros(tabIndex):
-  lojasComDados = preparar_dados_classe_selecionada(GET_FATURAM_ZIG_ALIM_BEB_MENSAL(), 'Loja')
+  lojasComDados = preparar_dados_lojas_user()
   data_inicio_default, data_fim_default = preparar_dados_datas()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores_pareto(lojasComDados, data_inicio_default, data_fim_default, tab_index=tabIndex)
   st.divider()

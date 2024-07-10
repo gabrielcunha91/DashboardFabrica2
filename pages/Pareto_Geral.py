@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from utils.queries import *
-from utils.functions.functions import *
+from utils.functions.pareto import *
 from utils.functions.dados_gerais import *
 from utils.components import *
 

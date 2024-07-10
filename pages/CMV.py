@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from babel.dates import format_date
 from utils.queries import *
-from utils.functions import *
+from utils.functions.cmv import *
+from utils.functions.dados_gerais import *
 from utils.components import *
 from utils.user import logout
 

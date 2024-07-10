@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from utils.queries import *
-from utils.functions_fluxo_caixa import *
-from utils.functions import config_sidebar
+from utils.functions.dados_gerais import *
+from utils.functions.fluxo_de_caixa import *
 from workalendar.america import Brazil
 
 
@@ -16,8 +16,6 @@ if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
   st.switch_page('Login.py')
 
 config_sidebar()
-
-
 
 df_projecao_bares = config_projecao_bares()
 df_projecao_grouped = config_grouped_projecao(df_projecao_bares.copy())

@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from utils.queries import *
-from utils.functions import *
+from utils.functions.faturam_receit_extraord import *
+from utils.functions.dados_gerais import *
 from utils.components import *
 from utils.user import logout
 

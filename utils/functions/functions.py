@@ -7,6 +7,10 @@ from utils.queries import *
 from utils.components import *
 
 ####### DADOS GERAIS #######
+##TESTE##
+
+def test():
+  "ola"
 
 def config_permissoes_user():
   username = st.session_state.get('userName', 'Usuário desconhecido')

@@ -180,24 +180,29 @@ def config_view_parc_agrup():
 def config_custos_blueme_sem_parcelamento():
   df_custos_blueme_sem_parcelamento = GET_CUSTOS_BLUEME_SEM_PARCELAMENTO()
   df_custos_blueme_sem_parcelamento['Valor'] = df_custos_blueme_sem_parcelamento['Valor'].astype(float).round(2)
-  df_custos_blueme_sem_parcelamento['Data_Vencimento'] = pd.to_datetime(df_custos_blueme_sem_parcelamento['Data_Vencimento'])
-  df_custos_blueme_sem_parcelamento['Data_Competencia'] = pd.to_datetime(df_custos_blueme_sem_parcelamento['Data_Competencia'])
-  df_custos_blueme_sem_parcelamento['Data_Lancamento'] = pd.to_datetime(df_custos_blueme_sem_parcelamento['Data_Lancamento'])
-  df_custos_blueme_sem_parcelamento['Realizacao_Pgto'] = pd.to_datetime(df_custos_blueme_sem_parcelamento['Realizacao_Pgto'])
-  df_custos_blueme_sem_parcelamento['Previsao_Pgto'] = pd.to_datetime(df_custos_blueme_sem_parcelamento['Previsao_Pgto'])    
+  
+  date_columns = ['Data_Vencimento', 'Data_Competencia', 'Data_Lancamento', 'Realizacao_Pgto', 'Previsao_Pgto']
+  
+  for col in date_columns:
+    df_custos_blueme_sem_parcelamento[col] = pd.to_datetime(df_custos_blueme_sem_parcelamento[col], errors='coerce')
+  
   return df_custos_blueme_sem_parcelamento
+ 
 
 
 def config_custos_blueme_com_parcelamento():
-  df_custos_blueme_com_parcelamento = GET_CUSTOS_BLUEME_COM_PARCELAMENTO()           
+  df_custos_blueme_com_parcelamento = GET_CUSTOS_BLUEME_COM_PARCELAMENTO()
   df_custos_blueme_com_parcelamento['Valor_Parcela'] = df_custos_blueme_com_parcelamento['Valor_Parcela'].astype(float).round(2)
   df_custos_blueme_com_parcelamento['Valor_Original'] = df_custos_blueme_com_parcelamento['Valor_Original'].astype(float).round(2)
   df_custos_blueme_com_parcelamento['Valor_Liquido'] = df_custos_blueme_com_parcelamento['Valor_Liquido'].astype(float).round(2)
-  df_custos_blueme_com_parcelamento['Vencimento_Parcela'] = pd.to_datetime(df_custos_blueme_com_parcelamento['Vencimento_Parcela'], format='%d/%m/%Y')
-  df_custos_blueme_com_parcelamento['Previsao_Parcela'] = pd.to_datetime(df_custos_blueme_com_parcelamento['Previsao_Parcela'], format='%d/%m/%Y')
-  df_custos_blueme_com_parcelamento['Realiz_Parcela'] = pd.to_datetime(df_custos_blueme_com_parcelamento['Realiz_Parcela'], format='%d/%m/%Y')
-  df_custos_blueme_com_parcelamento['Data_Lancamento'] = pd.to_datetime(df_custos_blueme_com_parcelamento['Data_Lancamento'], format='%d/%m/%Y')
+  
+  date_columns = ['Vencimento_Parcela', 'Previsao_Parcela', 'Realiz_Parcela', 'Data_Lancamento']
+  
+  for col in date_columns:
+    df_custos_blueme_com_parcelamento[col] = pd.to_datetime(df_custos_blueme_com_parcelamento[col], format='%d/%m/%Y', errors='coerce')
+  
   return df_custos_blueme_com_parcelamento
+
 
 
 

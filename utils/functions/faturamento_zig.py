@@ -11,21 +11,23 @@ def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
   categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço']
   FaturamentoZig = FaturamentoZig[FaturamentoZig['Categoria'].isin(categorias_desejadas)]
   FaturamentoZig = filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
-  FaturamentoZig = pd.DataFrame(FaturamentoZig)
 
-  FaturamentoZig.drop(['Loja', 'Data_Evento'], axis=1, inplace=True)
+  # Cálculo de novas colunas
   FaturamentoZig['Valor Bruto Venda'] = FaturamentoZig['Preco'] * FaturamentoZig['Qtd_Transacao']
   FaturamentoZig['Valor Líquido Venda'] = FaturamentoZig['Valor Bruto Venda'] - FaturamentoZig['Desconto']
-  FaturamentoZig = FaturamentoZig.rename(columns = {'ID_Venda_EPM': 'ID Venda', 'Data_Venda': 'Data da Venda', 
-                                                    'ID_Produto_EPM': 'ID Produto', 'Nome_Produto': 'Nome Produto', 
-                                                    'Preco':'Preço Unitário', 'Qtd_Transacao': 'Quantia comprada', 
-                                                    'Valor Bruto Venda': 'Valor Bruto Venda', 'Desconto':'Desconto', 
-                                                    'Valor Líquido Venda': 'Valor Líquido Venda', 'Categoria': 'Categoria', 
-                                                    'Tipo': 'Tipo'})
-  
+
+  # Renomear colunas
+  FaturamentoZig = FaturamentoZig.rename(columns={
+    'ID_Venda_EPM': 'ID Venda', 'Data_Venda': 'Data da Venda', 'ID_Produto_EPM': 'ID Produto',
+    'Nome_Produto': 'Nome Produto', 'Preco': 'Preço Unitário', 'Qtd_Transacao': 'Quantia comprada',
+    'Valor Bruto Venda': 'Valor Bruto Venda', 'Desconto': 'Desconto', 'Valor Líquido Venda': 'Valor Líquido Venda',
+    'Categoria': 'Categoria', 'Tipo': 'Tipo'
+  })
+  # Formatação de datas
   FaturamentoZig = format_date_brazilian(FaturamentoZig, 'Data da Venda')
-  FaturamentoZig = pd.DataFrame(FaturamentoZig)
+
   return FaturamentoZig
+
 
 def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   FaturamZigAgregado = GET_FATURAM_ZIG_AGREGADO()
@@ -33,7 +35,7 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
 
   # Conversão de tipos para a padronização de valores
   FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].astype(str)
-  OrcamFaturam['ID_Loja'] = OrcamFaturam['ID_Loja'].astype(str)  
+  OrcamFaturam['ID_Loja'] = OrcamFaturam['ID_Loja'].astype(str)
   FaturamZigAgregado['Primeiro_Dia_Mes'] = pd.to_datetime(FaturamZigAgregado['Primeiro_Dia_Mes'], format='%y-%m-%d')
   OrcamFaturam['Primeiro_Dia_Mes'] = pd.to_datetime(OrcamFaturam['Primeiro_Dia_Mes'])
 
@@ -47,18 +49,17 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamentoFaturamento = OrcamentoFaturamento.dropna(subset=['Categoria'])
   OrcamentoFaturamento['Data_Evento'] = pd.to_datetime(OrcamentoFaturamento['Data_Evento'])
 
-  # Agora filtra  
+  # Agora filtra
   OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
-  OrcamentoFaturamento = filtrar_por_classe_selecionada(OrcamentoFaturamento, 'Loja',lojas_selecionadas)
-  OrcamentoFaturamento = pd.DataFrame(OrcamentoFaturamento)
+  OrcamentoFaturamento = filtrar_por_classe_selecionada(OrcamentoFaturamento, 'Loja', lojas_selecionadas)
 
   # Exclui colunas que não serão usadas na análise, agrupa tuplas de valores de categoria iguais e renomeia as colunas restantes
   OrcamentoFaturamento.drop(['ID_Loja', 'Loja', 'Data_Evento', 'Primeiro_Dia_Mes'], axis=1, inplace=True)
   OrcamentoFaturamento = OrcamentoFaturamento.groupby('Categoria').agg({
-        'Orcamento_Faturamento': 'sum',
-        'Valor_Bruto': 'sum',
-        'Desconto': 'sum',
-        'Valor_Liquido': 'sum'
+    'Orcamento_Faturamento': 'sum',
+    'Valor_Bruto': 'sum',
+    'Desconto': 'sum',
+    'Valor_Liquido': 'sum'
   }).reset_index()
   OrcamentoFaturamento.columns = ['Categoria', 'Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido']
 
@@ -69,12 +70,13 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   # Criação da coluna 'Faturam - Orçamento' e da linha 'Total Geral'
   OrcamentoFaturamento['Faturam - Orçamento'] = OrcamentoFaturamento['Valor Líquido'] - OrcamentoFaturamento['Orçamento']
   Total = OrcamentoFaturamento[['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento']].sum()
-  NovaLinha = pd.DataFrame([{'Categoria': 'Total Geral', 'Orçamento': Total['Orçamento'], 'Valor Bruto': Total['Valor Bruto'],
-                              'Desconto': Total['Desconto'], 'Valor Líquido': Total['Valor Líquido'], 
-                              'Faturam - Orçamento': Total['Faturam - Orçamento']}])
+  NovaLinha = pd.DataFrame([{
+    'Categoria': 'Total Geral', 'Orçamento': Total['Orçamento'], 'Valor Bruto': Total['Valor Bruto'],
+    'Desconto': Total['Desconto'], 'Valor Líquido': Total['Valor Líquido'],
+    'Faturam - Orçamento': Total['Faturam - Orçamento']
+  }])
   OrcamentoFaturamento = pd.concat([OrcamentoFaturamento, NovaLinha], ignore_index=True)
-  
-  OrcamentoFaturamento = pd.DataFrame(OrcamentoFaturamento)
+
   return OrcamentoFaturamento
 
 

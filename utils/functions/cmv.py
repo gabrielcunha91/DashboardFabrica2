@@ -4,36 +4,33 @@ from utils.queries import *
 from utils.components import *
 
 
-def merge_dataframes(df1, df2, df3, df4, df5, df6):
-  # Realiza a junção das tabelas
-  merged_df = df1.merge(df2, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df2'))
-  merged_df = merged_df.merge(df3, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df3'))
-  merged_df = merged_df.merge(df4, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df4'))
-  merged_df = merged_df.merge(df5, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df5'))
-  merged_df = merged_df.merge(df6, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df6'))
+def merge_dataframes(dfs):
+  merged_df = dfs[0]
+  suffixes = ['', '_df2', '_df3', '_df4', '_df5', '_df6']
 
-  # Preenche os valores nulos com zero (similar ao COALESCE)
+  for i, df in enumerate(dfs[1:], start=1):
+    merged_df = merged_df.merge(df, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', suffixes[i]))
+
   merged_df.fillna(0, inplace=True)
   merged_df.infer_objects(copy=False)
 
-  # Calcular as colunas de compras (alimentos e bebidas)
-  merged_df['Compras_Alimentos'] = (merged_df['BlueMe_Sem_Pedido_Alimentos'] + 
-                                    merged_df['BlueMe_Com_Pedido_Valor_Liq_Alimentos'])
-  merged_df['Compras_Bebidas'] = (merged_df['BlueMe_Sem_Pedido_Bebidas'] + 
-                                  merged_df['BlueMe_Com_Pedido_Valor_Liq_Bebidas'])
+  merged_df['Compras_Alimentos'] = merged_df['BlueMe_Sem_Pedido_Alimentos'] + merged_df['BlueMe_Com_Pedido_Valor_Liq_Alimentos']
+  merged_df['Compras_Bebidas'] = merged_df['BlueMe_Sem_Pedido_Bebidas'] + merged_df['BlueMe_Com_Pedido_Valor_Liq_Bebidas']
 
-  # Selecionar as colunas conforme a query SQL original
-  result_df = merged_df[['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Faturam_Bruto_Aliment', 
-                         'Faturam_Bruto_Bebidas', 'Estoque_Inicial_Alimentos', 
-                         'Estoque_Final_Alimentos', 'Estoque_Inicial_Bebidas', 
-                         'Estoque_Final_Bebidas', 'Estoque_Inicial_Descart_Hig_Limp', 
-                         'Estoque_Final_Descart_Hig_Limp', 'BlueMe_Sem_Pedido_Alimentos', 
-                         'BlueMe_Com_Pedido_Valor_Liq_Alimentos', 'Compras_Alimentos', 
-                         'BlueMe_Sem_Pedido_Bebidas', 'BlueMe_Com_Pedido_Valor_Liq_Bebidas', 
-                         'Compras_Bebidas', 'Entrada_Transf_Alim', 
-                         'Saida_Transf_Alim', 'Entrada_Transf_Bebidas', 
-                         'Saida_Transf_Bebidas', 'Consumo_Interno', 'Quebras_e_Perdas']]
+  selected_columns = ['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Faturam_Bruto_Aliment', 
+                      'Faturam_Bruto_Bebidas', 'Estoque_Inicial_Alimentos', 
+                      'Estoque_Final_Alimentos', 'Estoque_Inicial_Bebidas', 
+                      'Estoque_Final_Bebidas', 'Estoque_Inicial_Descart_Hig_Limp', 
+                      'Estoque_Final_Descart_Hig_Limp', 'BlueMe_Sem_Pedido_Alimentos', 
+                      'BlueMe_Com_Pedido_Valor_Liq_Alimentos', 'Compras_Alimentos', 
+                      'BlueMe_Sem_Pedido_Bebidas', 'BlueMe_Com_Pedido_Valor_Liq_Bebidas', 
+                      'Compras_Bebidas', 'Entrada_Transf_Alim', 'Saida_Transf_Alim', 
+                      'Entrada_Transf_Bebidas', 'Saida_Transf_Bebidas', 
+                      'Consumo_Interno', 'Quebras_e_Perdas']
+
+  result_df = merged_df[selected_columns]
   return result_df
+
 
 def config_tabelas_iniciais_cmv(lojas_selecionadas, data_inicio, data_fim):
   df1 = GET_FATURAM_ZIG_ALIM_BEB_MENSAL()
@@ -45,20 +42,15 @@ def config_tabelas_iniciais_cmv(lojas_selecionadas, data_inicio, data_fim):
 
   df3 = df3[df3['ID_Loja'] != 296]
 
-  df1 = filtrar_por_classe_selecionada(df1, 'Loja' , lojas_selecionadas)
-  df1 = filtrar_por_datas(df1, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df2 = filtrar_por_classe_selecionada(df2, 'Loja' , lojas_selecionadas)
-  df2 = filtrar_por_datas(df2, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df3 = filtrar_por_classe_selecionada(df3, 'Loja' , lojas_selecionadas)
-  df3 = filtrar_por_datas(df3, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df4 = filtrar_por_classe_selecionada(df4, 'Loja' , lojas_selecionadas)
-  df4 = filtrar_por_datas(df4, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df5 = filtrar_por_classe_selecionada(df5, 'Loja' , lojas_selecionadas)
-  df5 = filtrar_por_datas(df5, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df6 = filtrar_por_classe_selecionada(df6, 'Loja' , lojas_selecionadas)
-  df6 = filtrar_por_datas(df6, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+  dfs = [df1, df2, df3, df4, df5, df6]
+  for i, df in enumerate(dfs):
+    df_filtrado = filtrar_por_classe_selecionada(df, 'Loja', lojas_selecionadas)
+    df_filtrado = filtrar_por_datas(df_filtrado, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+    dfs[i] = df_filtrado
 
-  dfFinal = merge_dataframes(df1, df2, df3, df4, df5, df6)
+  df1, df2, df3, df4, df5, df6 = dfs
+
+  dfFinal = merge_dataframes(dfs)
   return dfFinal
 
 def config_tabela_CMV(df):

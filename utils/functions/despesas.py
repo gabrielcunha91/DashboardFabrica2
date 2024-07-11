@@ -46,8 +46,6 @@ def config_despesas_por_classe(df):
   for col in ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.']:
     df.loc[df['Plano de Contas'] == '', col] = ''
 
-  
-
   return df
 
 def config_despesas_detalhado(df):

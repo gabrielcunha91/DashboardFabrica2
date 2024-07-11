@@ -4,7 +4,6 @@ from utils.queries import *
 from utils.components import *
 
 
-
 def config_receit_extraord(lojas_selecionadas, data_inicio, data_fim):
   df = GET_RECEIT_EXTRAORD()
 

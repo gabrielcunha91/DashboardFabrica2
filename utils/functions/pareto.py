@@ -23,7 +23,6 @@ def config_media_anterior(df, data_inicio, data_fim, lojas_selecionadas):
   return df2
 
 
-
 def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df = df.sort_values(by='Nome Produto', ascending=False)
   df = filtrar_por_classe_selecionada(df, 'Loja' , lojas_selecionadas)

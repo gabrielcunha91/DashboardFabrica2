@@ -5,16 +5,12 @@ from datetime import datetime, timedelta
 from utils.queries import *
 from utils.components import *
 
-####### DADOS GERAIS #######
-
 def config_permissoes_user():
   username = st.session_state.get('userName', 'Usuário desconhecido')
   dfpermissao = GET_PERMISSIONS(username)
   permissao = dfpermissao['Permissao'].tolist()
   nomeUser = GET_USERNAME(username)
-  nomeUser = nomeUser['Nome'].tolist()
-  str1 = " "
-  nomeUser = str1.join(nomeUser)
+  nomeUser = ' '.join(nomeUser['Nome'].tolist())  # Unir o nome usando 'join' diretamente
   return permissao, nomeUser
 
 
@@ -70,12 +66,12 @@ def preparar_dados_lojas_user():
   lojas.sort(key=str.lower)
   return lojas
 
+
 def preparar_dados_classe_selecionada(df, classe):
-  dfCopia = df.copy()
-  dados = dfCopia[classe].unique().tolist()
-  dados = [dado for dado in dados if dado is not None]
+  dados = df[classe].dropna().unique().tolist()  # Dropna para remover valores nulos antes de listar
   dados.sort(key=str.lower)
   return dados
+
 
 def filtrar_por_datas(dataframe, data_inicio, data_fim, categoria):
   data_inicio = pd.Timestamp(data_inicio)
@@ -100,11 +96,9 @@ def filtrar_por_classe_selecionada(dataframe, classe, valores_selecionados):
 
 def format_brazilian(num):
   try:
-    # Convertendo para float
     num = float(num)
     return f"{num:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
   except (ValueError, TypeError):
-    # Em caso de falha na conversão, retorna o valor original
     return num
 
 def format_columns_brazilian(df, numeric_columns):

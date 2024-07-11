@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from utils.queries import *
-from utils.functions_fluxo_caixa import *
-from utils.functions import config_sidebar
+from utils.functions.dados_gerais import *
+from utils.functions.fluxo_de_caixa import *
 from workalendar.america import Brazil
 
 

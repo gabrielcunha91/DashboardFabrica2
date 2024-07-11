@@ -45,9 +45,14 @@ def main():
   DeltaEstoqueBebidas = ((dfFinal['Estoque_Final_Bebidas'].sum()) - (dfFinal['Estoque_Inicial_Bebidas'].sum()))
   CMVAlim = (ComprasAlim - DeltaEstoqueAlim)
   CMVBebidas = (ComprasBeb - DeltaEstoqueBebidas)
-  CMVPercentualAlim = (CMVAlim / FaturamBrutoAliment) * 100
-  CMVPercentualBebidas = (CMVBebidas / FaturamBrutoBebidas) * 100
-  CMVPercentualGeral = ((CMVAlim + CMVBebidas)/(FaturamBrutoAliment+FaturamBrutoBebidas)) * 100
+  if FaturamBrutoAliment != 0 and FaturamBrutoBebidas != 0:
+    CMVPercentualAlim = (CMVAlim / FaturamBrutoAliment) * 100
+    CMVPercentualBebidas = (CMVBebidas / FaturamBrutoBebidas) * 100
+    CMVPercentualGeral = ((CMVAlim + CMVBebidas)/(FaturamBrutoAliment+FaturamBrutoBebidas)) * 100
+  else:
+    CMVPercentualAlim = 0
+    CMVPercentualBebidas = 0
+    CMVPercentualGeral = 0
 
   FaturamBrutoAliment = format_brazilian(FaturamBrutoAliment)
   FaturamBrutoBebidas = format_brazilian(FaturamBrutoBebidas)

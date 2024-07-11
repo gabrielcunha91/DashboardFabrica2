@@ -6,16 +6,16 @@ import mysql.connector
 LOGGER = get_logger(__name__)
 
 def mysql_connection():
-    mysql_config = st.secrets["mysql"]
-    # Cria a conexão com MySQL
-    conn = mysql.connector.connect(
-        host=mysql_config['host'],
-        port=mysql_config['port'],
-        database=mysql_config['database'],
-        user=mysql_config['username'],
-        password=mysql_config['password']
-    )    
-    return conn
+  mysql_config = st.secrets["mysql"]
+  # Cria a conexão com MySQL
+  conn = mysql.connector.connect(
+    host=mysql_config['host'],
+    port=mysql_config['port'],
+    database=mysql_config['database'],
+    user=mysql_config['username'],
+    password=mysql_config['password']
+  )    
+  return conn
 
 def execute_query(query):
   conn = mysql_connection()

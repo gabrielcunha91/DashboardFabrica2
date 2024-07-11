@@ -12,7 +12,7 @@ def merge_dataframes(df1, df2, df3, df4, df5, df6):
   merged_df = merged_df.merge(df5, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df5'))
   merged_df = merged_df.merge(df6, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', '_df6'))
 
-  # Preenche os valores nulos com zero (similar ao COALESCE)
+  # Preenche os valores nulos com zero 
   merged_df.fillna(0, inplace=True)
   merged_df.infer_objects(copy=False)
 

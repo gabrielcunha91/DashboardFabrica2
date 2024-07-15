@@ -206,11 +206,11 @@ def comparativo_entre_lojas(df):
         col1, col2 = st.columns(2)
         with col1:
           st.subheader(f'{loja1}')
-          st.dataframe(df_loja1, hide_index=True)
+          st.dataframe(df_loja1, use_container_width=True, hide_index=True)
 
         with col2:
           st.subheader(f'{loja2}')
-          st.dataframe(df_loja2, hide_index=True)
+          st.dataframe(df_loja2, use_container_width=True, hide_index=True)
     else:
         st.info('Selecione um produto para visualizar os dados.')
 
@@ -256,7 +256,6 @@ def comparativo_valor_mais_baixo(df1):
     df2 = create_columns_comparativo(df2)
     df_min = df2.loc[df2.groupby('Nome Produto')['Valor Unitário'].idxmin()]
     df_min = df_min.rename(columns={'Loja': 'Loja Menor Preço', 'Quantidade': 'Qtd. Menor Preço', 'Fornecedor': 'Forn. Menor Preço', 'Valor Unitário': 'Menor V. Unit.'})
-    # st.dataframe(df_min)
 
     df = df[df['Loja'] == loja1]
     df = create_columns_comparativo(df)
@@ -272,5 +271,5 @@ def comparativo_valor_mais_baixo(df1):
     newdf = newdf.sort_values(by='Diferença Preços', ascending=False).reset_index(drop=True)
     newdf = newdf.rename(columns={'ID Produto': 'ID Prod.'})
     newdf = format_columns_brazilian(newdf, ['Valor Unitário', 'Menor V. Unit.', 'Diferença Preços'])
-    st.dataframe(newdf, hide_index=True)
+    st.dataframe(newdf, use_container_width=True, hide_index=True)
 

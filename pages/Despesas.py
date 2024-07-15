@@ -42,7 +42,7 @@ def main():
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
       st.subheader("Despesas por Classe:")
-      st.dataframe(despesasConfigStyled, height=500, width=1080, hide_index=True)
+      st.dataframe(despesasConfigStyled, height=500, use_container_width=True, hide_index=True)
 
   despesaDetalhada = config_despesas_detalhado(Despesas)
 
@@ -64,7 +64,7 @@ def main():
       valorTotal = despesaDetalhada['Valor'].sum()
       valorTotal = format_brazilian(valorTotal)
       despesaDetalhada = format_columns_brazilian(despesaDetalhada, ['Valor'])
-      st.dataframe(despesaDetalhada, height=500, width=1250, hide_index=True)
+      st.dataframe(despesaDetalhada, height=500, use_container_width=True, hide_index=True)
       st.write('Valor Total = R$', valorTotal)
 
 if __name__ == '__main__':

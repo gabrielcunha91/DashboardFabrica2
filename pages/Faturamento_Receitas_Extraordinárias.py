@@ -41,9 +41,9 @@ def main():
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
       st.subheader("Faturamento Receitas Extaordinárias:")
-      st.dataframe(FaturamReceitExtraord, width=1080, hide_index=True)
+      st.dataframe(FaturamReceitExtraord, use_container_width=True, hide_index=True)
       st.write("Faturamento Extraordinário Total:")
-      st.dataframe(Totais, width=1080, hide_index=True)
+      st.dataframe(Totais, use_container_width=True, hide_index=True)
 
 
   classificacoes = preparar_dados_classe_selecionada(GET_CLSSIFICACAO(), 'Classificacao')
@@ -58,7 +58,7 @@ def main():
         classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
       DfFiltrado = filtrar_por_classe_selecionada(ReceitExtraord, 'Classificação', classificacoes_selecionadas)
       DfFiltrado = format_columns_brazilian(DfFiltrado, ['Valor Total', 'Categ. AB', 'Categ. Aluguel', 'Categ. Artista', 'Categ. Couvert', 'Categ. Locação', 'Categ. Patrocínio', 'Categ. Taxa de serviço'])
-      st.dataframe(DfFiltrado, hide_index=True)
+      st.dataframe(DfFiltrado, use_container_width=True, hide_index=True)
 
 
 if __name__ == '__main__':

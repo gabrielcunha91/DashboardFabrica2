@@ -24,6 +24,8 @@ def main ():
     """
   st.markdown(streamlit_style, unsafe_allow_html=True)
 
+  st.title('CURVA ABC - Diagrama de Pareto')
+
   dfComparativo = GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE()
 
   tab1, tab2, tab3, tab4 = st.tabs(["ALIMENTOS", "BEBIDAS", " PRODUTOS DE LIMP/HIGIENE", "COMPARATIVO ENTRE LOJAS"])
@@ -49,7 +51,6 @@ def main ():
       pesquisa_por_produto(dfNomeEstoque3, 3)
 
   with tab4:
-    st.title('Comparativo de Valores Unitários entre Lojas')
     comparativo_valor_mais_baixo(dfComparativo)
     comparativo_entre_lojas(dfComparativo)
 

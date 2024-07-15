@@ -1,10 +1,33 @@
-1. Refatoramento: Toda tarefa repetitiva que possa ser universal terá uma função em functions
-    1.1. Filtrar por classificação: substituirá todos os "filtrar por" parecidos (lojas, classificação e fornecedor) (Feito!)
-    1.2. 
-2. Página CMV:
-    2.1. Mês do cmv está como primeiro dia do mês, mudar para o nome ou numero do mes sem o dia
-    2.2. Insumos blueme com pedido: adicionar uma coluna de diferença entre valor liq e valor insumos (para identificar possíveis erros)
-3. Pareto:
-    3.1. eixo do nome do produto está invadindo o eixo y (nao sei se é consertável)
-    3.2. valor unitario da comparação -> mudar pra formato brasileiro
-    
+Faturamento zig: Consertar erro no calculo
+ - Trazer percentual do atingimento entre o orçamento e o valor real gasto (valor bruto)
+ - Fazer  diferença Faturam - Orçam do brito, não do liquido
+ - Criar um faturamento acumulado do ano corrente
+ - Comparação top 10: em vez da barra, colocar ua porcentagem de representação do total
+ - Colocar uma linha de delivery nas empresas que contem delivey
+  - Bar leo: Delivery bar leo centro
+  - Jacaré: Delivery jacare
+  - Orfeu: Delivery Orfeu
+  - Brahma: Delivery Hotel MAraba + Delivery Fabrica de bares (BBC)
+
+Faturam. Receit. Extraord:
+ - Deixar só evento, coleta de oleo, patrocinio, bilheteria, Premium Corp (Pro blue note) (Na primeira tabela)
+
+Despesas:
+ - Colocar todos os planos de contas, mesmo se não tiver despesa relacionada (pra aparecer o orçamento)
+  - Isso é mudado na query, tem left join no t orçamentos, oq corta qndo n tem despesa atrelada
+ - Higiene e limpeza nao tem classificação mas deve ser colocado na tabela (Vmarket?)
+ - Processos trabalhistas na DRE - Aba separada (Não trazer pro dash)
+
+
+CMV:
+ - Consertar Filtro
+ - Criação da tabela EPM para incluir os eventos e refazer os cálculos em função
+ - 
+
+Pareto = "Curva ABC"
+ - Deixar apens valor total
+ - Comparativo na primeira aba
+
+
+
+FAZER UM MANUAL DO RELATÓRIO

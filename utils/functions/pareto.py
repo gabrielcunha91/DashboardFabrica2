@@ -150,7 +150,7 @@ def comparativo_entre_lojas(df):
   data_inicio_default, data_fim_default = preparar_dados_datas()
   # Seletores para loja e produto
   with st.container(border=True):
-    st.subheader('Comparativo individual por lojas selecionadas e produto selecionado')
+    st.subheader('Comparativo Valor Unitário por Insumo')
     lojas = df['Loja'].unique()
     col, col1 = st.columns(2)
     with col:
@@ -220,7 +220,7 @@ def comparativo_valor_mais_baixo(df1):
   df = df1.copy()
   data_inicio_default, data_fim_default = preparar_dados_datas()
   with st.container(border=True):
-    st.subheader('Comparação de valor unitário pago pela loja selecionada e loja que paga menor preço')
+    st.subheader('Comparação de valor unitário - Menor Preço')
     lojas = df['Loja'].unique()
     col, col1, col2 = st.columns([5, 3, 3])
     with col:

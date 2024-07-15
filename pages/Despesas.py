@@ -21,7 +21,7 @@ def main():
   config_sidebar()
   col, colx = st.columns([5, 1])
   with col:
-    st.title('Despesas')
+    st.title('DESPESAS')
   with colx:
     if st.button("Logout"):
       logout()
@@ -41,7 +41,7 @@ def main():
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
-      st.subheader("Despesas por Classe:")
+      st.subheader("Despesas:")
       st.dataframe(despesasConfigStyled, height=500, use_container_width=True, hide_index=True)
 
   despesaDetalhada = config_despesas_detalhado(Despesas)

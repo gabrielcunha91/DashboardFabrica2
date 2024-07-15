@@ -117,7 +117,7 @@ def main():
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
-      st.subheader('Fatutamentos brutos e Estoques')
+      st.subheader('Faturamento Bruto e Estoque por Categoria')
       st.dataframe(config_tabela_CMV(dfFinal), use_container_width=True, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
@@ -161,7 +161,7 @@ def main():
       valorTotal = format_brazilian(valorTotal)
       insumosSemPedido = format_columns_brazilian(insumosSemPedido, ['Valor Líquido'])
       st.dataframe(insumosSemPedido, use_container_width=True, hide_index=True)
-      st.write('Valor Líquido Total = R$', valorTotal)
+      st.write('Valor Líquido Total: R$', valorTotal)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
@@ -176,7 +176,7 @@ def main():
       valorTotal = format_brazilian(valorTotal)
       insumosComPedido = format_columns_brazilian(insumosComPedido, cols)
       st.dataframe(insumosComPedido, use_container_width=True, hide_index=True)
-      st.write('Valor Líquido Total = R$', valorTotal)
+      st.write('Valor Líquido Total: R$', valorTotal)
 
 if __name__ == '__main__':
   main()

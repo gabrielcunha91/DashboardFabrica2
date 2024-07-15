@@ -20,7 +20,7 @@ def main():
   config_sidebar()
   col, colx = st.columns([5, 1])
   with col:
-    st.title('Faturamento (Receitas Extraordinárias)')
+    st.title('RECEITAS EXTRAORDINÁRIAS')
   with colx:
     if st.button("Logout"):
       logout()
@@ -53,7 +53,7 @@ def main():
     with col1:
       col3, col4 = st.columns([2, 1])
       with col3:
-        st.subheader("Detalhamento de acordo com a classificação selecionada:")
+        st.subheader("Detalhamento por Classificação:")
       with col4:
         classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
       DfFiltrado = filtrar_por_classe_selecionada(ReceitExtraord, 'Classificação', classificacoes_selecionadas)

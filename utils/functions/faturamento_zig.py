@@ -8,6 +8,7 @@ from utils.components import *
 def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
   FaturamentoZig = GET_FATURAM_ZIG(data_inicio, data_fim)
 
+  filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
   categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço']
   FaturamentoZig = FaturamentoZig[FaturamentoZig['Categoria'].isin(categorias_desejadas)]
   FaturamentoZig = filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)

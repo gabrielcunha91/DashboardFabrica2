@@ -21,7 +21,7 @@ def main():
   config_sidebar()
   col, colx = st.columns([5, 1])
   with col:
-    st.title('Faturamento Zig Agregado')
+    st.title('FATURAMENTO ZIGPAY')
   with colx:
     if st.button("Logout"):
       logout()
@@ -33,7 +33,7 @@ def main():
 
   st.divider()
 
-  threading.Thread(target=config_Faturamento_zig)
+  # threading.Thread(target=config_Faturamento_zig)
   OrcamentoFaturamento = config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim) 
   orcamfatformatado = OrcamentoFaturamento.copy()
   orcamfatformatado = format_columns_brazilian(orcamfatformatado, ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento'])
@@ -41,7 +41,7 @@ def main():
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 7])
     with col1:
-      st.subheader("Faturamento Zig:")
+      st.subheader("Faturamento Agregado:")
       st.dataframe(orcamfatformatado, width=700, hide_index=True)
     with col2:
       st.subheader("Valores Líquidos:")
@@ -52,13 +52,13 @@ def main():
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
-      st.subheader("Top Dez Alimentos:")
+      st.subheader("Top 10 Alimentos:")
       top_dez(FaturamentoZig, 'Alimentos')
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
-      st.subheader("Top Dez Bebidas:")
+      st.subheader("Top 10 Bebidas:")
       top_dez(FaturamentoZig, 'Bebidas')
 
   with st.container(border=True):  

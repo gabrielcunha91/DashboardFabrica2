@@ -117,8 +117,8 @@ def main():
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
-      st.subheader('Fatutamentos brutos e Estoques')
-      st.dataframe(config_tabela_CMV(dfFinal), width=1200, hide_index=True)
+      st.subheader('Faturamento Bruto e Estoque por Categoria')
+      st.dataframe(config_tabela_CMV(dfFinal), use_container_width=True, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
@@ -127,7 +127,7 @@ def main():
       dfcompras['Mês'] = pd.to_datetime(dfcompras['Mês'], format='%d-%m-%Y')
       # Formatando a data para "nome do mês/ano"
       dfcompras['Mês'] = dfcompras['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
-      st.dataframe(dfcompras, width=1200, hide_index=True)
+      st.dataframe(dfcompras, use_container_width=True, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
@@ -136,7 +136,7 @@ def main():
       dfTransf['Mês'] = pd.to_datetime(dfTransf['Mês'], format='%d-%m-%Y')
       # Formatando a data para "nome do mês/ano"
       dfTransf['Mês'] = dfTransf['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
-      st.dataframe(dfTransf, width=1200, hide_index=True)
+      st.dataframe(dfTransf, use_container_width=True, hide_index=True)
 
   insumosSemPedido = config_insumos_blueme_sem_pedido(GET_INSUMOS_BLUE_ME_SEM_PEDIDO(), data_inicio, data_fim)
   insumosComPedido = config_insumos_blueme_com_pedido(GET_INSUMOS_BLUE_ME_COM_PEDIDO(), data_inicio, data_fim)
@@ -160,8 +160,8 @@ def main():
       valorTotal = insumosSemPedido['Valor Líquido'].sum()
       valorTotal = format_brazilian(valorTotal)
       insumosSemPedido = format_columns_brazilian(insumosSemPedido, ['Valor Líquido'])
-      st.dataframe(insumosSemPedido, width=1200, hide_index=True)
-      st.write('Valor Líquido Total = R$', valorTotal)
+      st.dataframe(insumosSemPedido, use_container_width=True, hide_index=True)
+      st.write('Valor Líquido Total: R$', valorTotal)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
@@ -175,8 +175,8 @@ def main():
       cols = ['Valor Líquido', 'Valor Insumos', 'Insumos - V. Líq']
       valorTotal = format_brazilian(valorTotal)
       insumosComPedido = format_columns_brazilian(insumosComPedido, cols)
-      st.dataframe(insumosComPedido, width=1200, hide_index=True)
-      st.write('Valor Líquido Total = R$', valorTotal)
+      st.dataframe(insumosComPedido, use_container_width=True, hide_index=True)
+      st.write('Valor Líquido Total: R$', valorTotal)
 
 if __name__ == '__main__':
   main()

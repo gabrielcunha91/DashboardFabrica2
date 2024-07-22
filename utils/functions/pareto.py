@@ -94,22 +94,22 @@ def config_tabela_para_pareto(dfNomeEstoque, dfNomeCompras, categoria, key):
 
 def config_diagramas_pareto(dfNomeEstoque, dfNomeCompras, categoria, categString):
   df_por_valor = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Total')
-  df_valor_unitario = config_por_categ_avaliada(dfNomeCompras.copy(), 'Valor Unitário')
-  df_valor_unit_ajust = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Unit. Ajustado')  
+  # df_valor_unitario = config_por_categ_avaliada(dfNomeCompras.copy(), 'Valor Unitário')
+  # df_valor_unit_ajust = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Unit. Ajustado')  
 
   keyDiagrama1 = categoria + '_valor'
-  keyDiagrama2 = categoria + '_valor_unitario'
-  keyDiagrama3 = categoria + '_valor_unit_ajust'
+  # keyDiagrama2 = categoria + '_valor_unitario'
+  # keyDiagrama3 = categoria + '_valor_unit_ajust'
 
   with st.container(border=True):
     st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor total')
     diagrama_pareto_por_categ_avaliada(df_por_valor, 'Valor Total', key=keyDiagrama1)
-  with st.container(border=True):    
-    st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor Unitário de cada')
-    diagrama_pareto_por_categ_avaliada(df_valor_unitario, 'Valor Unitário', key=keyDiagrama2)
-  with st.container(border=True):
-    st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor unitário ajustado')
-    diagrama_pareto_por_categ_avaliada(df_valor_unit_ajust, 'Valor Unit. Ajustado', key=keyDiagrama3)
+  # with st.container(border=True):    
+  #   st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor Unitário de cada')
+  #   diagrama_pareto_por_categ_avaliada(df_valor_unitario, 'Valor Unitário', key=keyDiagrama2)
+  # with st.container(border=True):
+  #   st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor unitário ajustado')
+  #   diagrama_pareto_por_categ_avaliada(df_valor_unit_ajust, 'Valor Unit. Ajustado', key=keyDiagrama3)
 
 
 def pesquisa_por_produto(dfNomeEstoque, key):
@@ -150,7 +150,7 @@ def comparativo_entre_lojas(df):
   data_inicio_default, data_fim_default = preparar_dados_datas()
   # Seletores para loja e produto
   with st.container(border=True):
-    st.subheader('Comparativo individual por lojas selecionadas e produto selecionado')
+    st.subheader('Comparativo Valor Unitário por Insumo')
     lojas = df['Loja'].unique()
     col, col1 = st.columns(2)
     with col:
@@ -206,11 +206,11 @@ def comparativo_entre_lojas(df):
         col1, col2 = st.columns(2)
         with col1:
           st.subheader(f'{loja1}')
-          st.dataframe(df_loja1, hide_index=True)
+          st.dataframe(df_loja1, use_container_width=True, hide_index=True)
 
         with col2:
           st.subheader(f'{loja2}')
-          st.dataframe(df_loja2, hide_index=True)
+          st.dataframe(df_loja2, use_container_width=True, hide_index=True)
     else:
         st.info('Selecione um produto para visualizar os dados.')
 
@@ -220,7 +220,7 @@ def comparativo_valor_mais_baixo(df1):
   df = df1.copy()
   data_inicio_default, data_fim_default = preparar_dados_datas()
   with st.container(border=True):
-    st.subheader('Comparação de valor unitário pago pela loja selecionada e loja que paga menor preço')
+    st.subheader('Comparação de valor unitário - Menor Preço')
     lojas = df['Loja'].unique()
     col, col1, col2 = st.columns([5, 3, 3])
     with col:
@@ -256,7 +256,6 @@ def comparativo_valor_mais_baixo(df1):
     df2 = create_columns_comparativo(df2)
     df_min = df2.loc[df2.groupby('Nome Produto')['Valor Unitário'].idxmin()]
     df_min = df_min.rename(columns={'Loja': 'Loja Menor Preço', 'Quantidade': 'Qtd. Menor Preço', 'Fornecedor': 'Forn. Menor Preço', 'Valor Unitário': 'Menor V. Unit.'})
-    # st.dataframe(df_min)
 
     df = df[df['Loja'] == loja1]
     df = create_columns_comparativo(df)
@@ -272,5 +271,5 @@ def comparativo_valor_mais_baixo(df1):
     newdf = newdf.sort_values(by='Diferença Preços', ascending=False).reset_index(drop=True)
     newdf = newdf.rename(columns={'ID Produto': 'ID Prod.'})
     newdf = format_columns_brazilian(newdf, ['Valor Unitário', 'Menor V. Unit.', 'Diferença Preços'])
-    st.dataframe(newdf, hide_index=True)
+    st.dataframe(newdf, use_container_width=True, hide_index=True)
 

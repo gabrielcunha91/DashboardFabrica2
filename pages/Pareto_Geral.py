@@ -24,34 +24,36 @@ def main ():
     """
   st.markdown(streamlit_style, unsafe_allow_html=True)
 
+  st.title('CURVA ABC - Diagrama de Pareto')
+
   dfComparativo = GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE()
 
-  tab1, tab2, tab3, tab4 = st.tabs(["ALIMENTOS", "BEBIDAS", " PRODUTOS DE LIMP/HIGIENE", "COMPARATIVO ENTRE LOJAS"])
+  tab1, tab2, tab3, tab4 = st.tabs(["COMPARATIVO ENTRE LOJAS", "ALIMENTOS", "BEBIDAS", " PRODUTOS DE LIMP/HIGIENE"])
   with tab1:
+    comparativo_valor_mais_baixo(dfComparativo)
+    comparativo_entre_lojas(dfComparativo)
+
+  with tab2:
     dfNomeEstoque, dfNomeCompras = config_tabela_para_pareto(GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE(), GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA(), 'ALIMENTOS', 1)
     config_diagramas_pareto(dfNomeEstoque, dfNomeCompras, 'ALIMENTOS', 'Alimentos')
     with st.container(border=True):
       dfNomeEstoque = dfNomeEstoque.drop(['Categoria', 'Fator de Proporção'], axis=1)
       pesquisa_por_produto(dfNomeEstoque, 1)
 
-  with tab2:
+  with tab3:
     dfNomeEstoque2, dfNomeCompras2 = config_tabela_para_pareto(GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE(), GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA(), 'BEBIDAS', 2)
     config_diagramas_pareto(dfNomeEstoque2, dfNomeCompras2, 'BEBIDAS', 'Bebidas')
     with st.container(border=True):
       dfNomeEstoque2 = dfNomeEstoque2.drop(['Categoria', 'Fator de Proporção'], axis=1)
       pesquisa_por_produto(dfNomeEstoque2, 2)
 
-  with tab3:
+  with tab4:
     dfNomeEstoque3, dfNomeCompras3 = config_tabela_para_pareto(GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE(), GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA(), 'DESCARTAVEIS/HIGIENE E LIMPEZA', 3)
     config_diagramas_pareto(dfNomeEstoque3, dfNomeCompras3, 'DESCARTAVEIS/HIGIENE E LIMPEZA', 'Produtos de Limpeza e Higiene')
     with st.container(border=True):
       dfNomeEstoque3 = dfNomeEstoque3.drop(['Categoria', 'Fator de Proporção'], axis=1)
       pesquisa_por_produto(dfNomeEstoque3, 3)
 
-  with tab4:
-    st.title('Comparativo de Valores Unitários entre Lojas')
-    comparativo_valor_mais_baixo(dfComparativo)
-    comparativo_entre_lojas(dfComparativo)
 
 
 

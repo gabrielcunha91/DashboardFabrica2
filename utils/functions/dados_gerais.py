@@ -20,11 +20,11 @@ def config_sidebar():
   if st.session_state['loggedIn']:
     if 'Administrador' in permissao:
       st.sidebar.title("Menu")
-      st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
-      st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Faturamento Receitas Extraordinárias")
+      st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento ZIGPAY")
+      st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Receitas Extraordinárias")
       st.sidebar.page_link("pages/Despesas.py", label="Despesas")
       st.sidebar.page_link("pages/CMV.py", label="CMV")
-      st.sidebar.page_link("pages/Pareto_Geral.py", label="Pareto")
+      st.sidebar.page_link("pages/Pareto_Geral.py", label="Curva ABC - Diagrama de Pareto")
       st.sidebar.page_link("pages/Projecao_fluxo_caixa.py", label="Projeção Fluxo de Caixa")
       st.sidebar.page_link("pages/Conciliacao_fluxo_caixa.py", label="Conciliação Fluxo de Caixa")
     elif 'Aprovador' in permissao:

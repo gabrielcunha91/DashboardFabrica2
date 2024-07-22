@@ -9,7 +9,7 @@ def merge_dataframes(dfs):
   suffixes = ['', '_df2', '_df3', '_df4', '_df5', '_df6']
 
   for i, df in enumerate(dfs[1:], start=1):
-    merged_df = merged_df.merge(df, on=['ID_Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', suffixes[i]))
+    merged_df = merged_df.merge(df, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='left', suffixes=('', suffixes[i]))
 
   merged_df.fillna(0, inplace=True)
   merged_df.infer_objects(copy=False)

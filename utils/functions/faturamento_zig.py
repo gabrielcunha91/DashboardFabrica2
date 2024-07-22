@@ -8,6 +8,7 @@ from utils.components import *
 def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
   FaturamentoZig = GET_FATURAM_ZIG(data_inicio, data_fim)
 
+  filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
   categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço']
   FaturamentoZig = FaturamentoZig[FaturamentoZig['Categoria'].isin(categorias_desejadas)]
   FaturamentoZig = filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
@@ -33,25 +34,39 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   FaturamZigAgregado = GET_FATURAM_ZIG_AGREGADO()
   OrcamFaturam = GET_ORCAM_FATURAM()
 
+  FaturamZigAgregado = filtrar_por_classe_selecionada(FaturamZigAgregado, 'Loja', lojas_selecionadas)
+  OrcamFaturam = filtrar_por_classe_selecionada(OrcamFaturam, 'Loja', lojas_selecionadas)
+
   # Conversão de tipos para a padronização de valores
   FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].astype(str)
   OrcamFaturam['ID_Loja'] = OrcamFaturam['ID_Loja'].astype(str)
   FaturamZigAgregado['Primeiro_Dia_Mes'] = pd.to_datetime(FaturamZigAgregado['Primeiro_Dia_Mes'], format='%y-%m-%d')
   OrcamFaturam['Primeiro_Dia_Mes'] = pd.to_datetime(OrcamFaturam['Primeiro_Dia_Mes'])
 
+  # Colunas do FaturamZigAgregado = ['ID_Loja', 'Loja', 'Categoria', 'Data_Evento', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Valor_Bruto', 'Desconto', 'Valor_Liquido']
+  # Colunas do OrcamFaturam = ['ID_Loja', 'Loja', 'Categoria', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Orcamento_Faturamento']
+  # itens = ['265', '266', '275', '277']
+  # if FaturamZigAgregado['ID_Loja'].isin(itens).any():
+  #   st.markdown('Teste')
+  #   if FaturamZigAgregado['ID_Loja'].isin(['265']).any(): # Orfeu
+  #     faturamDelivery = filtrar_por_classe_selecionada(GET_FATURAM_ZIG_AGREGADO(), 'Loja', ['Delivery Orfeu'])
+  #     orcamDelivery = filtrar_por_classe_selecionada(GET_ORCAM_FATURAM(), 'Loja', ['Delivery Orfeu'])
+  #     st.dataframe(orcamDelivery)    
+
+
   # Padronização de categorias (para não aparecer as categorias não desejadas)
-  categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço']
+  categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço', 'Delivery']
   OrcamFaturam = OrcamFaturam[OrcamFaturam['Categoria'].isin(categorias_desejadas)]
   FaturamZigAgregado = FaturamZigAgregado[FaturamZigAgregado['Categoria'].isin(categorias_desejadas)]
 
   # Faz o merge das tabelas
-  OrcamentoFaturamento = pd.merge(FaturamZigAgregado, OrcamFaturam, on=['ID_Loja', 'Primeiro_Dia_Mes', 'Categoria'], how='left')
+  OrcamentoFaturamento = pd.merge(FaturamZigAgregado, OrcamFaturam, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Categoria'], how='outer')
   OrcamentoFaturamento = OrcamentoFaturamento.dropna(subset=['Categoria'])
   OrcamentoFaturamento['Data_Evento'] = pd.to_datetime(OrcamentoFaturamento['Data_Evento'])
-
+  
+  
   # Agora filtra
   OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
-  OrcamentoFaturamento = filtrar_por_classe_selecionada(OrcamentoFaturamento, 'Loja', lojas_selecionadas)
 
   # Exclui colunas que não serão usadas na análise, agrupa tuplas de valores de categoria iguais e renomeia as colunas restantes
   OrcamentoFaturamento.drop(['ID_Loja', 'Loja', 'Data_Evento', 'Primeiro_Dia_Mes'], axis=1, inplace=True)
@@ -68,7 +83,7 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamentoFaturamento[cols] = OrcamentoFaturamento[cols].astype(float)
 
   # Criação da coluna 'Faturam - Orçamento' e da linha 'Total Geral'
-  OrcamentoFaturamento['Faturam - Orçamento'] = OrcamentoFaturamento['Valor Líquido'] - OrcamentoFaturamento['Orçamento']
+  OrcamentoFaturamento['Faturam - Orçamento'] = OrcamentoFaturamento['Valor Bruto'] - OrcamentoFaturamento['Orçamento']
   Total = OrcamentoFaturamento[['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento']].sum()
   NovaLinha = pd.DataFrame([{
     'Categoria': 'Total Geral', 'Orçamento': Total['Orçamento'], 'Valor Bruto': Total['Valor Bruto'],

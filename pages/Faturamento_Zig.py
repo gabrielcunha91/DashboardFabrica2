@@ -33,7 +33,7 @@ def main():
 
   st.divider()
 
-  threading.Thread(target=config_Faturamento_zig)
+  # threading.Thread(target=config_Faturamento_zig)
   OrcamentoFaturamento = config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim) 
   orcamfatformatado = OrcamentoFaturamento.copy()
   orcamfatformatado = format_columns_brazilian(orcamfatformatado, ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento'])

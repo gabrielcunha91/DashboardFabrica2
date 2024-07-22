@@ -94,22 +94,22 @@ def config_tabela_para_pareto(dfNomeEstoque, dfNomeCompras, categoria, key):
 
 def config_diagramas_pareto(dfNomeEstoque, dfNomeCompras, categoria, categString):
   df_por_valor = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Total')
-  df_valor_unitario = config_por_categ_avaliada(dfNomeCompras.copy(), 'Valor Unitário')
-  df_valor_unit_ajust = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Unit. Ajustado')  
+  # df_valor_unitario = config_por_categ_avaliada(dfNomeCompras.copy(), 'Valor Unitário')
+  # df_valor_unit_ajust = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Unit. Ajustado')  
 
   keyDiagrama1 = categoria + '_valor'
-  keyDiagrama2 = categoria + '_valor_unitario'
-  keyDiagrama3 = categoria + '_valor_unit_ajust'
+  # keyDiagrama2 = categoria + '_valor_unitario'
+  # keyDiagrama3 = categoria + '_valor_unit_ajust'
 
   with st.container(border=True):
     st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor total')
     diagrama_pareto_por_categ_avaliada(df_por_valor, 'Valor Total', key=keyDiagrama1)
-  with st.container(border=True):    
-    st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor Unitário de cada')
-    diagrama_pareto_por_categ_avaliada(df_valor_unitario, 'Valor Unitário', key=keyDiagrama2)
-  with st.container(border=True):
-    st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor unitário ajustado')
-    diagrama_pareto_por_categ_avaliada(df_valor_unit_ajust, 'Valor Unit. Ajustado', key=keyDiagrama3)
+  # with st.container(border=True):    
+  #   st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor Unitário de cada')
+  #   diagrama_pareto_por_categ_avaliada(df_valor_unitario, 'Valor Unitário', key=keyDiagrama2)
+  # with st.container(border=True):
+  #   st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor unitário ajustado')
+  #   diagrama_pareto_por_categ_avaliada(df_valor_unit_ajust, 'Valor Unit. Ajustado', key=keyDiagrama3)
 
 
 def pesquisa_por_produto(dfNomeEstoque, key):

@@ -14,36 +14,64 @@ st.set_page_config(
 if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
     st.switch_page('Login.py')
 
+
+st.title('PROJEÇÃO - Fluxo de Caixa')
 config_sidebar()
 
 df_projecao_bares = config_projecao_bares()
 df_projecao_grouped = config_grouped_projecao(df_projecao_bares.copy())
 
 bares = df_projecao_bares["Empresa"].unique()
-bar = st.selectbox("Bar", bares)
-
-df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"] == bar]
-df_projecao_bar_com_soma = somar_total(df_projecao_bar)
-
-columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
+with st.container(border=True):
+  bar = st.selectbox("Bar", bares)
+  df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"] == bar]
+  df_projecao_bar_com_soma = somar_total(df_projecao_bar)
+  columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                                  'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
-df_projecao_bar_com_soma = df_projecao_bar_com_soma[columns_projecao_bar_com_soma]
-
-st.dataframe(df_projecao_bar_com_soma, use_container_width=True, hide_index=True)
+  df_projecao_bar_com_soma = df_projecao_bar_com_soma[columns_projecao_bar_com_soma]
+  st.dataframe(df_projecao_bar_com_soma, use_container_width=True, hide_index=True)
 
 st.divider()
 
 # Projeção Agrupada
-st.markdown(
-  """
-  **Projeção de bares agrupados**: *Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-  Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares*
-  """
-)
+with st.container(border=True):
+  st.subheader('Projeção de bares agrupados:' )
+  st.markdown(
+    """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless*
+    """
+  )
 
-df_projecao_grouped_com_soma = somar_total(df_projecao_grouped)
+  df_projecao_grouped_com_soma = somar_total(df_projecao_grouped)
 
-columns_projecao_grouped = ['Data', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
+  columns_projecao_grouped = ['Data', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                             'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
 
-st.dataframe(df_projecao_grouped_com_soma[columns_projecao_grouped], use_container_width=True, hide_index=True)
+  st.dataframe(df_projecao_grouped_com_soma[columns_projecao_grouped], use_container_width=True, hide_index=True)
+
+st.divider()
+
+with st.container(border=True):
+  st.subheader('Despesas pendentes')
+  lojasComDados = preparar_dados_lojas_user()
+  col1, col2, col3 = st.columns([3, 1, 2])
+
+  # Adiciona seletores
+  with col1:
+    lojasSelecionadas = st.multiselect(label='Selecione Lojas', options=lojasComDados, key='lojas_multiselect')
+  with col2:
+    checkbox = st.checkbox(label='Adicionar lojas agrupadas')
+    if checkbox:
+      lojasAgrupadas = [
+            'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
+            'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
+            'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu',
+            'Riviera Bar', 'Tempus', 'Escritorio Fabrica de Bares', 'Priceless'
+      ]
+      lojasSelecionadas.extend(lojasAgrupadas)
+  with col3:
+    dataSelecionada = st.date_input('Data de Início', value=datetime.today(), key='data_inicio_input', format="DD/MM/YYYY")
+
+  dataSelecionada = pd.to_datetime(dataSelecionada)
+  df = config_despesas_a_pagar(lojasSelecionadas, dataSelecionada)
+  st.dataframe(df, use_container_width=True, hide_index=True)

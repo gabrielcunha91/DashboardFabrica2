@@ -58,8 +58,11 @@ def preparar_dados_datas():
 
 
 def preparar_dados_lojas_user():
-  username = st.session_state.get('userName', 'Usuário desconhecido')
-  dflojas = GET_LOJAS_USER(username)
+  permissao, username = config_permissoes_user()
+  if 'Administrador' in permissao:
+    dflojas = GET_LOJAS()
+  else:
+    dflojas = GET_LOJAS_USER(username)
   lojas = dflojas['Loja'].tolist()
   if 'Blue Note - São Paulo' in lojas or 'Blue Note SP (Novo)' in lojas:
     lojas.append('Blue Note - SP Jazz')

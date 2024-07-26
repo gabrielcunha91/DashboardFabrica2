@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 from utils.queries import *
 from workalendar.america import Brazil
+from utils.functions.dados_gerais import *
+import openpyxl
+import os
 
 def config_projecao_bares():
   # Função auxiliar para converter colunas de data
@@ -44,7 +47,7 @@ def config_projecao_bares():
   houses_to_group = [
     'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
     'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 
-    'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritorio Fabrica de Bares'
+    'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritorio Fabrica de Bares', 'Priceless'
   ]
 
   # Create a new column 'Group' based on the houses
@@ -221,3 +224,33 @@ def somar_total(df):
   soma_colunas['Data'] = 'Total' 
   df_com_soma = pd.concat([df, soma_colunas], ignore_index=True)
   return df_com_soma
+
+
+
+def config_despesas_a_pagar(lojas_selecionadas, data):
+  despesasPendentes = GET_DESPESAS_PENDENTES(data)
+  despesasPendentes = filtrar_por_classe_selecionada(despesasPendentes, 'Loja', lojas_selecionadas)
+  return despesasPendentes
+
+
+
+def export_to_excel(df, sheet_name, excel_filename):
+  if os.path.exists(excel_filename):
+    wb = openpyxl.load_workbook(excel_filename)
+  else:
+    wb = openpyxl.Workbook()
+
+  if sheet_name in wb.sheetnames:
+    wb.remove(wb[sheet_name])
+  ws = wb.create_sheet(title=sheet_name)
+  
+  # Escrever os cabeçalhos
+  for col_idx, column_title in enumerate(df.columns, start=1):
+    ws.cell(row=1, column=col_idx, value=column_title)
+  
+  # Escrever os dados
+  for row_idx, row in enumerate(df.itertuples(index=False, name=None), start=2):
+    for col_idx, value in enumerate(row, start=1):
+      ws.cell(row=row_idx, column=col_idx, value=value)
+
+  wb.save(excel_filename)

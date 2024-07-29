@@ -23,8 +23,8 @@ def main():
   if not st.session_state['loggedIn']:
     st.title("Dashboard Fábrica de Bares")
     st.write("Insira seus dados de login:")
-    userName = st.text_input(label="", value="", placeholder="Email")
-    password = st.text_input(label="", value="", placeholder="Senha", type="password")
+    userName = st.text_input(label=" ", value="", placeholder="Email")
+    password = st.text_input(label=" ", value="", placeholder="Senha", type="password")
     st.button("Login", on_click=handle_login, args=(userName, password))
     st.stop()
   

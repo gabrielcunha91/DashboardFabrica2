@@ -118,7 +118,11 @@ def main():
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
       st.subheader('Faturamento Bruto e Estoque por Categoria')
-      st.dataframe(config_tabela_CMV(dfFinal), use_container_width=True, hide_index=True)
+      dfFaturamento = config_tabela_CMV(dfFinal)
+      dfFaturamento['Mês'] = pd.to_datetime(dfFaturamento['Mês'], format='%d-%m-%Y')
+      # Formatando a data para "nome do mês/ano"
+      dfFaturamento['Mês'] = dfFaturamento['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
+      st.dataframe(dfFaturamento, use_container_width=True, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:

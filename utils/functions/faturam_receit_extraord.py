@@ -22,6 +22,11 @@ def config_receit_extraord(lojas_selecionadas, data_inicio, data_fim):
                             'Categ_Couvert': 'Categ. Couvert', 'Categ_Locacao': 'Categ. Locação', 
                             'Categ_Patroc': 'Categ. Patrocínio', 'Categ_Taxa_Serv': 'Categ. Taxa de serviço', 
                             'Valor_Total': 'Valor Total', 'Data_Evento': 'Data Evento'})
+  
+  Classificacoes = ['Eventos', 'Coleta de Óleo', 'Bilheteria', 'Patrocínio']
+  if 'Blue Note - São Paulo' in lojas_selecionadas or 'Blue Note SP (Novo)' in lojas_selecionadas:
+    Classificacoes.append('Premium Corp')
+  df = df[df['Classificação'].isin(Classificacoes)]
 
   df = format_date_brazilian(df, 'Data Evento')
   df = pd.DataFrame(df)

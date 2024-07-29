@@ -1,14 +1,11 @@
 Faturamento zig: 
  - Criar um faturamento acumulado do ano corrente
- - Comparação top 10: em vez da barra, colocar ua porcentagem de representação do total
  - Colocar uma linha de delivery nas empresas que contem delivey
   - Bar leo: Delivery bar leo centro
   - Jacaré: Delivery jacare
   - Orfeu: Delivery Orfeu
   - Brahma: Delivery Hotel MAraba + Delivery Fabrica de bares (BBC)
 
-Faturam. Receit. Extraord:
- - Deixar só evento, coleta de oleo, patrocinio, bilheteria, Premium Corp (Pro blue note) (Na primeira tabela)
 
 Despesas:
  - Colocar todos os planos de contas, mesmo se não tiver despesa relacionada (pra aparecer o orçamento)
@@ -18,17 +15,9 @@ Despesas:
 
 
 CMV:
- - Consertar Filtro (Erro no banco)
  - Criação da tabela EPM para incluir os eventos e refazer os cálculos em função (Não sou eu quem faz)
 
 
-Pareto = "Curva ABC"
- - Deixar apens valor total (Feito!)
- - Comparativo na primeira aba (Feito!)
-
-
-
-
-unir as duas blue notes do t empresas
+unir as duas blue notes do t empresas (nao fiz!! kkkk)
 
 FAZER UM MANUAL DO RELATÓRIO

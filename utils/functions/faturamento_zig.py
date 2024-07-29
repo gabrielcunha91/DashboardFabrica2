@@ -109,47 +109,79 @@ def top_dez(dataframe, categoria):
 
   topDez['Valor Líquido Venda'] = topDez['Valor Líquido Venda'].astype(float)
   topDez['Valor Bruto Venda'] = topDez['Valor Bruto Venda'].astype(float)
-  max_valor_liq_venda = topDez['Valor Líquido Venda'].max()
-  max_valor_bru_venda = topDez['Valor Bruto Venda'].max()
+  # max_valor_liq_venda = topDez['Valor Líquido Venda'].max()
+  # max_valor_bru_venda = topDez['Valor Bruto Venda'].max()
 
-  topDez['Comparação Valor Líq.'] = topDez['Valor Líquido Venda']
-  topDez['Comparação Valor Bruto'] = topDez['Valor Bruto Venda']
+  valor_total_bruto = topDez['Valor Bruto Venda'].sum()
+  valor_total_liq = topDez['Valor Líquido Venda'].sum()
+  
+  topDez['% do Valor Líquido Total'] = (topDez['Valor Líquido Venda']/valor_total_liq) * 100
+  topDez['% do Valor Bruto Total'] = (topDez['Valor Bruto Venda']/valor_total_bruto) * 100
+
+  # topDez['Comparação Valor Líq.'] = topDez['Valor Líquido Venda']
+  # topDez['Comparação Valor Bruto'] = topDez['Valor Bruto Venda']
 
   # Aplicar a formatação brasileira nas colunas
-  topDez['Valor Líquido Venda'] = topDez['Valor Líquido Venda'].apply(format_brazilian)
-  topDez['Valor Bruto Venda'] = topDez['Valor Bruto Venda'].apply(format_brazilian)
+  colunas = ['Valor Líquido Venda', 'Valor Bruto Venda']
+  topDez = format_columns_brazilian(topDez, colunas)
   
   topDez = format_columns_brazilian(topDez, ['Preço Unitário', 'Desconto'])
   topDez['Quantia comprada'] = topDez['Quantia comprada'].apply(lambda x: str(x))
 
   # Reordenar as colunas
   colunas_ordenadas = [
-    'Nome Produto', 'Preço Unitário', 'Quantia comprada',
-    'Comparação Valor Bruto', 'Valor Bruto Venda', 'Desconto',
-    'Comparação Valor Líq.', 'Valor Líquido Venda'
+    'Nome Produto', 'Preço Unitário', 'Quantia comprada', '% do Valor Bruto Total', 
+    'Valor Bruto Venda', 'Desconto', '% do Valor Líquido Total', 'Valor Líquido Venda'
   ]
   topDez = topDez.reindex(columns=colunas_ordenadas)
+
+
+  # st.data_editor(
+  #   topDez,
+  #   width=1080,
+  #   column_config={
+  #     "Valor Liq %": st.column_config.ProgressColumn(
+  #       "Valor Liq %",
+  #       help="O Valor Líquido da Venda do produto em reais",
+  #       format='Valor Liq %',
+  #       min_value=0,
+  #       max_value=valor_total_liq,
+  #     ),
+  #     "Valor Bruto %": st.column_config.ProgressColumn(
+  #       "Valor Bruto %",
+  #       help="O Valor Bruto da Venda do produto em reais",
+  #       format='Valor Bruto %',
+  #       min_value=0,
+  #       max_value=valor_total_bruto,
+  #     ),
+  #   },
+  #   disabled=True,
+  #   hide_index=True,
+  # )
+
 
   st.data_editor(
     topDez,
     width=1080,
     column_config={
-      "Comparação Valor Líq.": st.column_config.ProgressColumn(
-        "Comparação Valor Líq.",
-        help="O Valor Líquido da Venda do produto em reais",
-        format=" ",  # Não exibir o valor na barra
+      "% do Valor Líquido Total": st.column_config.ProgressColumn(
+        "% do Valor Líquido Total",
+        help="O Valor Líquido da Venda do produto em porcentagem",
+        format="%.2f%%",
         min_value=0,
-        max_value=max_valor_liq_venda,
-      ),
-      "Comparação Valor Bruto": st.column_config.ProgressColumn(
-        "Comparação Valor Bruto",
-        help="O Valor Bruto da Venda do produto em reais",
-        format=" ",  # Não exibir o valor na barra
+        max_value=100,
+    ),
+      "% do Valor Bruto Total": st.column_config.ProgressColumn(
+        "% do Valor Bruto Total",
+        help="O Valor Bruto da Venda do produto em porcentagem",
+        format="%.2f%%",
         min_value=0,
-        max_value=max_valor_bru_venda,
+        max_value=100,
       ),
     },
     disabled=True,
     hide_index=True,
   )
+
+
   return topDez

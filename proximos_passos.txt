@@ -1,7 +1,4 @@
 Faturamento zig: 
- - Consertar erro no calculo (Erro no banco)
- - Trazer percentual do atingimento entre o orçamento e o valor real gasto (valor bruto)
- - Fazer  diferença Faturam - Orçam do bruto, não do liquido (Feito!)
  - Criar um faturamento acumulado do ano corrente
  - Comparação top 10: em vez da barra, colocar ua porcentagem de representação do total
  - Colocar uma linha de delivery nas empresas que contem delivey

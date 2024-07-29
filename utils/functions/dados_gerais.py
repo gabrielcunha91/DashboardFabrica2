@@ -61,6 +61,8 @@ def preparar_dados_lojas_user():
   permissao, username = config_permissoes_user()
   if 'Administrador' in permissao:
     dflojas = GET_LOJAS()
+    lojasARemover = ['Casa Teste', 'Casa Teste 2', 'Casa Teste 3']
+    dflojas = dflojas[~dflojas['Loja'].isin(lojasARemover)]
   else:
     dflojas = GET_LOJAS_USER(username)
   lojas = dflojas['Loja'].tolist()

@@ -43,16 +43,6 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   FaturamZigAgregado['Primeiro_Dia_Mes'] = pd.to_datetime(FaturamZigAgregado['Primeiro_Dia_Mes'], format='%y-%m-%d')
   OrcamFaturam['Primeiro_Dia_Mes'] = pd.to_datetime(OrcamFaturam['Primeiro_Dia_Mes'])
 
-  # Colunas do FaturamZigAgregado = ['ID_Loja', 'Loja', 'Categoria', 'Data_Evento', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Valor_Bruto', 'Desconto', 'Valor_Liquido']
-  # Colunas do OrcamFaturam = ['ID_Loja', 'Loja', 'Categoria', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Orcamento_Faturamento']
-  # itens = ['265', '266', '275', '277']
-  # if FaturamZigAgregado['ID_Loja'].isin(itens).any():
-  #   st.markdown('Teste')
-  #   if FaturamZigAgregado['ID_Loja'].isin(['265']).any(): # Orfeu
-  #     faturamDelivery = filtrar_por_classe_selecionada(GET_FATURAM_ZIG_AGREGADO(), 'Loja', ['Delivery Orfeu'])
-  #     orcamDelivery = filtrar_por_classe_selecionada(GET_ORCAM_FATURAM(), 'Loja', ['Delivery Orfeu'])
-  #     st.dataframe(orcamDelivery)    
-
 
   # Padronização de categorias (para não aparecer as categorias não desejadas)
   categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço', 'Delivery']
@@ -91,6 +81,13 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
     'Faturam - Orçamento': Total['Faturam - Orçamento']
   }])
   OrcamentoFaturamento = pd.concat([OrcamentoFaturamento, NovaLinha], ignore_index=True)
+
+  OrcamentoFaturamento['Atingimento %'] = (OrcamentoFaturamento['Valor Bruto']/OrcamentoFaturamento['Orçamento']) *100
+  OrcamentoFaturamento['Atingimento %'] = OrcamentoFaturamento['Atingimento %'].apply(format_brazilian)
+  OrcamentoFaturamento['Atingimento %'] = OrcamentoFaturamento['Atingimento %'].apply(lambda x: x + '%')
+
+  OrcamentoFaturamento = OrcamentoFaturamento.reindex(['Categoria', 'Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido',
+    'Atingimento %', 'Faturam - Orçamento'], axis=1)
 
   return OrcamentoFaturamento
 

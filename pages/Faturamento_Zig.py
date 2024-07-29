@@ -42,7 +42,8 @@ def main():
     col0, col1, col2 = st.columns([1, 10, 7])
     with col1:
       st.subheader("Faturamento Agregado:")
-      st.dataframe(orcamfatformatado, width=700, hide_index=True)
+      orcamfatformatadoStyled = orcamfatformatado.style.map(highlight_values, subset=['Faturam - Orçamento'])
+      st.dataframe(orcamfatformatadoStyled, width=700, hide_index=True)
     with col2:
       st.subheader("Valores Líquidos:")
       Grafico_Donut(OrcamentoFaturamento)

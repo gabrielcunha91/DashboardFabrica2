@@ -16,7 +16,8 @@ if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
 config_sidebar()
 
 df_lojas = GET_LOJAS()
-lojas = df_lojas["Loja"].unique()
+lojas = preparar_dados_lojas_user()
+# lojas = df_lojas["Loja"].unique()
 loja = st.selectbox("Loja", lojas)
 
 # Defina um dicionário para mapear nomes de lojas a IDs de lojas

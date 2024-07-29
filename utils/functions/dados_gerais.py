@@ -10,7 +10,7 @@ def config_permissoes_user():
   dfpermissao = GET_PERMISSIONS(username)
   permissao = dfpermissao['Permissao'].tolist()
   nomeUser = GET_USERNAME(username)
-  nomeUser = ' '.join(nomeUser['Nome'].tolist())  # Unir o nome usando 'join' diretamente
+  nomeUser = ' '.join(nomeUser['Nome'].tolist())  
   return permissao, nomeUser
 
 
@@ -64,14 +64,12 @@ def preparar_dados_lojas_user():
   else:
     dflojas = GET_LOJAS_USER(username)
   lojas = dflojas['Loja'].tolist()
-  if 'Blue Note - São Paulo' in lojas or 'Blue Note SP (Novo)' in lojas:
-    lojas.append('Blue Note - SP Jazz')
   lojas.sort(key=str.lower)
   return lojas
 
 
 def preparar_dados_classe_selecionada(df, classe):
-  dados = df[classe].dropna().unique().tolist()  # Dropna para remover valores nulos antes de listar
+  dados = df[classe].dropna().unique().tolist() 
   dados.sort(key=str.lower)
   return dados
 
@@ -80,10 +78,9 @@ def filtrar_por_datas(dataframe, data_inicio, data_fim, categoria):
   data_inicio = pd.Timestamp(data_inicio)
   data_fim = pd.Timestamp(data_fim)
   
-  # Ensure the 'categoria' column is converted to datetime correctly
+ 
   dataframe.loc[:, categoria] = pd.to_datetime(dataframe[categoria])
   
-  # Apply the filter using .loc to avoid SettingWithCopyWarning
   dataframe_filtered = dataframe.loc[
       (dataframe[categoria] >= data_inicio) & (dataframe[categoria] <= data_fim)
   ]

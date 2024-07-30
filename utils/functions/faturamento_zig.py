@@ -9,7 +9,7 @@ def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
   FaturamentoZig = GET_FATURAM_ZIG(data_inicio, data_fim)
 
   filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
-  categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço']
+  categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço', 'Delivery']
   FaturamentoZig = FaturamentoZig[FaturamentoZig['Categoria'].isin(categorias_desejadas)]
   FaturamentoZig = filtrar_por_classe_selecionada(FaturamentoZig, 'Loja', lojas_selecionadas)
 
@@ -34,9 +34,6 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   FaturamZigAgregado = GET_FATURAM_ZIG_AGREGADO()
   OrcamFaturam = GET_ORCAM_FATURAM()
 
-  FaturamZigAgregado = filtrar_por_classe_selecionada(FaturamZigAgregado, 'Loja', lojas_selecionadas)
-  OrcamFaturam = filtrar_por_classe_selecionada(OrcamFaturam, 'Loja', lojas_selecionadas)
-
   # Conversão de tipos para a padronização de valores
   FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].astype(str)
   OrcamFaturam['ID_Loja'] = OrcamFaturam['ID_Loja'].astype(str)
@@ -48,6 +45,26 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço', 'Delivery']
   OrcamFaturam = OrcamFaturam[OrcamFaturam['Categoria'].isin(categorias_desejadas)]
   FaturamZigAgregado = FaturamZigAgregado[FaturamZigAgregado['Categoria'].isin(categorias_desejadas)]
+
+  substituicoesIds = {
+    '103': '116',
+    '112': '104',
+    '118': '114',
+    '139': '105'
+  }
+
+  substituicoesNomes = {
+    'Delivery Fabrica de Bares': 'Bar Brahma - Centro',
+    'Delivery Bar Leo Centro': 'Bar Léo - Centro',
+    'Delivery Orfeu': 'Orfeu',
+    'Delivery Jacaré': 'Jacaré'
+  }
+
+  FaturamZigAgregado['Loja'] = FaturamZigAgregado['Loja'].replace(substituicoesNomes)
+  FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].replace(substituicoesIds)
+
+  FaturamZigAgregado = filtrar_por_classe_selecionada(FaturamZigAgregado, 'Loja', lojas_selecionadas)
+  OrcamFaturam = filtrar_por_classe_selecionada(OrcamFaturam, 'Loja', lojas_selecionadas)
 
   # Faz o merge das tabelas
   OrcamentoFaturamento = pd.merge(FaturamZigAgregado, OrcamFaturam, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Categoria'], how='outer')
@@ -134,31 +151,6 @@ def top_dez(dataframe, categoria):
     'Valor Bruto Venda', 'Desconto', '% do Valor Líquido Total', 'Valor Líquido Venda'
   ]
   topDez = topDez.reindex(columns=colunas_ordenadas)
-
-
-  # st.data_editor(
-  #   topDez,
-  #   width=1080,
-  #   column_config={
-  #     "Valor Liq %": st.column_config.ProgressColumn(
-  #       "Valor Liq %",
-  #       help="O Valor Líquido da Venda do produto em reais",
-  #       format='Valor Liq %',
-  #       min_value=0,
-  #       max_value=valor_total_liq,
-  #     ),
-  #     "Valor Bruto %": st.column_config.ProgressColumn(
-  #       "Valor Bruto %",
-  #       help="O Valor Bruto da Venda do produto em reais",
-  #       format='Valor Bruto %',
-  #       min_value=0,
-  #       max_value=valor_total_bruto,
-  #     ),
-  #   },
-  #   disabled=True,
-  #   hide_index=True,
-  # )
-
 
   st.data_editor(
     topDez,

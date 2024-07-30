@@ -37,6 +37,8 @@ def main():
   OrcamentoFaturamento = config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim) 
   orcamfatformatado = OrcamentoFaturamento.copy()
   orcamfatformatado = format_columns_brazilian(orcamfatformatado, ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento'])
+  orcamfatformatado.loc[orcamfatformatado['Orçamento'] == '0,00', 'Atingimento %'] = '-'
+
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 7])
@@ -54,18 +56,21 @@ def main():
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
       st.subheader("Top 10 Alimentos:")
+      st.markdown("*Sem delivery")
       top_dez(FaturamentoZig, 'Alimentos')
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
       st.subheader("Top 10 Bebidas:")
+      st.markdown("*Sem delivery")
       top_dez(FaturamentoZig, 'Bebidas')
 
   with st.container(border=True):  
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
       st.subheader("Faturamento Por Dia:")
+      st.markdown("*Sem delivery")
       faturam_por_dia(FaturamentoZig)
 
 if __name__ == '__main__':

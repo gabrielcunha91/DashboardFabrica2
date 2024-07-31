@@ -46,7 +46,7 @@ def main():
       st.dataframe(Totais, use_container_width=True, hide_index=True)
 
 
-  classificacoes = preparar_dados_classe_selecionada(GET_CLSSIFICACAO(), 'Classificacao')
+  classificacoes = ['Eventos', 'Coleta de Óleo', 'Bilheteria', 'Patrocínio', 'Premium Corp']
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 15, 1])

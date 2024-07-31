@@ -121,13 +121,44 @@ def GET_LOJAS():
 #     Categoria;
 #   ''')
 
+# @st.cache_data
+# def GET_FATURAM_ZIG_AGREGADO():
+#   return dataframe_query(f''' 
+#   SELECT
+#     te.ID AS ID_Loja,
+#     te.NOME_FANTASIA AS Loja,
+#     tfza.CATEGORIA AS Categoria,
+#     cast(tfza.DATA_EVENTO as date) AS Data_Evento,
+#     cast(date_format(cast(tfza.DATA_EVENTO as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
+#     concat(year(cast(tfza.DATA_EVENTO as date)), '-', month(cast(tfza.DATA_EVENTO as date))) AS Ano_Mes,
+#     sum(tfza.VALOR_TRANSACAO_BRUTO) AS Valor_Bruto,
+#     sum(tfza.DESCONTO) AS Desconto,
+#     sum(tfza.VALOR_TRANSACAO_LIQUIDO) AS Valor_Liquido
+#   FROM
+#     T_FATURAMENTO_ZIG_AGREGADO tfza
+#   JOIN 
+#     T_EMPRESAS te ON tfza.ID_LOJA = te.ID 
+#   GROUP BY
+#     tfza.ID_LOJA,
+#     Categoria,
+#     Primeiro_Dia_Mes
+#   ORDER BY
+#     Primeiro_Dia_Mes,
+#     Loja,
+#     Categoria;
+# ''')  
+
+
 @st.cache_data
 def GET_FATURAM_ZIG_AGREGADO():
   return dataframe_query(f''' 
   SELECT
     te.ID AS ID_Loja,
     te.NOME_FANTASIA AS Loja,
-    tfza.CATEGORIA AS Categoria,
+    CASE 
+      WHEN te.ID IN (103, 112, 118, 139) THEN 'Delivery'
+      ELSE tfza.CATEGORIA 
+    END AS Categoria,
     cast(tfza.DATA_EVENTO as date) AS Data_Evento,
     cast(date_format(cast(tfza.DATA_EVENTO as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
     concat(year(cast(tfza.DATA_EVENTO as date)), '-', month(cast(tfza.DATA_EVENTO as date))) AS Ano_Mes,

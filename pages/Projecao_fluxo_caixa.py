@@ -54,7 +54,7 @@ st.divider()
 with st.container(border=True):
   st.subheader('Despesas do dia')
   lojasComDados = preparar_dados_lojas_user()
-  col1, col2, col3 = st.columns([3, 1, 2])
+  col1, col2, col3 = st.columns([5, 2, 3])
 
   # Adiciona seletores
   with col1:
@@ -69,9 +69,19 @@ with st.container(border=True):
             'Riviera Bar', 'Tempus', 'Escritorio Fabrica de Bares', 'Priceless'
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
+    checkbox2 = st.checkbox(label='Apenas Pendentes')
+    checkbox3 = st.checkbox(label='Apenas Pagas')
   with col3:
     dataSelecionada = st.date_input('Data de Início', value=datetime.today(), key='data_inicio_input', format="DD/MM/YYYY")
 
   dataSelecionada = pd.to_datetime(dataSelecionada)
   df = config_despesas_a_pagar(lojasSelecionadas, dataSelecionada)
+  if checkbox2:
+    df = filtrar_por_classe_selecionada(df, 'Status_Pgto', ['Pendente'])
+  if checkbox3:
+    df = filtrar_por_classe_selecionada(df, 'Status_Pgto', ['Pago'])
   st.dataframe(df, use_container_width=True, hide_index=True)
+  valorTotal = df['Valor'].sum()
+  valorTotal = format_brazilian(valorTotal)
+  df = format_columns_brazilian(df, ['Valor'])
+  st.write('Valor total das despesas selecionadas = R$', valorTotal)

@@ -52,7 +52,7 @@ with st.container(border=True):
 st.divider()
 
 with st.container(border=True):
-  st.subheader('Despesas pendentes')
+  st.subheader('Despesas do dia')
   lojasComDados = preparar_dados_lojas_user()
   col1, col2, col3 = st.columns([3, 1, 2])
 

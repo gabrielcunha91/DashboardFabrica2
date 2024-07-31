@@ -280,6 +280,7 @@ def GET_CLSSIFICACAO():
 
 ############## Despesas ################
 
+@st.cache_data
 def GET_DESPESAS():
   #'Data_Evento' é, na realidade, a data da emissão, eu só coloquei esse nome pra ficar mais fácil de programar
   #Vai mudar com a Vmarket
@@ -319,6 +320,59 @@ def GET_DESPESAS():
         WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID);
 ''')
 
+
+
+@st.cache_data
+def GET_DESPESAS2():
+  return dataframe_query(f'''
+    SELECT 
+      tdr.ID AS ID,
+      te.NOME_FANTASIA AS Loja,
+      tf.CORPORATE_NAME AS Fornecedor,
+      tdr.NF AS Doc_Serie,
+      STR_TO_DATE(tdr.COMPETENCIA, '%Y-%m-%d') AS Data_Evento,
+      STR_TO_DATE(tdr.VENCIMENTO, '%Y-%m-%d') AS Data_Vencimento,
+      CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
+      tdr.OBSERVACAO AS Descricao,
+      tdr.VALOR_LIQUIDO AS Valor_Liquido,
+      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
+      tcpdc.DESCRICAO AS Class_Plano_de_Contas,
+      CASE 
+        WHEN tdr.FK_Status = 'Provisionado' THEN 'Provisionado'
+        ELSE 'Real'
+      END AS Status
+    FROM T_DESPESA_RAPIDA tdr
+    JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
+    LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
+    LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
+    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
+    LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
+    WHERE tdr.FK_DESPESA_TEKNISA IS NULL
+      AND tdr.COMPETENCIA >= '2024-01-01 00:00:00'
+      AND tdr.VENCIMENTO >= '2024-01-01 00:00:00'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM T_DESPESA_RAPIDA_ITEM tdri
+        WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID);
+''')
+
+@st.cache_data
+def GET_ORCAMENTOS_DESPESAS():
+  return dataframe_query(f'''
+    SELECT
+      to2.ID AS ID_Orcamento,
+      te.NOME_FANTASIA AS Loja,
+      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
+      tcpdc.DESCRICAO AS Class_Plano_de_Contas,
+      to2.VALOR AS Orcamento,
+      cast(date_format(cast(CONCAT(to2.ANO, '-', to2.MES, '-01') AS date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes
+    FROM
+      T_ORCAMENTOS to2 
+    LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON to2.FK_CLASSIFICACAO_2 = tccg2.ID
+    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
+    LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
+    LEFT JOIN T_EMPRESAS te ON to2.FK_EMPRESA = te.ID;
+''')
 
 ############################### CMV ###################################
 

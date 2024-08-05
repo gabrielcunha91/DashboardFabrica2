@@ -1364,3 +1364,15 @@ def GET_COMPENSACOES_ZIG_AGRUPADAS():
     Empresa;
 ''')
 
+
+
+def GET_FATURAMENTO_REAL():
+  return dataframe_query(f'''
+  SELECT
+	  te.NOME_FANTASIA as 'Loja',
+	  tzf.DATA as 'Data',
+	  SUM(tzf.VALOR) as 'Valor_Faturado' 
+	FROM T_ZIG_FATURAMENTO tzf 
+	INNER JOIN T_EMPRESAS te ON (tzf.FK_LOJA = te.ID)
+	GROUP BY te.ID, tzf.DATA
+''')

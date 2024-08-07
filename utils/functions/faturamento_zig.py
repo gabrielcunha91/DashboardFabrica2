@@ -70,6 +70,8 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   # Faz o merge das tabelas
   OrcamentoFaturamento = pd.merge(FaturamZigAgregado, OrcamFaturam, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Categoria'], how='outer')
   OrcamentoFaturamento = OrcamentoFaturamento.dropna(subset=['Categoria'])
+
+  OrcamentoFaturamento['Data_Evento'] = OrcamentoFaturamento['Data_Evento'].fillna(OrcamentoFaturamento['Primeiro_Dia_Mes'])
   OrcamentoFaturamento['Data_Evento'] = pd.to_datetime(OrcamentoFaturamento['Data_Evento'])
   
   
@@ -77,6 +79,7 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
 
   contagem_delivery = OrcamentoFaturamento[OrcamentoFaturamento['Categoria'] == 'Delivery'].shape[0]
+  
 
   # Exclui colunas que não serão usadas na análise, agrupa tuplas de valores de categoria iguais e renomeia as colunas restantes
   OrcamentoFaturamento.drop(['ID_Loja', 'Loja', 'Data_Evento', 'Primeiro_Dia_Mes'], axis=1, inplace=True)

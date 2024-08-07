@@ -46,6 +46,7 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamFaturam = OrcamFaturam[OrcamFaturam['Categoria'].isin(categorias_desejadas)]
   FaturamZigAgregado = FaturamZigAgregado[FaturamZigAgregado['Categoria'].isin(categorias_desejadas)]
 
+
   substituicoesIds = {
     '103': '116',
     '112': '104',
@@ -75,6 +76,8 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   # Agora filtra
   OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
 
+  contagem_delivery = OrcamentoFaturamento[OrcamentoFaturamento['Categoria'] == 'Delivery'].shape[0]
+
   # Exclui colunas que não serão usadas na análise, agrupa tuplas de valores de categoria iguais e renomeia as colunas restantes
   OrcamentoFaturamento.drop(['ID_Loja', 'Loja', 'Data_Evento', 'Primeiro_Dia_Mes'], axis=1, inplace=True)
   OrcamentoFaturamento = OrcamentoFaturamento.groupby('Categoria').agg({
@@ -88,6 +91,10 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   # Conversão de valores para padronização
   cols = ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido']
   OrcamentoFaturamento[cols] = OrcamentoFaturamento[cols].astype(float)
+
+  if 'Delivery' in OrcamentoFaturamento['Categoria'].values:
+    OrcamentoFaturamento.loc[OrcamentoFaturamento['Categoria'] == 'Delivery', 'Orçamento'] /= contagem_delivery
+
 
   # Criação da coluna 'Faturam - Orçamento' e da linha 'Total Geral'
   OrcamentoFaturamento['Faturam - Orçamento'] = OrcamentoFaturamento['Valor Bruto'] - OrcamentoFaturamento['Orçamento']
@@ -107,6 +114,8 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
     'Atingimento %', 'Faturam - Orçamento'], axis=1)
 
   return OrcamentoFaturamento
+
+
 
 
 def top_dez(dataframe, categoria):

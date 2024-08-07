@@ -18,7 +18,7 @@ def config_sidebar():
   permissao, username = config_permissoes_user()
   st.sidebar.header(f"Bem-vindo(a) {username}!")
   if st.session_state['loggedIn']:
-    if 'Administrador' in permissao:
+    if 'Administrador' in permissao or 'Acesso Caixa' in permissao:
       st.sidebar.title("Menu")
       st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento ZIGPAY")
       st.sidebar.page_link("pages/Faturamento_Receitas_Extraordinárias.py", label="Receitas Extraordinárias")

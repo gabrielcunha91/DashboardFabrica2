@@ -49,7 +49,10 @@ dfComparacao = sorted_df.merge(faturamentoReal, on=['Data', 'Loja'], how='left')
 dfComparacao = filtrar_por_datas(dfComparacao, data_inicio, data_fim, 'Data')
 dfComparacao = filtrar_por_classe_selecionada(dfComparacao, 'Loja', lojasSelecionadas)
 dfComparacao.rename(columns = {'Valor_Faturado': 'Valor Faturado'}, inplace=True)
+dfComparacao['Valor Projetado'] = dfComparacao['Valor Projetado'].fillna(0)
+dfComparacao['Valor Faturado'] = dfComparacao['Valor Faturado'].fillna(0)
 dfComparacao['Diferença'] = dfComparacao['Valor Faturado'] - dfComparacao['Valor Projetado']
+
 
 dfComparacao2 = dfComparacao.copy()
 

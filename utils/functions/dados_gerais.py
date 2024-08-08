@@ -80,8 +80,19 @@ def preparar_dados_lojas_user():
     dflojas = dflojas[~dflojas['Loja'].isin(lojasARemover)]
   else:
     dflojas = GET_LOJAS_USER(username)
+
   lojas = dflojas['Loja'].tolist()
+
+  lojasReais = ['Abaru - Priceless', 'Arcos', 'Bar Brahma - Centro', 'Bar Léo - Centro', 'Blue Note - São Paulo', 'Blue Note SP (Novo)',
+                'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares', 'Delivery Jacaré', 'Delivery Orfeu', 'Edificio Rolim', 'Escritório Fabrica de Bares', 
+                'Girondino ', 'Girondino - CCBB', 'Hotel Maraba', 'Jacaré', 'Love Cabaret', 'Notiê - Priceless', 'Orfeu', 'Priceless', 'Riviera Bar', 
+                'Sanduiche comunicação LTDA ', 'Tempus Fugit  Ltda ', 'Ultra Evil Premium Ltda ']
+
+  lojasReaisSet = set(lojasReais)
+  lojas = [loja for loja in lojas if loja in lojasReaisSet]
+
   lojas.sort(key=str.lower)
+
   return lojas
 
 

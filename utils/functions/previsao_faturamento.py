@@ -27,33 +27,20 @@ def criar_parciais(df):
 
 
 def unificar_parciais(df):
-  # Crie uma lista para armazenar os DataFrames intermediários
-  dfs = []
+  dfs = {}
 
-  temp_df_1 = pd.DataFrame({
-    'Empresa': df['Empresa'],
-    'Data_Parcial': df[f'Data_Parcial_{1}'],
-    'Valor_Parcial': df[f'Valor_Parcial_{1}']
-  })
-  temp_df_2 = pd.DataFrame({
-    'Empresa': df['Empresa'],
-    'Data_Parcial': df[f'Data_Parcial_{2}'],
-    'Valor_Parcial': df[f'Valor_Parcial_{2}']
-  })
-  temp_df_3 = pd.DataFrame({
-    'Empresa': df['Empresa'],
-    'Data_Parcial': df[f'Data_Parcial_{3}'],
-    'Valor_Parcial': df[f'Valor_Parcial_{3}']
-  })
-  temp_df_4 = pd.DataFrame({
-    'Empresa': df['Empresa'],
-    'Data_Parcial': df[f'Data_Parcial_{4}'],
-    'Valor_Parcial': df[f'Valor_Parcial_{4}']
-  })
+# Iterar sobre o intervalo e criar DataFrames
+  for i in range(1, 5):
+    dfs[i] = pd.DataFrame({
+        'Empresa': df['Empresa'],
+        'Data_Parcial': df[f'Data_Parcial_{i}'],
+        'Valor_Parcial': df[f'Valor_Parcial_{i}']
+    })
 
-  dfs = [temp_df_1, temp_df_2, temp_df_3, temp_df_4]
+  # Converter o dicionário em uma lista de DataFrames, se necessário
+  dfs_list = [dfs[i] for i in range(1, 5)]
 
   # Concatene todos os DataFrames temporários em um único DataFrame
-  result_df = pd.concat(dfs, ignore_index=True)
+  result_df = pd.concat(dfs_list, ignore_index=True)
 
   return result_df

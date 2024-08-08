@@ -36,10 +36,6 @@ serie_datas_feriados = config_feriados()
 df_faturam_zig = config_faturam_zig_fluxo_caixa(serie_datas_feriados)
 df_faturam_zig_loja = df_faturam_zig[df_faturam_zig['ID_Loja'] == id_loja]
 st.dataframe(df_faturam_zig_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Faturam Zig'):
-  sheet_name_zig = 'df_faturam_zig'
-  export_to_excel(df_faturam_zig_loja, sheet_name_zig, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("Receitas Extraordinárias")
@@ -47,10 +43,6 @@ st.subheader("Receitas Extraordinárias")
 df_receitas_extraord = config_receitas_extraord_fluxo_caixa()
 df_receitas_extraord_loja = df_receitas_extraord[df_receitas_extraord['ID_Loja'] == id_loja]
 st.dataframe(df_receitas_extraord_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Receitas Extraord'):
-  sheet_name_receitas_extraord = 'df_receitas_extraord'
-  export_to_excel(df_receitas_extraord_loja, sheet_name_receitas_extraord, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("View Parcelamentos Agrupados - Receitas Extraord")
@@ -58,10 +50,6 @@ st.subheader("View Parcelamentos Agrupados - Receitas Extraord")
 df_view_parc_agrup = config_view_parc_agrup()
 df_view_parc_loja = df_view_parc_agrup[df_view_parc_agrup['ID_Loja'] == id_loja]
 st.dataframe(df_view_parc_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar View Parcelamentos Receitas Extraord'):
-  sheet_name_view_parc_agrup = 'view_parc_agrup'
-  export_to_excel(df_view_parc_loja, sheet_name_view_parc_agrup, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("Custos BlueMe Sem Parcelamento")
@@ -69,10 +57,6 @@ st.subheader("Custos BlueMe Sem Parcelamento")
 df_custos_blueme_sem_parcelamento = config_custos_blueme_sem_parcelamento()
 df_custos_blueme_sem_parcelamento_loja = df_custos_blueme_sem_parcelamento[df_custos_blueme_sem_parcelamento['ID_Loja'] == id_loja]
 st.dataframe(df_custos_blueme_sem_parcelamento_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Custos BlueMe Sem Parcelamento'):
-  sheet_name_custos_blueme_sem_parcelamento = 'df_blueme_sem_parcelamento'
-  export_to_excel(df_custos_blueme_sem_parcelamento_loja, sheet_name_custos_blueme_sem_parcelamento, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("Custos BlueMe Com Parcelamento")
@@ -80,10 +64,6 @@ st.subheader("Custos BlueMe Com Parcelamento")
 df_custos_blueme_com_parcelamento = config_custos_blueme_com_parcelamento()
 df_custos_blueme_com_parcelamento_loja = df_custos_blueme_com_parcelamento[df_custos_blueme_com_parcelamento['ID_Loja'] == id_loja]
 st.dataframe(df_custos_blueme_com_parcelamento_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Custos BlueMe Com Parcelamento'):
-  sheet_name_custos_blueme_com_parcelamento = 'df_blueme_com_parcelamento'
-  export_to_excel(df_custos_blueme_com_parcelamento_loja, sheet_name_custos_blueme_com_parcelamento, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("Extratos Bancários")
@@ -91,10 +71,6 @@ st.subheader("Extratos Bancários")
 df_extratos = config_extratos()
 df_extratos_loja = df_extratos[df_extratos['ID_Loja'] == id_loja]
 st.dataframe(df_extratos_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Extratos'):
-  sheet_name_extratos = 'df_extratos'
-  export_to_excel(df_extratos_loja, sheet_name_extratos, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("Mutuos")
@@ -102,13 +78,6 @@ st.subheader("Mutuos")
 df_mutuos = config_mutuos()
 df_mutuos_loja = df_mutuos[((df_mutuos['ID_Loja_Saida'] == id_loja) | (df_mutuos['ID_Loja_Entrada'] == id_loja))]
 st.dataframe(df_mutuos_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Mutuos'):
-  df_mutuos_loja['Valor_Entrada'] = df_mutuos_loja.apply(lambda row: row['Valor'] if row['ID_Loja_Entrada'] == id_loja else 0, axis=1)
-  df_mutuos_loja['Valor_Saida'] = df_mutuos_loja.apply(lambda row: row['Valor'] if row['ID_Loja_Saida'] == id_loja else 0, axis=1)
-  df_mutuos_loja = df_mutuos_loja.drop('Valor', axis=1)
-  sheet_name_mutuos = 'df_mutuos'
-  export_to_excel(df_mutuos_loja, sheet_name_mutuos, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
 st.subheader("Tesouraria - Transações")
@@ -116,12 +85,40 @@ st.subheader("Tesouraria - Transações")
 df_tesouraria_trans = config_tesouraria_trans()
 df_tesouraria_trans_loja = df_tesouraria_trans[df_tesouraria_trans['ID_Loja'] == id_loja]
 st.dataframe(df_tesouraria_trans_loja, use_container_width=True, hide_index=True)
-if st.button('Atualizar Tesouraria Transações'):
-  sheet_name_tesouraria = 'df_tesouraria_trans'
-  export_to_excel(df_tesouraria_trans_loja, sheet_name_tesouraria, excel_filename)
-  st.success('Arquivo atualizado com sucesso!')
 
 st.divider()
+
+if st.button('Atualizar Planilha Excel'):
+  sheet_name_zig = 'df_faturam_zig'
+  export_to_excel(df_faturam_zig_loja, sheet_name_zig, excel_filename)
+
+  sheet_name_receitas_extraord = 'df_receitas_extraord'
+  export_to_excel(df_receitas_extraord_loja, sheet_name_receitas_extraord, excel_filename)
+
+  sheet_name_view_parc_agrup = 'view_parc_agrup'
+  export_to_excel(df_view_parc_loja, sheet_name_view_parc_agrup, excel_filename)
+
+  sheet_name_custos_blueme_sem_parcelamento = 'df_blueme_sem_parcelamento'
+  export_to_excel(df_custos_blueme_sem_parcelamento_loja, sheet_name_custos_blueme_sem_parcelamento, excel_filename)
+
+  sheet_name_custos_blueme_com_parcelamento = 'df_blueme_com_parcelamento'
+  export_to_excel(df_custos_blueme_com_parcelamento_loja, sheet_name_custos_blueme_com_parcelamento, excel_filename)
+
+  sheet_name_extratos = 'df_extratos'
+  export_to_excel(df_extratos_loja, sheet_name_extratos, excel_filename)
+
+  df_mutuos_loja['Valor_Entrada'] = df_mutuos_loja.apply(lambda row: row['Valor'] if row['ID_Loja_Entrada'] == id_loja else 0, axis=1)
+  df_mutuos_loja['Valor_Saida'] = df_mutuos_loja.apply(lambda row: row['Valor'] if row['ID_Loja_Saida'] == id_loja else 0, axis=1)
+  df_mutuos_loja = df_mutuos_loja.drop('Valor', axis=1)
+  sheet_name_mutuos = 'df_mutuos'
+  export_to_excel(df_mutuos_loja, sheet_name_mutuos, excel_filename)
+
+  sheet_name_tesouraria = 'df_tesouraria_trans'
+  export_to_excel(df_tesouraria_trans_loja, sheet_name_tesouraria, excel_filename)
+  
+  st.success('Arquivo atualizado com sucesso!')
+
+
 
 
 if st.button('Baixar Excel'):

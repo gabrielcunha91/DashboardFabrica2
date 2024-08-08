@@ -56,8 +56,9 @@ dfComparacao2 = dfComparacao.copy()
 dfComparacaoAgg = dfComparacao.groupby('Loja').agg({
   'Valor Projetado': 'sum',
   'Valor Faturado': 'sum',
-  'Diferença': 'sum'
 }).reset_index()
+dfComparacaoAgg['Diferença'] = dfComparacaoAgg['Valor Faturado'] - dfComparacaoAgg['Valor Projetado']
+
 
 dfComparacao = format_date_brazilian(dfComparacao, 'Data')
 dfComparacao = format_columns_brazilian(dfComparacao, ['Valor Projetado', 'Valor Faturado', 'Diferença'])

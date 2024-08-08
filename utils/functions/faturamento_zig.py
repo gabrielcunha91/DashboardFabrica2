@@ -72,6 +72,7 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamentoFaturamento = OrcamentoFaturamento.dropna(subset=['Categoria'])
 
   OrcamentoFaturamento['Data_Evento'] = OrcamentoFaturamento['Data_Evento'].fillna(OrcamentoFaturamento['Primeiro_Dia_Mes'])
+  
   OrcamentoFaturamento['Data_Evento'] = pd.to_datetime(OrcamentoFaturamento['Data_Evento'])
   
   

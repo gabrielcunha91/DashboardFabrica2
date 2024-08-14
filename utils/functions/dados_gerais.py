@@ -93,6 +93,17 @@ def preparar_dados_lojas_user():
 
   lojas.sort(key=str.lower)
 
+  # Verificar se ambas as lojas estão na lista
+  if 'Abaru - Priceless' in lojas and 'Notiê - Priceless' in lojas:
+    # Remover a 'loja 1' da lista
+    lojas.remove('Abaru - Priceless')
+    
+    # Encontrar o índice da 'loja 3' para inserir a 'loja 1' logo após
+    indice_loja_alvo = lojas.index('Notiê - Priceless')
+    
+    # Inserir a 'loja 1' após a 'loja 3'
+    lojas.insert(indice_loja_alvo + 1, 'Abaru - Priceless')
+
   return lojas
 
 

@@ -34,7 +34,7 @@ sorted_df = grouped_df.sort_values(by=['Data_Parcial', 'Empresa'])
 
 lojasComDados = preparar_dados_lojas_user()
 data_inicio_default = datetime.today() - timedelta(days=7)
-data_fim_default = datetime.today()
+data_fim_default = datetime.today() - timedelta(days=1)
 lojasSelecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
 st.divider()
 

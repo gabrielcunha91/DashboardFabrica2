@@ -21,9 +21,9 @@ st.title('PREVISÃO DE FATURAMENTO')
 config_sidebar()
 st.divider()
 
-dfCompensacoes = GET_COMPENSACOES_ZIG_AGRUPADAS()
-dfCompensacoes['Data_Compensacao'] = pd.to_datetime(dfCompensacoes['Data_Compensacao'])
-df_parciais = criar_parciais(dfCompensacoes)
+dfPrevisoes = GET_PREVISOES_ZIG_AGRUPADAS()
+dfPrevisoes['Data'] = pd.to_datetime(dfPrevisoes['Data'])
+df_parciais = criar_parciais(dfPrevisoes)
 df_parciais = df_parciais.loc[:,~df_parciais.columns.duplicated()]
 df_unificado = unificar_parciais(df_parciais)
 
@@ -35,7 +35,7 @@ sorted_df = grouped_df.sort_values(by=['Data_Parcial', 'Empresa'])
 
 lojasComDados = preparar_dados_lojas_user()
 data_inicio_default = datetime.today() - timedelta(days=7)
-data_fim_default = datetime.today() + timedelta(days=7)
+data_fim_default = datetime.today()
 lojasSelecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
 st.divider()
 

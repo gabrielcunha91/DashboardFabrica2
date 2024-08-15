@@ -28,7 +28,6 @@ df_parciais = df_parciais.loc[:,~df_parciais.columns.duplicated()]
 df_unificado = unificar_parciais(df_parciais)
 
 
-
 # Filtre os dados com base no intervalo de datas
 grouped_df = df_unificado.groupby(['Data_Parcial', 'Empresa'], as_index=False).agg({'Valor_Parcial': 'sum'})
 sorted_df = grouped_df.sort_values(by=['Data_Parcial', 'Empresa'])

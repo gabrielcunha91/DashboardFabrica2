@@ -14,8 +14,8 @@ def criar_parciais(df):
   df_parciais = pd.DataFrame()
   for i in range(1, 5):
     parcial = df.copy()
-    parcial['Data_Parcial'] = parcial['Data_Compensacao'] + pd.DateOffset(days=7 * i)
-    parcial['Valor_Parcial'] = (parcial['Valor_Compensado'] / 4).round(2)
+    parcial['Data_Parcial'] = parcial['Data'] + pd.DateOffset(days=7 * i)
+    parcial['Valor_Parcial'] = (parcial['Valor'] / 4).round(2)
     parcial = parcial.rename(columns={'Data_Parcial': f'Data_Parcial_{i}', 'Valor_Parcial': f'Valor_Parcial_{i}'})
     df_parciais = pd.concat([df_parciais, parcial[['Empresa', f'Data_Parcial_{i}', f'Valor_Parcial_{i}']]], axis=1)
 

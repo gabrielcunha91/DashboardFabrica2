@@ -1252,6 +1252,7 @@ AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RESGATE INVEST FACIL%'
 AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLICACAO CONTAMAX%'
 AND teb.DESCRICAO_TRANSACAO NOT LIKE '%Pix Enviado-Conta Transacional%'
 AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RESGATE CONTAMAX AUTOMATICO%'
+AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLIC.INVEST FACIL%'
 ORDER BY teb.DATA_TRANSACAO DESC
 ''')
 
@@ -1337,26 +1338,48 @@ def GET_DESPESAS_PENDENTES(data):
 ###########################  Previsão Faturamento  #############################
 
 
-def GET_COMPENSACOES_ZIG_AGRUPADAS():
+# def GET_COMPENSACOES_ZIG_AGRUPADAS():
+#   return dataframe_query(f'''
+#   SELECT
+#     te.NOME_FANTASIA AS Empresa,
+#     tzf.DATA AS Data,
+#     tzf.VALOR AS Valor,
+#     CASE
+#       WHEN DAYOFWEEK(tzf.DATA) = 6 THEN tzf.DATA + INTERVAL 3 DAY
+#       WHEN DAYOFWEEK(tzf.DATA) = 7 THEN tzf.DATA + INTERVAL 2 DAY
+#       ELSE tzf.DATA + INTERVAL 1 DAY
+#     END AS Data_Compensacao,
+#     SUM(
+#       ROUND(
+#         CASE
+#           WHEN tzf.TIPO_PAGAMENTO = 'CRÉDITO' THEN tzf.VALOR * 0.9735
+#           WHEN tzf.TIPO_PAGAMENTO = 'DÉBITO' THEN tzf.VALOR * 0.9905
+#           WHEN tzf.TIPO_PAGAMENTO = 'APP' THEN tzf.VALOR * 0.965
+#           ELSE tzf.VALOR
+#         END,
+#         2
+#       )
+#     ) AS Valor_Compensado
+#   FROM
+#     T_ZIG_FATURAMENTO tzf
+#     LEFT JOIN T_EMPRESAS te ON tzf.FK_LOJA = te.ID
+#   WHERE
+#     tzf.DATA >= '2023-08-01 00:00:00'
+#     AND tzf.VALOR > 0
+#   GROUP BY
+#     Data_Compensacao,
+#     Empresa
+#   ORDER BY
+#     Data_Compensacao,
+#     Empresa;
+# ''')
+
+def GET_PREVISOES_ZIG_AGRUPADAS():
   return dataframe_query(f'''
   SELECT
     te.NOME_FANTASIA AS Empresa,
-    CASE
-      WHEN DAYOFWEEK(tzf.DATA) = 6 THEN tzf.DATA + INTERVAL 3 DAY
-      WHEN DAYOFWEEK(tzf.DATA) = 7 THEN tzf.DATA + INTERVAL 2 DAY
-      ELSE tzf.DATA + INTERVAL 1 DAY
-    END AS Data_Compensacao,
-    SUM(
-      ROUND(
-        CASE
-          WHEN tzf.TIPO_PAGAMENTO = 'CRÉDITO' THEN tzf.VALOR * 0.9735
-          WHEN tzf.TIPO_PAGAMENTO = 'DÉBITO' THEN tzf.VALOR * 0.9905
-          WHEN tzf.TIPO_PAGAMENTO = 'APP' THEN tzf.VALOR * 0.965
-          ELSE tzf.VALOR
-        END,
-        2
-      )
-    ) AS Valor_Compensado
+    tzf.DATA AS Data,
+    tzf.VALOR AS Valor
   FROM
     T_ZIG_FATURAMENTO tzf
     LEFT JOIN T_EMPRESAS te ON tzf.FK_LOJA = te.ID
@@ -1364,10 +1387,10 @@ def GET_COMPENSACOES_ZIG_AGRUPADAS():
     tzf.DATA >= '2023-08-01 00:00:00'
     AND tzf.VALOR > 0
   GROUP BY
-    Data_Compensacao,
+    Data,
     Empresa
   ORDER BY
-    Data_Compensacao,
+    Data,
     Empresa;
 ''')
 

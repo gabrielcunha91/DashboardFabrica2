@@ -46,6 +46,7 @@ sorted_df['Data'] = pd.to_datetime(sorted_df['Data'])
 
 dfComparacao = sorted_df.merge(faturamentoReal, on=['Data', 'Loja'], how='left')
 dfComparacao = filtrar_por_datas(dfComparacao, data_inicio, data_fim, 'Data')
+dfComparacao = dfComparacao[dfComparacao['Loja'] != 'Piratininga']
 dfComparacao = filtrar_por_classe_selecionada(dfComparacao, 'Loja', lojasSelecionadas)
 dfComparacao.rename(columns = {'Valor_Faturado': 'Valor Faturado'}, inplace=True)
 dfComparacao['Valor Projetado'] = dfComparacao['Valor Projetado'].fillna(0)

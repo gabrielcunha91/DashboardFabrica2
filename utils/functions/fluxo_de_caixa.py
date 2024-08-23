@@ -419,6 +419,12 @@ def config_tesouraria_trans():
   df_tesouraria_trans['Valor'] = df_tesouraria_trans['Valor'].astype(float).round(2)
   return df_tesouraria_trans
 
+def config_ajustes_conciliacao():
+  df_ajustes_conciliacao = GET_AJUSTES_CONCILIACAO()
+  df_ajustes_conciliacao['Data Ajuste'] = df_ajustes_conciliacao['Data Ajuste'].dt.date
+  df_ajustes_conciliacao['Valor'] = df_ajustes_conciliacao['Valor'].astype(float).round(2)
+  return df_ajustes_conciliacao
+
 def somar_total(df):
   colunas_numericas = df.select_dtypes(include=[int, float]).columns
   soma_colunas = df[colunas_numericas].sum().to_frame().T

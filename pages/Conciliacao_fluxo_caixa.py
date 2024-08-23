@@ -88,6 +88,15 @@ st.dataframe(df_tesouraria_trans_loja, use_container_width=True, hide_index=True
 
 st.divider()
 
+st.subheader("Ajustes de Conciliação")
+
+df_ajustes_conciliacao = config_ajustes_conciliacao()
+df_ajustes_conciliacao_loja = df_ajustes_conciliacao[df_ajustes_conciliacao['ID_Loja'] == id_loja]
+st.dataframe(df_ajustes_conciliacao_loja, use_container_width=True, hide_index=True)
+
+st.divider()
+
+
 if st.button('Atualizar Planilha Excel'):
   sheet_name_zig = 'df_faturam_zig'
   export_to_excel(df_faturam_zig_loja, sheet_name_zig, excel_filename)
@@ -115,6 +124,9 @@ if st.button('Atualizar Planilha Excel'):
 
   sheet_name_tesouraria = 'df_tesouraria_trans'
   export_to_excel(df_tesouraria_trans_loja, sheet_name_tesouraria, excel_filename)
+
+  sheet_name_ajustes_conciliacao = 'df_ajustes_conciliaco'
+  export_to_excel(df_ajustes_conciliacao_loja, sheet_name_ajustes_conciliacao, excel_filename)
   
   st.success('Arquivo atualizado com sucesso!')
 

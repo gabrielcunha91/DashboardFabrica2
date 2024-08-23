@@ -94,32 +94,7 @@ def GET_LOJAS():
 
 ######## Faturamento zig #########
 
-# @st.cache_data
-# def GET_FATURAM_ZIG_AGREGADO():
-#   return dataframe_query(f''' 
-#   SELECT
-#     tl.ID AS ID_Loja,
-#     tl.NOME AS Loja,
-#     tfza.CATEGORIA AS Categoria,
-#     cast(tfza.DATA_EVENTO as date) AS Data_Evento,
-#     cast(date_format(cast(tfza.DATA_EVENTO as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
-#     concat(year(cast(tfza.DATA_EVENTO as date)), '-', month(cast(tfza.DATA_EVENTO as date))) AS Ano_Mes,
-#     sum(tfza.VALOR_TRANSACAO_BRUTO) AS Valor_Bruto,
-#     sum(tfza.DESCONTO) AS Desconto,
-#     sum(tfza.VALOR_TRANSACAO_LIQUIDO) AS Valor_Liquido
-#   FROM
-#     T_FATURAMENTO_ZIG_AGREGADO tfza
-#   JOIN 
-#     T_LOJAS tl ON tfza.ID_LOJA = tl.ID
-#   GROUP BY
-#     tfza.ID_LOJA,
-#     Categoria,
-#     Primeiro_Dia_Mes
-#   ORDER BY
-#     Primeiro_Dia_Mes,
-#     Loja,
-#     Categoria;
-#   ''')
+
 
 # @st.cache_data
 # def GET_FATURAM_ZIG_AGREGADO():
@@ -127,7 +102,10 @@ def GET_LOJAS():
 #   SELECT
 #     te.ID AS ID_Loja,
 #     te.NOME_FANTASIA AS Loja,
-#     tfza.CATEGORIA AS Categoria,
+#     CASE 
+#       WHEN te.ID IN (103, 112, 118, 139) THEN 'Delivery'
+#       ELSE tfza.CATEGORIA 
+#     END AS Categoria,
 #     cast(tfza.DATA_EVENTO as date) AS Data_Evento,
 #     cast(date_format(cast(tfza.DATA_EVENTO as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
 #     concat(year(cast(tfza.DATA_EVENTO as date)), '-', month(cast(tfza.DATA_EVENTO as date))) AS Ano_Mes,
@@ -157,27 +135,27 @@ def GET_FATURAM_ZIG_AGREGADO():
     te.NOME_FANTASIA AS Loja,
     CASE 
       WHEN te.ID IN (103, 112, 118, 139) THEN 'Delivery'
-      ELSE tfza.CATEGORIA 
+      ELSE tivc2.DESCRICAO 
     END AS Categoria,
-    cast(tfza.DATA_EVENTO as date) AS Data_Evento,
-    cast(date_format(cast(tfza.DATA_EVENTO as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
-    concat(year(cast(tfza.DATA_EVENTO as date)), '-', month(cast(tfza.DATA_EVENTO as date))) AS Ano_Mes,
-    sum(tfza.VALOR_TRANSACAO_BRUTO) AS Valor_Bruto,
-    sum(tfza.DESCONTO) AS Desconto,
-    sum(tfza.VALOR_TRANSACAO_LIQUIDO) AS Valor_Liquido
-  FROM
-    T_FATURAMENTO_ZIG_AGREGADO tfza
-  JOIN 
-    T_EMPRESAS te ON tfza.ID_LOJA = te.ID 
-  GROUP BY
-    tfza.ID_LOJA,
+    cast(date_format(cast(tiv.EVENT_DATE as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
+    concat(year(cast(tiv.EVENT_DATE as date)), '-', month(cast(tiv.EVENT_DATE as date))) AS Ano_Mes,
+    cast(tiv.EVENT_DATE as date) AS Data_Evento,
+    SUM((tiv.UNIT_VALUE * tiv.COUNT)) AS Valor_Bruto,
+    SUM(tiv.DISCOUNT_VALUE) AS Desconto,
+    SUM((tiv.UNIT_VALUE * tiv.COUNT) - tiv.DISCOUNT_VALUE) AS Valor_Liquido
+  FROM T_ITENS_VENDIDOS tiv
+  LEFT JOIN T_ITENS_VENDIDOS_CADASTROS tivc ON tiv.PRODUCT_ID = tivc.ID_ZIGPAY
+  LEFT JOIN T_ITENS_VENDIDOS_CATEGORIAS tivc2 ON tivc.FK_CATEGORIA = tivc2.ID
+  LEFT JOIN T_ITENS_VENDIDOS_TIPOS tivt ON tivc.FK_TIPO = tivt.ID
+  LEFT JOIN T_EMPRESAS te ON tiv.LOJA_ID = te.ID_ZIGPAY
+  GROUP BY 
+    ID_Loja,
     Categoria,
-    Primeiro_Dia_Mes
-  ORDER BY
-    Primeiro_Dia_Mes,
-    Loja,
-    Categoria;
+    Primeiro_Dia_Mes;
 ''')  
+
+
+
 
 @st.cache_data
 def GET_ORCAM_FATURAM():
@@ -657,6 +635,39 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_coM_PEDIDO():
 # ''')
 
 
+# @st.cache_data
+# def GET_TRANSF_ESTOQUE_AGRUPADOS():
+#   return dataframe_query(f'''
+#   SELECT
+#     vte.ID_Loja,
+#     vte.Loja,
+#     vte.Primeiro_Dia_Mes,
+#     SUM(vte.Entrada_Transf_Alim) AS Entrada_Transf_Alim,
+#     SUM(vte.Saida_Transf_Alim) AS Saida_Transf_Alim,
+#     SUM(vte.Entrada_Transf_Bebidas) AS Entrada_Transf_Bebidas,
+#     SUM(vte.Saida_Transf_Bebidas) AS Saida_Transf_Bebidas
+#   FROM (
+#     SELECT
+#       tte.ID AS ID_Transf,
+#       tl.ID AS ID_Loja,
+#       tl.NOME AS Loja,
+#       tte.DATA_TRANSFERENCIA AS Data_Transf,
+#       tte.ENTRADA_TRANSF_ALIMENTOS AS Entrada_Transf_Alim,
+#       tte.SAIDA_TRANSF_ALIMENTOS AS Saida_Transf_Alim,
+#       tte.ENTRADA_TRANSF_BEBIDAS AS Entrada_Transf_Bebidas,
+#       tte.SAIDA_TRANSF_BEBIDAS AS Saida_Transf_Bebidas,
+#       CAST(DATE_FORMAT(CAST(tte.DATA_TRANSFERENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
+#     FROM
+#       T_TRANSFERENCIAS_ESTOQUE tte
+#     JOIN T_LOJAS tl ON tte.FK_LOJA = tl.ID
+#   ) vte
+#   GROUP BY
+#     vte.ID_Loja,
+#     vte.Primeiro_Dia_Mes
+#   ORDER BY
+#     vte.ID_Loja;
+# ''')
+
 @st.cache_data
 def GET_TRANSF_ESTOQUE_AGRUPADOS():
   return dataframe_query(f'''
@@ -672,7 +683,7 @@ def GET_TRANSF_ESTOQUE_AGRUPADOS():
     SELECT
       tte.ID AS ID_Transf,
       tl.ID AS ID_Loja,
-      tl.NOME AS Loja,
+      tl.NOME_FANTASIA AS Loja,
       tte.DATA_TRANSFERENCIA AS Data_Transf,
       tte.ENTRADA_TRANSF_ALIMENTOS AS Entrada_Transf_Alim,
       tte.SAIDA_TRANSF_ALIMENTOS AS Saida_Transf_Alim,
@@ -681,7 +692,7 @@ def GET_TRANSF_ESTOQUE_AGRUPADOS():
       CAST(DATE_FORMAT(CAST(tte.DATA_TRANSFERENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
     FROM
       T_TRANSFERENCIAS_ESTOQUE tte
-    JOIN T_LOJAS tl ON tte.FK_LOJA = tl.ID
+    JOIN T_EMPRESAS tl ON tte.FK_LOJA = tl.ID
   ) vte
   GROUP BY
     vte.ID_Loja,
@@ -691,36 +702,6 @@ def GET_TRANSF_ESTOQUE_AGRUPADOS():
 ''')
 
 
-### Com t empresas:
-  # SELECT
-  #   vte.ID_Loja,
-  #   vte.Loja,
-  #   vte.Primeiro_Dia_Mes,
-  #   SUM(vte.Entrada_Transf_Alim) AS Entrada_Transf_Alim,
-  #   SUM(vte.Saida_Transf_Alim) AS Saida_Transf_Alim,
-  #   SUM(vte.Entrada_Transf_Bebidas) AS Entrada_Transf_Bebidas,
-  #   SUM(vte.Saida_Transf_Bebidas) AS Saida_Transf_Bebidas
-  # FROM (
-  #   SELECT
-  #     tte.ID AS ID_Transf,
-  #     tl.ID AS ID_Loja,
-  #     tl.NOME_FANTASIA AS Loja,
-  #     tte.DATA_TRANSFERENCIA AS Data_Transf,
-  #     tte.ENTRADA_TRANSF_ALIMENTOS AS Entrada_Transf_Alim,
-  #     tte.SAIDA_TRANSF_ALIMENTOS AS Saida_Transf_Alim,
-  #     tte.ENTRADA_TRANSF_BEBIDAS AS Entrada_Transf_Bebidas,
-  #     tte.SAIDA_TRANSF_BEBIDAS AS Saida_Transf_Bebidas,
-  #     CAST(DATE_FORMAT(CAST(tte.DATA_TRANSFERENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
-  #   FROM
-  #     T_TRANSFERENCIAS_ESTOQUE tte
-  #   JOIN T_EMPRESAS tl ON tte.FK_LOJA = tl.ID
-  # ) vte
-  # GROUP BY
-  #   vte.ID_Loja,
-  #   vte.Primeiro_Dia_Mes
-  # ORDER BY
-  #   vte.ID_Loja;
-
 
 @st.cache_data
 def GET_PERDAS_E_CONSUMO_AGRUPADOS():
@@ -729,7 +710,7 @@ def GET_PERDAS_E_CONSUMO_AGRUPADOS():
     SELECT
       tpecc.ID AS Perdas_ID,
       tl.ID AS ID_Loja,
-      tl.NOME AS Loja,
+      tl.NOME_FANTASIA AS Loja,
       tpecc.DATA_BAIXA AS Data_Baixa,        
       CASE
         WHEN tpecc.FK_MOTIVO = 106 THEN tpecc.VALOR
@@ -742,7 +723,7 @@ def GET_PERDAS_E_CONSUMO_AGRUPADOS():
       CAST(DATE_FORMAT(CAST(tpecc.DATA_BAIXA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
     FROM
       T_PERDAS_E_CONSUMO_CONSOLIDADOS tpecc
-    JOIN T_LOJAS tl ON tpecc.FK_LOJA = tl.ID
+    JOIN T_EMPRESAS tl ON tpecc.FK_LOJA = tl.ID
   )
   SELECT
     vpec.ID_Loja,
@@ -980,7 +961,6 @@ ORDER BY tc.DATA ASC;
 ''')
 
 def GET_PROJECAO_ZIG():
-  # Mudei a view fonte pra unir a t zig faturamento ao t empresas, mas precisa mudar a tabela!!
   return dataframe_query(f'''
 SELECT * FROM View_Projecao_Zig_Agrupadas
 WHERE `Data` >= CURDATE() 
@@ -990,7 +970,6 @@ ORDER BY `Data` ASC
 ''')
 
 def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
-  # Mudei sem problemas, já unia a t empresas
   return dataframe_query(f'''
 SELECT * FROM View_Previsao_Receitas_Extraord
 WHERE `Data` >= CURDATE() 
@@ -1000,7 +979,6 @@ ORDER BY `Data` ASC
 ''')
 
 def GET_DESPESAS_APROVADAS():
-  #mudei p t empresas na view
   return dataframe_query(f'''
 SELECT
 vvap.Empresa as 'Empresa',
@@ -1015,7 +993,6 @@ ORDER BY `Data` ASC
 ''')
 
 def GET_DESPESAS_PAGAS():
-  # Feito
   return dataframe_query(f'''
 SELECT
 vvap.Empresa as 'Empresa',
@@ -1030,7 +1007,6 @@ ORDER BY `Data` ASC
 ''')
 
 def GET_FATURAMENTO_ZIG_FLUXO_CAIXA():
-  # mudei pra t empresas mas a t zig faturamento deve ser mudada pra query dar certo
   return dataframe_query(f'''
 SELECT
 tzf.ID AS 'tzf_ID',
@@ -1285,6 +1261,18 @@ ttt.DESCRICAO as 'Descricao'
 FROM T_TESOURARIA_TRANSACOES ttt 
 INNER JOIN T_EMPRESAS te ON (ttt.FK_LOJA = te.ID)   
 ''')
+
+
+def GET_AJUSTES_CONCILIACAO():
+  return dataframe_query(f'''
+  SELECT 
+	  tac.FK_EMPRESA AS 'ID_Loja',
+	  tac.DATA_AJUSTE AS 'Data Ajuste',
+	  tac.VALOR AS 'Valor',
+	  tac.DESCRICAO AS 'Descrição'
+  FROM T_AJUSTES_CONCILIACAO tac
+''')
+
 
 
 def GET_DESPESAS_PENDENTES(data):

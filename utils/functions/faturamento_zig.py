@@ -190,3 +190,72 @@ def top_dez(dataframe, categoria):
 
 
   return topDez
+
+
+
+def vendas_agrupadas(dataframe):
+  # Agrupar por ID Produto
+  agrupado = dataframe.groupby(['ID Produto', 'Nome Produto', 'Loja']).agg({
+    'Preço Unitário': 'mean',
+    'Quantia comprada': 'sum',
+    'Valor Bruto Venda': 'sum',
+    'Desconto': 'sum',
+    'Valor Líquido Venda': 'sum'
+  }).reset_index()
+
+  # Ordenar por Valor Líquido Venda em ordem decrescente
+  AgrupadoSorted = agrupado.sort_values(by='Valor Líquido Venda', ascending=False).reset_index(drop=True)
+
+  AgrupadoSorted['Valor Líquido Venda'] = AgrupadoSorted['Valor Líquido Venda'].astype(float)
+  AgrupadoSorted['Valor Bruto Venda'] = AgrupadoSorted['Valor Bruto Venda'].astype(float)
+  # max_valor_liq_venda = topDez['Valor Líquido Venda'].max()
+  # max_valor_bru_venda = topDez['Valor Bruto Venda'].max()
+
+  valor_total_bruto = AgrupadoSorted['Valor Bruto Venda'].sum()
+  valor_total_liq = AgrupadoSorted['Valor Líquido Venda'].sum()
+  
+  AgrupadoSorted['% do Valor Líquido Total'] = (AgrupadoSorted['Valor Líquido Venda']/valor_total_liq) * 100
+  AgrupadoSorted['% do Valor Bruto Total'] = (AgrupadoSorted['Valor Bruto Venda']/valor_total_bruto) * 100
+
+  # topDez['Comparação Valor Líq.'] = topDez['Valor Líquido Venda']
+  # topDez['Comparação Valor Bruto'] = topDez['Valor Bruto Venda']
+
+  # Aplicar a formatação brasileira nas colunas
+  colunas = ['Valor Líquido Venda', 'Valor Bruto Venda']
+  AgrupadoSorted = format_columns_brazilian(AgrupadoSorted, colunas)
+  
+  AgrupadoSorted = format_columns_brazilian(AgrupadoSorted, ['Preço Unitário', 'Desconto'])
+  AgrupadoSorted['Quantia comprada'] = AgrupadoSorted['Quantia comprada'].apply(lambda x: str(x))
+
+  # Reordenar as colunas
+  colunas_ordenadas = [
+    'Nome Produto', 'Preço Unitário', 'Quantia comprada', '% do Valor Bruto Total', 
+    'Valor Bruto Venda', 'Desconto', '% do Valor Líquido Total', 'Valor Líquido Venda'
+  ]
+  AgrupadoSorted = AgrupadoSorted.reindex(columns=colunas_ordenadas)
+
+  st.data_editor(
+    AgrupadoSorted,
+    width=1080,
+    column_config={
+      "% do Valor Líquido Total": st.column_config.ProgressColumn(
+        "% do Valor Líquido Total",
+        help="O Valor Líquido da Venda do produto em porcentagem",
+        format="%.2f%%",
+        min_value=0,
+        max_value=100,
+    ),
+      "% do Valor Bruto Total": st.column_config.ProgressColumn(
+        "% do Valor Bruto Total",
+        help="O Valor Bruto da Venda do produto em porcentagem",
+        format="%.2f%%",
+        min_value=0,
+        max_value=100,
+      ),
+    },
+    disabled=True,
+    hide_index=True,
+  )
+
+
+  return AgrupadoSorted

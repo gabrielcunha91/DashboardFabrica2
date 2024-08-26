@@ -51,6 +51,18 @@ def main():
       Grafico_Donut(OrcamentoFaturamento)
   
   FaturamentoZig = config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim)
+  classificacoes = preparar_dados_classe_selecionada(FaturamentoZig, 'Tipo')
+
+  with st.container(border=True):
+    col0, col1, col2 = st.columns([1, 10, 1])
+    with col1:
+      col3, col4 = st.columns([6, 3])
+      with col3:
+        st.subheader("Vendas de Produtos por Categoria:")
+      with col4:
+        classificacoes_selecionadas = st.multiselect(label='Selecione Classificações', options=classificacoes)
+        FaturamentoZigClasse = filtrar_por_classe_selecionada(FaturamentoZig, 'Tipo', classificacoes_selecionadas)
+      FaturamentoZigClasse = vendas_agrupadas(FaturamentoZigClasse)
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])

@@ -55,22 +55,21 @@ with st.container(border=True):
   st.subheader('Despesas do dia')
   lojasComDados = preparar_dados_lojas_user()
   col1, col2, col3 = st.columns([5, 2, 3])
-
   # Adiciona seletores
   with col1:
     lojasSelecionadas = st.multiselect(label='Selecione Lojas', options=lojasComDados, key='lojas_multiselect')
   with col2:
-    checkbox = st.checkbox(label='Adicionar lojas agrupadas')
+    checkbox = st.checkbox(label='Adicionar lojas agrupadas', key='checkbox_lojas_despesas')
     if checkbox:
       lojasAgrupadas = [
             'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
             'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
             'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu',
-            'Riviera Bar', 'Tempus', 'Escritorio Fabrica de Bares', 'Priceless'
+            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless'
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
-    checkbox2 = st.checkbox(label='Apenas Pendentes')
-    checkbox3 = st.checkbox(label='Apenas Pagas')
+    checkbox2 = st.checkbox(label='Apenas Pendentes', key='checkbox_despesas_pendentes')
+    checkbox3 = st.checkbox(label='Apenas Pagas', key='checkbox_despesas_pagas')
   with col3:
     dataSelecionada = st.date_input('Data de Início', value=datetime.today(), key='data_inicio_input', format="DD/MM/YYYY")
 
@@ -85,3 +84,33 @@ with st.container(border=True):
   valorTotal = format_brazilian(valorTotal)
   df = format_columns_brazilian(df, ['Valor'])
   st.write('Valor total das despesas selecionadas = R$', valorTotal)
+
+
+
+with st.container(border=True):
+  st.subheader('Receitas extraordinárias do dia')
+  lojasComDados = preparar_dados_lojas_user()
+  col1, col2, col3 = st.columns([5, 2, 3])
+  with col1:
+    lojasSelecionadas2 = st.multiselect(label='Selecione Lojas', options=lojasComDados, key='lojas_multiselect2')
+  with col2:
+    checkboxLojas = st.checkbox(label='Adicionar lojas agrupadas', key='checkbox_lojas_extraord')
+    if checkboxLojas:
+      lojasAgrupadas = [
+            'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
+            'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
+            'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu',
+            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless'
+      ]
+      lojasSelecionadas2.extend(lojasAgrupadas)
+  with col3:
+    dataSelecionada2 = st.date_input('Selecione uma Data', value=datetime.today(), key='data_inicio_input2', format="DD/MM/YYYY")
+
+  dataSelecionada2 = pd.to_datetime(dataSelecionada2)
+  df = GET_RECEITAS_EXTRAORD_DO_DIA(dataSelecionada2)
+  df = filtrar_por_classe_selecionada(df, 'Empresa', lojasSelecionadas2)
+  st.dataframe(df, use_container_width=True, hide_index=True)
+  valorTotal = df['VALOR_PARCELA'].sum()
+  valorTotal = format_brazilian(valorTotal)
+  df = format_columns_brazilian(df, ['VALOR_PARCELA'])
+  st.write('Valor total das receitas extraordinárias selecionadas = R$', valorTotal)

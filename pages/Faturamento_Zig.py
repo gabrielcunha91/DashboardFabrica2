@@ -49,8 +49,19 @@ def main():
     with col2:
       st.subheader("Valores Líquidos:")
       Grafico_Donut(OrcamentoFaturamento)
-  
+
   FaturamentoZig = config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim)
+
+
+  with st.container(border=True):
+    col0, col1, col2 = st.columns([1, 10, 1])
+    with col1:
+      col3, col4 = st.columns([6, 3])
+      with col3:
+        st.subheader("Faturamento por Categoria:")
+      FaturamentoZigClasse = vendas_agrupadas_por_tipo(FaturamentoZig)
+
+
   classificacoes = preparar_dados_classe_selecionada(FaturamentoZig, 'Tipo')
 
   with st.container(border=True):

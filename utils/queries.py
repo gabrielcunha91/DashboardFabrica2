@@ -969,14 +969,57 @@ AND Empresa IS NOT NULL
 ORDER BY `Data` ASC
 ''')
 
+# def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
+#   return dataframe_query(f'''
+# SELECT * FROM View_Previsao_Receitas_Extraord
+# WHERE `Data` >= CURDATE() 
+# AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+# AND Empresa IS NOT NULL
+# ORDER BY `Data` ASC
+# ''')
+
 def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
   return dataframe_query(f'''
-SELECT * FROM View_Previsao_Receitas_Extraord
-WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
-AND Empresa IS NOT NULL
-ORDER BY `Data` ASC
+  SELECT
+    tc.DATA AS Data,
+    te.NOME_FANTASIA AS Empresa,
+    SUM(vpa.VALOR_PARCELA) AS Receita_Projetada_Extraord
+  FROM
+    T_CALENDARIO tc
+  LEFT JOIN View_Parcelas_Agrupadas vpa ON tc.DATA = vpa.DATA_VENCIMENTO
+  LEFT JOIN T_EMPRESAS te ON vpa.FK_EMPRESA = te.ID
+  WHERE
+    vpa.DATA_VENCIMENTO IS NOT NULL
+    AND vpa.DATA_RECEBIMENTO IS NULL
+    AND Data >= CURDATE() 
+    AND Data < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+    AND te.NOME_FANTASIA IS NOT NULL
+  GROUP BY
+    te.NOME_FANTASIA,
+    vpa.DATA_VENCIMENTO
+  ORDER BY
+    te.NOME_FANTASIA,
+    vpa.DATA_VENCIMENTO,
+    Data ASC;
 ''')
+
+
+def GET_RECEITAS_EXTRAORD_DO_DIA(data):
+  return dataframe_query(f'''
+  SELECT 
+    vpa.ID AS ID_Receita,
+    te.NOME_FANTASIA AS Empresa,
+    vpa.FK_CLIENTE AS ID_Cliente,
+    vpa.DATA_VENCIMENTO,
+    vpa.VALOR_PARCELA
+  FROM View_Parcelas_Agrupadas vpa
+  LEFT JOIN T_EMPRESAS te ON vpa.FK_EMPRESA = te.ID
+  WHERE
+    vpa.DATA_VENCIMENTO = '{data}'
+    AND vpa.DATA_RECEBIMENTO IS NULL 
+    AND te.NOME_FANTASIA IS NOT NULL;
+''')
+
 
 def GET_DESPESAS_APROVADAS():
   return dataframe_query(f'''
@@ -1097,6 +1140,51 @@ WHERE vpa.DATA_VENCIMENTO IS NOT NULL
 ORDER BY vpa.DATA_RECEBIMENTO DESC;
 ''')
 
+# def GET_CUSTOS_BLUEME_SEM_PARCELAMENTO():
+#   return dataframe_query(f'''
+# SELECT 
+# tdr.ID as 'ID_Despesa',
+# tdr.FK_DESPESA_TEKNISA as 'FK_Despesa_Teknisa',
+# te.ID as 'ID_Loja',
+# te.NOME_FANTASIA as 'Casa',
+# tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
+# tdr.VALOR_LIQUIDO as 'Valor',
+# tdr.VENCIMENTO as 'Data_Vencimento',
+# tc.`DATA` as 'Previsao_Pgto',
+# tc2.`DATA` as 'Realizacao_Pgto',    
+# tdr.COMPETENCIA as 'Data_Competencia',
+# tdr.LANCAMENTO as 'Data_Lancamento',
+# tfdp.DESCRICAO as 'Forma_Pagamento',
+# tccg.DESCRICAO as 'Class_Cont_1',
+# tccg2.DESCRICAO as 'Class_Cont_2',
+# CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Vencimento', 
+# tscd.DESCRICAO as 'Status_Conf_Document',
+# tsad.DESCRICAO as 'Status_Aprov_Diret',
+# tsac.DESCRICAO as 'Status_Aprov_Caixa',
+# tsp.DESCRICAO as 'Status_Pgto',
+# FROM T_DESPESA_RAPIDA tdr
+# INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
+# LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
+# LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
+# LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
+# LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID)
+# LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON (tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID)
+# LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsad.ID)
+# LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
+# LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
+# LEFT JOIN T_CALENDARIO tc ON (tdr.PREVISAO_PAGAMENTO = tc.ID)	
+# LEFT JOIN T_CALENDARIO tc2 ON (tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID)
+# LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
+# WHERE 
+#     te.ID IS NOT NULL
+#     AND tdp.FK_DESPESA IS NULL
+#     AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
+#     AND tsp.DESCRICAO = "Pago"
+#     AND tc2.`DATA` >= '2024-05-01 00:00:00'
+# ORDER BY 
+#     tc2.`DATA` DESC
+# ''')
+
 def GET_CUSTOS_BLUEME_SEM_PARCELAMENTO():
   return dataframe_query(f'''
 SELECT 
@@ -1118,9 +1206,12 @@ CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Venci
 tscd.DESCRICAO as 'Status_Conf_Document',
 tsad.DESCRICAO as 'Status_Aprov_Diret',
 tsac.DESCRICAO as 'Status_Aprov_Caixa',
-tsp.DESCRICAO as 'Status_Pgto'
+tsp.DESCRICAO as 'Status_Pgto',
+tcb.NOME_DA_CONTA as 'Conta_Bancaria',
+tdr.FK_LOJA_CNPJ as 'CNPJ_Loja'
 FROM T_DESPESA_RAPIDA tdr
 INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
+LEFT JOIN T_CONTAS_BANCARIAS tcb ON (tdr.FK_CONTA_BANCARIA = tcb.ID)
 LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
 LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
 LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
@@ -1141,6 +1232,7 @@ WHERE
 ORDER BY 
     tc2.`DATA` DESC
 ''')
+
 
 def GET_CUSTOS_BLUEME_COM_PARCELAMENTO():
   return dataframe_query(f'''
@@ -1179,8 +1271,10 @@ CASE
     WHEN tdp.PARCELA_PAGA = 1 
         THEN 'Parcela_Paga'
     ELSE 'Parcela_Pendente'
-END as 'Status_Pgto'
-FROM T_DESPESA_RAPIDA tdr
+END as 'Status_Pgto',
+tcb.NOME_DA_CONTA as 'Conta_Bancaria'
+FROM T_DESPESA_RAPIDA tdr,
+tdr.FK_LOJA_CNPJ as 'CNPJ_Loja'
 INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
 LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
 LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
@@ -1191,6 +1285,7 @@ LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsa
 LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
 LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
 LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
+LEFT JOIN T_CONTAS_BANCARIAS tcb ON (tdp.FK_CONTA_BANCARIA = tcb.ID)
 LEFT JOIN T_CALENDARIO tc ON (tdp.FK_PREVISAO_PGTO = tc.ID)
 LEFT JOIN T_CALENDARIO tc2 ON (tdp.FK_DATA_REALIZACAO_PGTO = tc2.ID)
 WHERE 
@@ -1229,6 +1324,7 @@ AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLICACAO CONTAMAX%'
 AND teb.DESCRICAO_TRANSACAO NOT LIKE '%Pix Enviado-Conta Transacional%'
 AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RESGATE CONTAMAX AUTOMATICO%'
 AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLIC.INVEST FACIL%'
+AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RENTAB.INVEST FACILCRED*%'
 ORDER BY teb.DATA_TRANSACAO DESC
 ''')
 

@@ -124,11 +124,13 @@ def config_faturam_zig_fluxo_caixa(serie_datas_feriados):
     'PIX': 0.0074,
   }
 
+  lojas_sem_antecipacao = ['Arcos', 'Bar Léo - Centro', 'Blue Note - São Paulo', 'Blue Note SP (Novo)', 'Jacaré', 'Love Cabaret', 'Orfeu']
+
   df_faturam_zig = GET_FATURAMENTO_ZIG_FLUXO_CAIXA()
   df_faturam_zig['Data_Faturamento'] = pd.to_datetime(df_faturam_zig['Data_Faturamento'])
   df_faturam_zig['Valor_Faturado'] = df_faturam_zig['Valor_Faturado'].astype(float).round(2)
 
-  df_faturam_zig['Antecipacao_Credito'] = df_faturam_zig.apply(lambda row: 0 if row['Loja'] == 'Arcos' else 1, axis=1)
+  df_faturam_zig['Antecipacao_Credito'] = df_faturam_zig.apply(lambda row: 0 if row['Loja'] in lojas_sem_antecipacao else 1, axis=1)
   df_faturam_zig['Taxa'] = df_faturam_zig.apply(lambda row: calcular_taxa(row, taxas), axis=1)
 
   df_faturam_zig['Valor_Compensado'] = df_faturam_zig.apply(

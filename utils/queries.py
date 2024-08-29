@@ -1236,64 +1236,65 @@ ORDER BY
 
 def GET_CUSTOS_BLUEME_COM_PARCELAMENTO():
   return dataframe_query(f'''
-SELECT 
-tdp.ID as 'ID_Parcela',
-tdr.ID as 'ID_Despesa',
-te.NOME_FANTASIA as 'Empresa',
-te.ID as 'ID_Loja',
-tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
-CASE
-    WHEN tdp.FK_DESPESA IS NOT NULL
-        THEN 'True'
-    ELSE 'False'
-END AS 'Parcelamento',
-CASE 
-    WHEN tdp.FK_DESPESA IS NOT NULL
-        THEN COUNT(tdp.ID) OVER (PARTITION BY tdr.ID)
-    ELSE NULL 
-END AS 'Qtd_Parcelas',
-tdp.PARCELA as 'Num_Parcela',
-tdp.VALOR as 'Valor_Parcela',
-DATE_FORMAT(DATE_ADD(tdp.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') as 'Vencimento_Parcela',
-DATE_FORMAT(DATE_ADD(tc.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Previsao_Parcela',
-DATE_FORMAT(DATE_ADD(tc2.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Realiz_Parcela',
-tdr.VALOR_PAGAMENTO as 'Valor_Original',
-tdr.VALOR_LIQUIDO as 'Valor_Liquido',
-DATE_ADD(STR_TO_DATE(tdr.LANCAMENTO, '%Y-%m-%d'), INTERVAL 30 SECOND) as 'Data_Lancamento',
-tfdp.DESCRICAO as 'Forma_Pagamento',
-tccg.DESCRICAO as 'Class_Cont_1',
-tccg2.DESCRICAO as 'Class_Cont_2',
-CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Vencimento', 
-tscd.DESCRICAO as 'Status_Conf_Document',
-tsad.DESCRICAO as 'Status_Aprov_Diret',
-tsac.DESCRICAO as 'Status_Aprov_Caixa',
-CASE
-    WHEN tdp.PARCELA_PAGA = 1 
-        THEN 'Parcela_Paga'
-    ELSE 'Parcela_Pendente'
-END as 'Status_Pgto',
-tcb.NOME_DA_CONTA as 'Conta_Bancaria'
-FROM T_DESPESA_RAPIDA tdr,
-tdr.FK_LOJA_CNPJ as 'CNPJ_Loja'
-INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
-LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
-LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
-LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
-LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID)
-LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON (tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID)
-LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsad.ID)
-LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
-LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
-LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
-LEFT JOIN T_CONTAS_BANCARIAS tcb ON (tdp.FK_CONTA_BANCARIA = tcb.ID)
-LEFT JOIN T_CALENDARIO tc ON (tdp.FK_PREVISAO_PGTO = tc.ID)
-LEFT JOIN T_CALENDARIO tc2 ON (tdp.FK_DATA_REALIZACAO_PGTO = tc2.ID)
-WHERE 
+  SELECT
+    tdp.ID as 'ID_Parcela',
+    tdr.ID as 'ID_Despesa',
+    te.NOME_FANTASIA as 'Empresa',
+    te.ID as 'ID_Loja',
+    tdr.FK_LOJA_CNPJ as 'CNPJ_Loja',
+    tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
+    CASE
+        WHEN tdp.FK_DESPESA IS NOT NULL
+            THEN 'True'
+        ELSE 'False'
+    END AS 'Parcelamento',
+    CASE 
+        WHEN tdp.FK_DESPESA IS NOT NULL
+            THEN COUNT(tdp.ID) OVER (PARTITION BY tdr.ID)
+        ELSE NULL 
+    END AS 'Qtd_Parcelas',
+    tdp.PARCELA as 'Num_Parcela',
+    tdp.VALOR as 'Valor_Parcela',
+    DATE_FORMAT(DATE_ADD(tdp.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') as 'Vencimento_Parcela',
+    DATE_FORMAT(DATE_ADD(tc.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Previsao_Parcela',
+    DATE_FORMAT(DATE_ADD(tc2.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Realiz_Parcela',
+    tdr.VALOR_PAGAMENTO as 'Valor_Original',
+    tdr.VALOR_LIQUIDO as 'Valor_Liquido',
+    DATE_ADD(STR_TO_DATE(tdr.LANCAMENTO, '%Y-%m-%d'), INTERVAL 30 SECOND) as 'Data_Lancamento',
+    tfdp.DESCRICAO as 'Forma_Pagamento',
+    tccg.DESCRICAO as 'Class_Cont_1',
+    tccg2.DESCRICAO as 'Class_Cont_2',
+    CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Vencimento', 
+    tscd.DESCRICAO as 'Status_Conf_Document',
+    tsad.DESCRICAO as 'Status_Aprov_Diret',
+    tsac.DESCRICAO as 'Status_Aprov_Caixa',
+    CASE
+        WHEN tdp.PARCELA_PAGA = 1 
+            THEN 'Parcela_Paga'
+        ELSE 'Parcela_Pendente'
+    END as 'Status_Pgto',
+    tcb.NOME_DA_CONTA as 'Conta_Bancaria'
+  FROM 
+    T_DESPESA_RAPIDA tdr
+  INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
+  LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
+  LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
+  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
+  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID)
+  LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON (tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID)
+  LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsad.ID)
+  LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
+  LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
+  LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
+  LEFT JOIN T_CONTAS_BANCARIAS tcb ON (tdp.FK_CONTA_BANCARIA = tcb.ID)
+  LEFT JOIN T_CALENDARIO tc ON (tdp.FK_PREVISAO_PGTO = tc.ID)
+  LEFT JOIN T_CALENDARIO tc2 ON (tdp.FK_DATA_REALIZACAO_PGTO = tc2.ID)
+  WHERE 
     tdp.FK_DESPESA IS NOT NULL
     AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
     AND tdp.PARCELA_PAGA = 1
     AND tc2.`DATA` >= '2024-05-01 00:00:00'
-ORDER BY 
+  ORDER BY 
     tc2.`DATA` DESC
 ''')
 

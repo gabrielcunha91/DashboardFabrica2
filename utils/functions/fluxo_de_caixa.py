@@ -97,10 +97,15 @@ def ajustar_data_compensacao(row, serie_datas_feriados):
     row['Data_Compensacao'] += pd.Timedelta(days=1)
   elif row['Tipo_Pagamento'] == 'CRÉDITO' and row['Antecipacao_Credito'] == 1:
     row['Data_Compensacao'] += pd.Timedelta(days=1)
+#########################     AQUI ESTÁ O CRÉDITO     ###############################
   elif row['Tipo_Pagamento'] == 'CRÉDITO' and row['Antecipacao_Credito'] == 0:
-    row['Data_Compensacao'] += pd.Timedelta(days=30)
-  elif row['Tipo_Pagamento'] in ['PIX', 'DINHEIRO', 'APP', 'VOUCHER', 'ANTECIPADO']:
+    row['Data_Compensacao'] += pd.Timedelta(days=31)
+    ################################################
+  elif row['Tipo_Pagamento'] in ['PIX', 'DINHEIRO', 'VOUCHER', 'ANTECIPADO']:
     row['Data_Compensacao'] += pd.Timedelta(days=1)
+    #################### APP CONTA IGUAL CRÉDITO ########################
+  elif row['Tipo_Pagamento'] == 'APP':
+    row['Data_Compensacao'] += pd.Timedelta(days=31)
 
   if row['Data_Compensacao'] in serie_datas_feriados.values:
     row['Data_Compensacao'] += pd.Timedelta(days=1)

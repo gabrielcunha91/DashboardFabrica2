@@ -11,12 +11,12 @@ def config_permissoes_user():
   permissao = dfpermissao['Permissao'].tolist()
   nomeUser = GET_USERNAME(username)
   nomeUser = ' '.join(nomeUser['Nome'].tolist())  
-  return permissao, nomeUser
+  return permissao, nomeUser, username
 
 
 def config_sidebar():
-  permissao, username = config_permissoes_user()
-  st.sidebar.header(f"Bem-vindo(a) {username}!")
+  permissao, Nomeuser, username = config_permissoes_user()
+  st.sidebar.header(f"Bem-vindo(a) {Nomeuser}!")
   if st.session_state['loggedIn']:
     if 'Administrador' in permissao or 'Acesso Caixa' in permissao:
       st.sidebar.title("Menu")
@@ -73,7 +73,7 @@ def preparar_datas_ultimo_mes():
   return data_inicio_default, data_fim_default
 
 def preparar_dados_lojas_user():
-  permissao, username = config_permissoes_user()
+  permissao, nomeuser, username = config_permissoes_user()
   if 'Administrador' in permissao:
     dflojas = GET_LOJAS()
     lojasARemover = ['Casa Teste', 'Casa Teste 2', 'Casa Teste 3']

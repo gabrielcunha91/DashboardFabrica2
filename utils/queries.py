@@ -53,12 +53,26 @@ def GET_PERMISSIONS(email):
   WHERE au.LOGIN = {emailStr}
   ''')
 
+# @st.cache_data
+# def GET_LOJAS_USER(email):
+#   emailStr = f"'{email}'"
+#   return dataframe_query(f'''
+#   SELECT 
+# 	  au.LOGIN AS 'Login',
+# 	  te.NOME_FANTASIA AS 'Loja'
+#   FROM
+#   	ADMIN_USERS au 
+# 	  LEFT JOIN T_USUARIOS_EMPRESAS tue ON au.ID = tue.FK_USUARIO 
+# 	  LEFT JOIN T_EMPRESAS te ON tue.FK_EMPRESA = te.ID
+# 	  LEFT JOIN T_LOJAS tl ON te.ID = tl.ID
+#   WHERE au.LOGIN = {emailStr}
+#   ''')
+
 @st.cache_data
 def GET_LOJAS_USER(email):
   emailStr = f"'{email}'"
   return dataframe_query(f'''
   SELECT 
-	  au.LOGIN AS 'Login',
 	  te.NOME_FANTASIA AS 'Loja'
   FROM
   	ADMIN_USERS au 

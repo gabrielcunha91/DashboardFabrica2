@@ -118,7 +118,7 @@ def filtrar_por_datas(dataframe, data_inicio, data_fim, categoria):
   data_fim = pd.Timestamp(data_fim)
   
  
-  dataframe.loc[:, categoria] = pd.to_datetime(dataframe[categoria])
+  dataframe.loc[:, categoria] = pd.to_datetime(dataframe[categoria], errors='coerce')
   
   dataframe_filtered = dataframe.loc[
       (dataframe[categoria] >= data_inicio) & (dataframe[categoria] <= data_fim)

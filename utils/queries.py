@@ -1453,12 +1453,60 @@ def GET_AJUSTES_CONCILIACAO():
 
 
 
+# def GET_DESPESAS_PENDENTES(data):
+#   # Formatando as datas para o formato de string com aspas simples
+#   dataStr = f"'{data.strftime('%Y-%m-%d %H:%M:%S')}'"
+#   return dataframe_query(f'''
+#   SELECT
+#     tc.DATA as 'Data',
+#     tdr.ID as 'ID_Despesa',
+#     "Nulo" as 'ID_Parcela',
+#     te.NOME_FANTASIA as 'Loja',
+#     tf.FANTASY_NAME as 'Fornecedor',
+#     tdr.VALOR_LIQUIDO as 'Valor',
+#     "Falso" as 'Parcelamento',
+#     CASE
+#         WHEN tdr.FK_STATUS_PGTO = 103 THEN 'Pago'
+#         ELSE 'Pendente'
+#     END as 'Status_Pgto'
+#   FROM T_DESPESA_RAPIDA tdr 
+#   INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
+#   INNER JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
+#   LEFT JOIN T_CALENDARIO tc ON (tdr.PREVISAO_PAGAMENTO = tc.ID)
+#   LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
+#   WHERE tdp.ID is NULL 
+#     AND tc.DATA = {dataStr}
+#   UNION ALL
+#   SELECT
+#     tc.DATA as 'Data',
+#     tdr.ID as 'ID_Despesa',
+#     tdp.ID as 'ID_Parcela',
+#     te.NOME_FANTASIA as 'Loja',
+#     tf.FANTASY_NAME as 'Fornecedor',
+#     tdp.VALOR as 'Valor',
+#     "True" as 'Parcelamento',
+#     CASE
+#         WHEN tdp.PARCELA_PAGA = 1 THEN 'Pago'
+#         ELSE 'Pendente'
+#     END as 'Status_Pgto'
+#   FROM T_DESPESA_RAPIDA tdr 
+#   INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
+#   INNER JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
+#   LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
+#   LEFT JOIN T_CALENDARIO tc ON (tdp.FK_PREVISAO_PGTO = tc.ID)
+#   WHERE tdp.ID is NOT NULL 
+#     AND tc.DATA = {dataStr}
+#     AND (tdp.PARCELA_PAGA = 0 OR tdp.PARCELA_PAGA IS NULL);
+# ''')
+
+
 def GET_DESPESAS_PENDENTES(data):
   # Formatando as datas para o formato de string com aspas simples
   dataStr = f"'{data.strftime('%Y-%m-%d %H:%M:%S')}'"
   return dataframe_query(f'''
   SELECT
-    tc.DATA as 'Data',
+    tc.DATA as 'Previsao_Pgto',
+    tdr.VENCIMENTO AS 'Data_Vencimento',
     tdr.ID as 'ID_Despesa',
     "Nulo" as 'ID_Parcela',
     te.NOME_FANTASIA as 'Loja',
@@ -1478,7 +1526,8 @@ def GET_DESPESAS_PENDENTES(data):
     AND tc.DATA = {dataStr}
   UNION ALL
   SELECT
-    tc.DATA as 'Data',
+    tc.DATA as 'Previsao_Pgto',
+    tdr.VENCIMENTO AS 'Data_Vencimento',
     tdr.ID as 'ID_Despesa',
     tdp.ID as 'ID_Parcela',
     te.NOME_FANTASIA as 'Loja',
@@ -1498,8 +1547,6 @@ def GET_DESPESAS_PENDENTES(data):
     AND tc.DATA = {dataStr}
     AND (tdp.PARCELA_PAGA = 0 OR tdp.PARCELA_PAGA IS NULL);
 ''')
-
-
 
 ###########################  Previsão Faturamento  #############################
 

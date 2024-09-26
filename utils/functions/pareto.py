@@ -49,16 +49,16 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df = df.sort_values(by='Nome Produto', ascending=True)
 
   df['Quantidade Ajustada'] = df['Quantidade'] * df['Fator de Proporção']
-  df['Valor Unitário'] = df['Valor Total'] / df['Quantidade']
+  df['Valor Unitário Médio'] = df['Valor Total'] / df['Quantidade']
   df['Valor Unit. Ajustado'] = df['Valor Total'] / df['Quantidade Ajustada']
 
   df['Quantidade'] = df['Quantidade'].round(2)
   df['Quantidade Ajustada'] = df['Quantidade Ajustada'].round(2)
   df['Valor Total'] = df['Valor Total'].round(2)
-  df['Valor Unitário'] = df['Valor Unitário'].round(2)
+  df['Valor Unitário Médio'] = df['Valor Unitário Médio'].round(2)
   df['Valor Unit. Ajustado'] = df['Valor Unit. Ajustado'].round(2)
-  df['V. Unit. 3 Meses Ant.'] = df['V. Unit. 3 Meses Ant.'].round(2)
-  nova_ordem = ['ID Produto', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário', 'V. Unit. 3 Meses Ant.',
+  df['V. Unit. Méd. 3 Meses Anteriores'] = df['V. Unit. 3 Meses Ant.'].round(2)
+  nova_ordem = ['ID Produto', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário Médio', 'V. Unit. Méd. 3 Meses Anteriores',
                  'Quantidade Ajustada', 'Valor Unit. Ajustado', 'Fator de Proporção', 'Fornecedor']
   df = df[nova_ordem]
 
@@ -112,11 +112,11 @@ def config_diagramas_pareto(dfNomeEstoque, dfNomeCompras, categoria, categString
   #   diagrama_pareto_por_categ_avaliada(df_valor_unit_ajust, 'Valor Unit. Ajustado', key=keyDiagrama3)
 
 
-def pesquisa_por_produto(dfNomeEstoque, key):
+def pesquisa_por_produto(dfNomeEstoque, key, titulo):
   dfNomeEstoque = dfNomeEstoque.drop(['Fornecedor'], axis=1)
   col0, col, col1, col2 = st.columns([1.6, 15, 8, 2])
   with col:
-    st.subheader('Informações detalhadas dos produtos')
+    st.subheader(titulo)
   with col1:
     search_term = st.text_input('Pesquisar por nome do produto:', '', key=key)
     if search_term:
@@ -124,7 +124,7 @@ def pesquisa_por_produto(dfNomeEstoque, key):
     else:
       filtered_df = dfNomeEstoque
   row1 = st.columns([1, 15, 1])
-  row1[1].dataframe(filtered_df, width=1100 ,hide_index=True)
+  row1[1].dataframe(filtered_df, use_container_width=True,hide_index=True)
 
 def create_columns_comparativo(df):
   df.loc[:,'Quantidade'] = df['Quantidade'].astype(str)

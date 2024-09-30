@@ -119,17 +119,17 @@ def config_insumos_blueme_com_pedido(df, data_inicio, data_fim):
 
   df = format_date_brazilian(df, 'Data_Emissao')
 
-  df['Valor_Insumos'] = df['Valor_Insumos'].astype(float)
+  df['Valor_Cotacao'] = df['Valor_Cotacao'].astype(float)
   df['Valor_Liquido'] = df['Valor_Liquido'].astype(float)
-  df['Insumos - V. Líq'] = df['Valor_Insumos'] - df['Valor_Liquido']
+  df['Insumos - V. Líq'] = df['Valor_Cotacao'] - df['Valor_Liquido']
 
   df.rename(columns = {'tdr_ID': 'tdr ID', 'Loja': 'Loja', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão',
-                       'Valor_Liquido': 'Valor Líquido', 'Valor_Insumos': 'Valor Insumos', 'Valor_Liq_Alimentos': 'Valor Líq. Alimentos',
-                       'Valor_Liq_Bebidas': 'Valor Líq. Bebidas', 'Valor_Liq_Descart_Hig_Limp': 'Valor Líq. Hig/Limp.', 
-                       'Valor_Liq_Outros': 'Valor Líq. Outros'}, inplace=True)
+                       'Valor_Liquido': 'Valor Líquido', 'Valor_Cotacao': 'Valor Cotação', 'Valor_Liq_Alimentos': 'Valor Líq. Alimentos',
+                       'Valor_Liq_Bebidas': 'Valor Líq. Bebidas', 'Valor_Liq_Descart_Hig_Limp': 'Valor Líq. Hig/Limp.', 'Valor_Gelo_Gas_Carvao_Velas': 'Valor Líq Gelo/Gas/Carvão/Velas',
+                       'Valor_Utensilios': 'Valor Líq. Utensilios', 'Valor_Liq_Outros': 'Valor Líq. Outros'}, inplace=True)
 
-  nova_ordem = ['tdr ID', 'Loja', 'Fornecedor', 'Doc_Serie', 'Data Emissão', 'Valor Líquido', 'Valor Insumos', 'Insumos - V. Líq', 'Valor Líq. Alimentos',
-                'Valor Líq. Bebidas', 'Valor Líq. Hig/Limp.', 'Valor Líq. Outros']
+  nova_ordem = ['tdr ID', 'Loja', 'Fornecedor', 'Doc_Serie', 'Data Emissão', 'Valor Líquido', 'Valor Cotação', 'Insumos - V. Líq', 'Valor Líq. Alimentos',
+                'Valor Líq. Bebidas', 'Valor Líq. Hig/Limp.', 'Valor Líq Gelo/Gas/Carvão/Velas', 'Valor Líq. Utensilios', 'Valor Líq. Outros']
   df = df[nova_ordem]
 
   return df

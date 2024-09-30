@@ -89,7 +89,7 @@ def config_tabela_para_pareto(dfNomeEstoque, dfNomeCompras, categoria, key):
 
   dfNomeEstoque = dfNomeEstoque[dfNomeEstoque['Categoria'] == categoria]
   dfNomeCompras = dfNomeCompras[dfNomeCompras['Categoria'] == categoria]
-  return dfNomeEstoque, dfNomeCompras
+  return dfNomeEstoque, dfNomeCompras, lojas_selecionadas
 
 
 def config_diagramas_pareto(dfNomeEstoque, dfNomeCompras, categoria, categString):
@@ -125,6 +125,28 @@ def pesquisa_por_produto(dfNomeEstoque, key, titulo):
       filtered_df = dfNomeEstoque
   row1 = st.columns([1, 15, 1])
   row1[1].dataframe(filtered_df, use_container_width=True,hide_index=True)
+
+
+def config_compras_insumos_detalhadas(categoria, key_data1, key_data2, keysearch, lojas_selecionadas):
+  data_inicio_default, data_fim_default = preparar_dados_datas()
+  col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+  with col1: 
+    st.subheader('Detalhamenro de compras')
+  with col2:
+    data_inicio = st.date_input('Data Início da Compra', value=data_inicio_default, key=key_data1, format="DD/MM/YYYY")
+  with col3:
+    data_fim = st.date_input('Data Fim da Compra', value=data_fim_default, key=key_data2, format="DD/MM/YYYY") 
+    df = GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria)
+  with col4:
+    search_term = st.text_input('Pesquisar por nome do produto:', '', key=keysearch)
+    if search_term:
+      filtered_df = df[df['Nome Produto'].str.contains(search_term, case=False, na=False)]
+    else:
+      filtered_df = df
+  filtered_df = filtrar_por_classe_selecionada(filtered_df, 'Loja', lojas_selecionadas)
+  row1 = st.columns([1, 15, 1])
+  row1[1].dataframe(filtered_df, use_container_width=True,hide_index=True)
+
 
 def create_columns_comparativo(df):
   df.loc[:,'Quantidade'] = df['Quantidade'].astype(str)

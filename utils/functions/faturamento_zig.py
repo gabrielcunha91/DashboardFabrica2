@@ -31,7 +31,7 @@ def config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim):
 
 
 def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
-  FaturamZigAgregado = GET_FATURAM_ZIG_AGREGADO()
+  FaturamZigAgregado = GET_FATURAM_ZIG_AGREGADO(data_inicio=data_inicio, data_fim=data_fim)
   OrcamFaturam = GET_ORCAM_FATURAM()
 
   # Conversão de tipos para a padronização de valores

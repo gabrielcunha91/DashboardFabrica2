@@ -36,6 +36,9 @@ def main():
   # threading.Thread(target=config_Faturamento_zig)
   OrcamentoFaturamento = config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim) 
   orcamfatformatado = OrcamentoFaturamento.copy()
+  categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts']
+  soma_valor_bruto = orcamfatformatado.loc[orcamfatformatado['Categoria'].isin(categorias_desejadas), 'Valor Bruto'].sum()
+  soma_valor_bruto = format_brazilian(soma_valor_bruto)
   orcamfatformatado = format_columns_brazilian(orcamfatformatado, ['Orçamento', 'Valor Bruto', 'Desconto', 'Valor Líquido', 'Faturam - Orçamento'])
   orcamfatformatado.loc[orcamfatformatado['Orçamento'] == '0,00', 'Atingimento %'] = '-'
 
@@ -46,6 +49,7 @@ def main():
       st.subheader("Faturamento Agregado:")
       orcamfatformatadoStyled = orcamfatformatado.style.map(highlight_values, subset=['Faturam - Orçamento'])
       st.dataframe(orcamfatformatadoStyled, width=700, hide_index=True)
+      st.write(f"Soma dos Valores Brutos de Alimentos, Bebidas, Couvert e Gifts: {soma_valor_bruto}")
     with col2:
       st.subheader("Valores Líquidos:")
       Grafico_Donut(OrcamentoFaturamento)

@@ -142,7 +142,7 @@ def GET_LOJAS():
 
 
 @st.cache_data
-def GET_FATURAM_ZIG_AGREGADO():
+def GET_FATURAM_ZIG_AGREGADO(data_inicio, data_fim):
   return dataframe_query(f''' 
   SELECT
     te.ID AS ID_Loja,
@@ -162,6 +162,8 @@ def GET_FATURAM_ZIG_AGREGADO():
   LEFT JOIN T_ITENS_VENDIDOS_CATEGORIAS tivc2 ON tivc.FK_CATEGORIA = tivc2.ID
   LEFT JOIN T_ITENS_VENDIDOS_TIPOS tivt ON tivc.FK_TIPO = tivt.ID
   LEFT JOIN T_EMPRESAS te ON tiv.LOJA_ID = te.ID_ZIGPAY
+  WHERE cast(tiv.EVENT_DATE as date) >= '{data_inicio}'
+    AND cast(tiv.EVENT_DATE as date) <= '{data_fim}'
   GROUP BY 
     ID_Loja,
     Categoria,

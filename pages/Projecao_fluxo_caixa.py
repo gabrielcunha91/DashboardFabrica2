@@ -38,7 +38,7 @@ with st.container(border=True):
   st.subheader('Projeção de bares agrupados:' )
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless*
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino*
     """
   )
 
@@ -65,7 +65,7 @@ with st.container(border=True):
             'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
             'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
             'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu',
-            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless'
+            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB'
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
     checkbox2 = st.checkbox(label='Apenas Pendentes', key='checkbox_despesas_pendentes')

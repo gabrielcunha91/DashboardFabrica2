@@ -1515,9 +1515,10 @@ def GET_AJUSTES_CONCILIACAO():
 
 
 
-def GET_DESPESAS_PENDENTES(data):
+def GET_DESPESAS_PENDENTES(dataInicio, dataFim):
   # Formatando as datas para o formato de string com aspas simples
-  dataStr = f"'{data.strftime('%Y-%m-%d %H:%M:%S')}'"
+  dataStr = f"'{dataInicio.strftime('%Y-%m-%d %H:%M:%S')}'"
+  datafimstr = f"'{dataFim.strftime('%Y-%m-%d %H:%M:%S')}'"
   return dataframe_query(f'''
   SELECT
     tc.DATA as 'Previsao_Pgto',
@@ -1538,7 +1539,8 @@ def GET_DESPESAS_PENDENTES(data):
   LEFT JOIN T_CALENDARIO tc ON (tdr.PREVISAO_PAGAMENTO = tc.ID)
   LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
   WHERE tdp.ID is NULL 
-    AND tc.DATA = {dataStr}
+    AND tc.DATA >= {dataStr}
+    AND tc.DATA <= {datafimstr}
   UNION ALL
   SELECT
     tc.DATA as 'Previsao_Pgto',

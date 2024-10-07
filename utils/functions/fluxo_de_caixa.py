@@ -259,8 +259,8 @@ def somar_total(df):
 
 
 
-def config_despesas_a_pagar(lojas_selecionadas, data):
-  despesasPendentes = GET_DESPESAS_PENDENTES(data)
+def config_despesas_a_pagar(lojas_selecionadas, dataInicio, dataFim):
+  despesasPendentes = GET_DESPESAS_PENDENTES(dataInicio=dataInicio, dataFim=dataFim)
   despesasPendentes = filtrar_por_classe_selecionada(despesasPendentes, 'Loja', lojas_selecionadas)
   return despesasPendentes
 

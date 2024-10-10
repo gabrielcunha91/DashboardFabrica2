@@ -38,7 +38,7 @@ with st.container(border=True):
   st.subheader('Projeção de bares agrupados:' )
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless*
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino*
     """
   )
 
@@ -54,7 +54,7 @@ st.divider()
 with st.container(border=True):
   st.subheader('Despesas do dia')
   lojasComDados = preparar_dados_lojas_user()
-  col1, col2, col3 = st.columns([5, 2, 3])
+  col1, col2, col3, col4 = st.columns([5, 3, 4, 4])
   # Adiciona seletores
   with col1:
     lojasSelecionadas = st.multiselect(label='Selecione Lojas', options=lojasComDados, key='lojas_multiselect')
@@ -65,16 +65,19 @@ with st.container(border=True):
             'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
             'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
             'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu',
-            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless'
+            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB'
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
     checkbox2 = st.checkbox(label='Apenas Pendentes', key='checkbox_despesas_pendentes')
     checkbox3 = st.checkbox(label='Apenas Pagas', key='checkbox_despesas_pagas')
   with col3:
-    dataSelecionada = st.date_input('Data de Início', value=datetime.today(), key='data_inicio_input', format="DD/MM/YYYY")
+    dataSelecionada = st.date_input('Data de Início (da Previsão de pagamento)', value=datetime.today(), key='data_inicio_input', format="DD/MM/YYYY")
+  with col4:
+    dataSelecionada2 = st.date_input('Data de Fim (da Previsão de pagamento)', value=datetime.today(), key='data_fim_input', format="DD/MM/YYYY")
 
   dataSelecionada = pd.to_datetime(dataSelecionada)
-  df = config_despesas_a_pagar(lojasSelecionadas, dataSelecionada)
+  dataSelecionada2 = pd.to_datetime(dataSelecionada2)
+  df = config_despesas_a_pagar(lojasSelecionadas, dataSelecionada, dataSelecionada2)
   if checkbox2:
     df = filtrar_por_classe_selecionada(df, 'Status_Pgto', ['Pendente'])
   if checkbox3:

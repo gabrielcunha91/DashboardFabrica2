@@ -47,7 +47,7 @@ def config_projecao_bares():
   houses_to_group = [
     'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
     'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 
-    'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless'
+    'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB'
   ]
 
   # Create a new column 'Group' based on the houses
@@ -259,8 +259,8 @@ def somar_total(df):
 
 
 
-def config_despesas_a_pagar(lojas_selecionadas, data):
-  despesasPendentes = GET_DESPESAS_PENDENTES(data)
+def config_despesas_a_pagar(lojas_selecionadas, dataInicio, dataFim):
+  despesasPendentes = GET_DESPESAS_PENDENTES(dataInicio=dataInicio, dataFim=dataFim)
   despesasPendentes = filtrar_por_classe_selecionada(despesasPendentes, 'Loja', lojas_selecionadas)
   return despesasPendentes
 

@@ -1519,9 +1519,10 @@ def GET_DESPESAS_PENDENTES(dataInicio, dataFim):
   # Formatando as datas para o formato de string com aspas simples
   dataStr = f"'{dataInicio.strftime('%Y-%m-%d %H:%M:%S')}'"
   datafimstr = f"'{dataFim.strftime('%Y-%m-%d %H:%M:%S')}'"
+######### NA PARTE DAS DESPESAS PARCELADAS, HÁ NA VIEW DO GABS UMA APROVAÇÃO DA DIRETORIA QUE PODE DAR DIFERENÇA #########
   return dataframe_query(f'''
   SELECT
-    tc.DATA as 'Previsao_Pgto',
+    DATE_FORMAT(tc.DATA, '%Y-%m-%d') as 'Previsao_Pgto',
     tdr.VENCIMENTO AS 'Data_Vencimento',
     tdr.ID as 'ID_Despesa',
     "Nulo" as 'ID_Parcela',
@@ -1543,7 +1544,7 @@ def GET_DESPESAS_PENDENTES(dataInicio, dataFim):
     AND tc.DATA <= {datafimstr}
   UNION ALL
   SELECT
-    tc.DATA as 'Previsao_Pgto',
+    DATE_FORMAT(tc.DATA, '%Y-%m-%d') as 'Previsao_Pgto',
     tdr.VENCIMENTO AS 'Data_Vencimento',
     tdr.ID as 'ID_Despesa',
     tdp.ID as 'ID_Parcela',
@@ -1556,13 +1557,13 @@ def GET_DESPESAS_PENDENTES(dataInicio, dataFim):
         ELSE 'Pendente'
     END as 'Status_Pgto'
   FROM T_DESPESA_RAPIDA tdr 
-  INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
-  INNER JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
+  LEFT JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
+  LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
   LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
   LEFT JOIN T_CALENDARIO tc ON (tdp.FK_PREVISAO_PGTO = tc.ID)
   WHERE tdp.ID is NOT NULL 
-    AND tc.DATA = {dataStr}
-    AND (tdp.PARCELA_PAGA = 0 OR tdp.PARCELA_PAGA IS NULL);
+    AND tc.DATA >= {dataStr}
+    AND tc.DATA <= {datafimstr}
 ''')
 
 ###########################  Previsão Faturamento  #############################

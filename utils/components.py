@@ -225,8 +225,10 @@ def diagrama_pareto_por_categ_avaliada(df, categoria, key):
         },
         "grid": {
             "top": 30,
-            "bottom": 150  # Aumenta a margem inferior para evitar cortes nas labels
-        },
+            "bottom": 150,  # Aumenta a margem inferior para evitar cortes nas labels
+            # "left": 300,  # Reduz a margem esquerda para diminuir a largura total
+            # "right": 300  # Reduz a margem direita para diminuir a largura total
+       },
         "xAxis": [
             {
                 "type": "category",

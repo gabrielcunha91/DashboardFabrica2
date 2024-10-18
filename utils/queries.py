@@ -371,95 +371,242 @@ def GET_ORCAMENTOS_DESPESAS():
 
 ############################### CMV ###################################
 
+# @st.cache_data
+# def GET_FATURAM_ZIG_ALIM_BEB_MENSAL():
+#   return dataframe_query(f'''
+#   SELECT
+#     tfza.ID_LOJA AS ID_Loja,
+#     te.NOME_FANTASIA AS Loja,
+#     CAST(DATE_FORMAT(CAST(tfza.DATA_EVENTO AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
+#     SUM(CASE
+#       WHEN tfza.CATEGORIA = 'Alimentos' THEN ROUND(CAST(tfza.VALOR_TRANSACAO_BRUTO AS DECIMAL(10, 2)), 2)
+#       ELSE 0
+#     END) AS Faturam_Bruto_Aliment,
+#     SUM(CASE
+#       WHEN tfza.CATEGORIA = 'Bebidas' THEN ROUND(CAST(tfza.VALOR_TRANSACAO_BRUTO AS DECIMAL(10, 2)), 2)
+#       ELSE 0
+#     END) AS Faturam_Bruto_Bebidas
+#   FROM
+#     T_FATURAMENTO_ZIG_AGREGADO tfza
+#   JOIN 
+#     T_EMPRESAS te ON tfza.ID_LOJA = te.ID 
+#   GROUP BY
+#     tfza.ID_LOJA,
+#     Primeiro_Dia_Mes
+#   ORDER BY
+#     tfza.ID_LOJA,
+#     Primeiro_Dia_Mes;
+# ''')
+
+
+# @st.cache_data
+# def GET_ESTOQUES_POR_CATEG_AGRUPADOS():
+#   return dataframe_query(f'''
+# SELECT
+#     te.ID AS ID_Loja,
+#     te.NOME_FANTASIA AS Loja,
+#     CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
+#     LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) AS Ultimo_Dia_Mes,
+#     SUM(CASE
+#       WHEN tin.DESCRICAO = 'ALIMENTOS' THEN tvee.VALOR_EM_ESTOQUE
+#       ELSE 0
+#     END) AS Estoque_Inicial_Alimentos,
+#     SUM(CASE
+#     WHEN tin.DESCRICAO = 'BEBIDAS' THEN tvee.VALOR_EM_ESTOQUE
+#     ELSE 0
+#     END) AS Estoque_Inicial_Bebidas,
+#     SUM(CASE
+#       WHEN tin.DESCRICAO = 'DESCARTAVEIS/ HIGIENE E LIMPEZA' THEN tvee.VALOR_EM_ESTOQUE
+#       ELSE 0
+#     END) AS Estoque_Inicial_Descart_Hig_Limp,
+#     SUM(CASE
+#       WHEN tin.DESCRICAO = 'ALIMENTOS' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
+#                                             FROM T_VALOR_EM_ESTOQUE tvee2
+#                                             WHERE tvee2.FK_LOJA = tvee.FK_LOJA
+#                                               AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
+#                                               AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
+#                                               LIMIT 1)
+#       ELSE 0
+#     END) AS Estoque_Final_Alimentos,
+#     SUM(CASE
+#       WHEN tin.DESCRICAO = 'BEBIDAS' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
+#                                           FROM T_VALOR_EM_ESTOQUE tvee2
+#                                           WHERE tvee2.FK_LOJA = tvee.FK_LOJA
+#                                             AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
+#                                             AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
+#                                             LIMIT 1)
+#       ELSE 0
+#     END) AS Estoque_Final_Bebidas,
+#     SUM(CASE
+#       WHEN tin.DESCRICAO = 'DESCARTAVEIS/ HIGIENE E LIMPEZA' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
+#                                                                   FROM T_VALOR_EM_ESTOQUE tvee2
+#                                                                   WHERE tvee2.FK_LOJA = tvee.FK_LOJA
+#                                                                     AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
+#                                                                     AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
+#                                                                     LIMIT 1)
+#            ELSE 0
+#     END) AS Estoque_Final_Descart_Hig_Limp
+#   FROM
+#     T_VALOR_EM_ESTOQUE tvee
+#     JOIN T_EMPRESAS te ON tvee.FK_LOJA = te.ID
+#     JOIN T_INSUMOS_NIVEL_1 tin ON tvee.FK_INSUMO_NIVEL_1 = tin.ID
+#   GROUP BY
+#     te.ID,
+#     te.NOME_FANTASIA ,
+#     Primeiro_Dia_Mes,
+#     LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE))
+#   ORDER BY
+#     te.ID,
+#     Primeiro_Dia_Mes;
+# ''')
+
+
+
 @st.cache_data
-def GET_FATURAM_ZIG_ALIM_BEB_MENSAL():
+def GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio, data_fim):
   return dataframe_query(f'''
   SELECT
-    tfza.ID_LOJA AS ID_Loja,
+    te.ID AS ID_Loja,
     te.NOME_FANTASIA AS Loja,
-    CAST(DATE_FORMAT(CAST(tfza.DATA_EVENTO AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-    SUM(CASE
-      WHEN tfza.CATEGORIA = 'Alimentos' THEN ROUND(CAST(tfza.VALOR_TRANSACAO_BRUTO AS DECIMAL(10, 2)), 2)
-      ELSE 0
-    END) AS Faturam_Bruto_Aliment,
-    SUM(CASE
-      WHEN tfza.CATEGORIA = 'Bebidas' THEN ROUND(CAST(tfza.VALOR_TRANSACAO_BRUTO AS DECIMAL(10, 2)), 2)
-      ELSE 0
-    END) AS Faturam_Bruto_Bebidas
-  FROM
-    T_FATURAMENTO_ZIG_AGREGADO tfza
-  JOIN 
-    T_EMPRESAS te ON tfza.ID_LOJA = te.ID 
-  GROUP BY
-    tfza.ID_LOJA,
-    Primeiro_Dia_Mes
-  ORDER BY
-    tfza.ID_LOJA,
+    tivc2.DESCRICAO AS Categoria,
+    CASE 
+      WHEN te.ID IN (103, 112, 118, 139) THEN 1
+      ELSE 0 
+    END AS Delivery,
+    cast(date_format(cast(tiv.EVENT_DATE AS date), '%Y-%m-01') AS date) AS Primeiro_Dia_Mes,
+    concat(year(cast(tiv.EVENT_DATE AS date)), '-', month(cast(tiv.EVENT_DATE AS date))) AS Ano_Mes,
+    cast(tiv.EVENT_DATE AS date) AS Data_Evento,
+    SUM((tiv.UNIT_VALUE * tiv.COUNT)) AS Valor_Bruto,
+    SUM(tiv.DISCOUNT_VALUE) AS Desconto,
+    SUM((tiv.UNIT_VALUE * tiv.COUNT) - tiv.DISCOUNT_VALUE) AS Valor_Liquido
+  FROM T_ITENS_VENDIDOS tiv
+  LEFT JOIN T_ITENS_VENDIDOS_CADASTROS tivc ON tiv.PRODUCT_ID = tivc.ID_ZIGPAY
+  LEFT JOIN T_ITENS_VENDIDOS_CATEGORIAS tivc2 ON tivc.FK_CATEGORIA = tivc2.ID
+  LEFT JOIN T_ITENS_VENDIDOS_TIPOS tivt ON tivc.FK_TIPO = tivt.ID
+  LEFT JOIN T_EMPRESAS te ON tiv.LOJA_ID = te.ID_ZIGPAY
+  WHERE cast(tiv.EVENT_DATE AS date) >= '{data_inicio}'
+    AND cast(tiv.EVENT_DATE AS date) <= '{data_fim}'
+    AND tivc2.DESCRICAO IN ('Alimentos', 'Bebidas')
+  GROUP BY 
+    ID_Loja,
+    Categoria,
     Primeiro_Dia_Mes;
 ''')
+
 
 
 @st.cache_data
-def GET_ESTOQUES_POR_CATEG_AGRUPADOS():
-  return dataframe_query(f'''
-SELECT
-    te.ID AS ID_Loja,
-    te.NOME_FANTASIA AS Loja,
-    CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-    LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) AS Ultimo_Dia_Mes,
-    SUM(CASE
-      WHEN tin.DESCRICAO = 'ALIMENTOS' THEN tvee.VALOR_EM_ESTOQUE
-      ELSE 0
-    END) AS Estoque_Inicial_Alimentos,
-    SUM(CASE
-    WHEN tin.DESCRICAO = 'BEBIDAS' THEN tvee.VALOR_EM_ESTOQUE
-    ELSE 0
-    END) AS Estoque_Inicial_Bebidas,
-    SUM(CASE
-      WHEN tin.DESCRICAO = 'DESCARTAVEIS/ HIGIENE E LIMPEZA' THEN tvee.VALOR_EM_ESTOQUE
-      ELSE 0
-    END) AS Estoque_Inicial_Descart_Hig_Limp,
-    SUM(CASE
-      WHEN tin.DESCRICAO = 'ALIMENTOS' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
-                                            FROM T_VALOR_EM_ESTOQUE tvee2
-                                            WHERE tvee2.FK_LOJA = tvee.FK_LOJA
-                                              AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
-                                              AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
-                                              LIMIT 1)
-      ELSE 0
-    END) AS Estoque_Final_Alimentos,
-    SUM(CASE
-      WHEN tin.DESCRICAO = 'BEBIDAS' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
-                                          FROM T_VALOR_EM_ESTOQUE tvee2
-                                          WHERE tvee2.FK_LOJA = tvee.FK_LOJA
-                                            AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
-                                            AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
-                                            LIMIT 1)
-      ELSE 0
-    END) AS Estoque_Final_Bebidas,
-    SUM(CASE
-      WHEN tin.DESCRICAO = 'DESCARTAVEIS/ HIGIENE E LIMPEZA' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
-                                                                  FROM T_VALOR_EM_ESTOQUE tvee2
-                                                                  WHERE tvee2.FK_LOJA = tvee.FK_LOJA
-                                                                    AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
-                                                                    AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
-                                                                    LIMIT 1)
-           ELSE 0
-    END) AS Estoque_Final_Descart_Hig_Limp
-  FROM
-    T_VALOR_EM_ESTOQUE tvee
-    JOIN T_EMPRESAS te ON tvee.FK_LOJA = te.ID
-    JOIN T_INSUMOS_NIVEL_1 tin ON tvee.FK_INSUMO_NIVEL_1 = tin.ID
-  GROUP BY
-    te.ID,
-    te.NOME_FANTASIA ,
-    Primeiro_Dia_Mes,
-    LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE))
-  ORDER BY
-    te.ID,
-    Primeiro_Dia_Mes;
-''')
+def GET_CONTAGEM_INSUMOS():
+  return dataframe_query(f'''  
+	SELECT
+    tci.ID as 'ID_Contagem',
+   	te.ID AS 'ID_Loja',
+   	te.NOME_FANTASIA AS 'Loja',
+   	tci.FK_INSUMO AS 'ID_Insumo',
+   	tin5.DESCRICAO AS 'Insumo',
+   	tci.QUANTIDADE_INSUMO AS 'Quantidade',
+    tudm.UNIDADE_MEDIDA as 'Unidade_Medida',
+   	tin.DESCRICAO AS 'Categoria',
+   	tci.DATA_CONTAGEM AS 'Data_Contagem',
+    cast(date_format(cast(tci.DATA_CONTAGEM AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes',
+    DATE_FORMAT(DATE_SUB(tci.DATA_CONTAGEM, INTERVAL 1 MONTH), '%m/%Y') AS 'Mes_Anterior_Texto'
+  FROM T_CONTAGEM_INSUMOS tci 
+  LEFT JOIN T_EMPRESAS te ON tci.FK_EMPRESA = te.ID 
+  LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tci.FK_INSUMO = tin5.ID
+  LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
+  LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
+  LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
+  LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id	
+  LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tin5.FK_UNIDADE_MEDIDA = tudm.ID)
+  ''')
 
+  
+@st.cache_data
+def GET_PRECOS_CONSOLIDADOS_MES():
+  return dataframe_query(f'''
+   SELECT 
+    vir.Loja as Loja,
+    vir.ID_Insumo_Nivel_5 as ID_Insumo,
+    vir.Nome_Insumo_Nivel_5 as Nome_Insumo,
+    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS Mes_Anterior_Texto,
+    ROUND(SUM(vir.Quantidade), 2) AS Quantidade_Comprada_no_Mes,
+    ROUND(SUM(vir.Valor_Insumos), 2) AS Valor_Total_Pago_no_Mes,
+    ROUND(SUM(vir.Valor_Insumos) / SUM(vir.Quantidade), 2) AS Preco_Medio_Pago_no_Mes
+FROM View_Insumos_Recebidos vir
+GROUP BY Mes_Anterior_Texto, vir.ID_Insumo_Nivel_5;
+  ''')
+
+@st.cache_data
+def GET_ULTIMOS_PRECOS():
+  return dataframe_query(f'''
+  SELECT 
+    vir.ID_Loja AS 'ID_Loja',
+    vir.Loja AS 'Loja',
+    vir.ID_Insumo_Nivel_5 AS 'ID_Insumo',
+    vir.Nome_Insumo_Nivel_5 AS 'Nome_Insumo',
+    ultima_compra.Data_Ultima_Compra as 'Data_Ultima_Compra',
+    vir.Quantidade AS 'Quantidade',
+    vir.Unidade_Medida AS 'Unidade_Medida',
+    vir.Valor_Insumos AS 'Valor_Cotado',
+    vir.Valor_Insumos / vir.Quantidade AS 'Valor_Unidade_Medida',
+    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS Mes_Anterior_Texto
+  FROM 
+    View_Insumos_Recebidos vir
+  INNER JOIN 
+    (SELECT 
+        ID_Insumo_Nivel_5, 
+        MAX(STR_TO_DATE(Data_Emissao, '%Y-%m-%d')) AS Data_Ultima_Compra
+     FROM View_Insumos_Recebidos
+     GROUP BY ID_Insumo_Nivel_5) AS ultima_compra
+  ON (vir.ID_Insumo_Nivel_5 = ultima_compra.ID_Insumo_Nivel_5) 
+  AND (STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d') = ultima_compra.Data_Ultima_Compra)
+  ''')
+
+
+@st.cache_data
+def GET_PRECOS_OUTRAS_LOJAS():
+  return dataframe_query(f'''
+  SELECT 
+    vir.ID_Insumo_Nivel_5 AS ID_Insumo,
+    vir.Nome_Insumo_Nivel_5 AS Insumo,
+    vir.Data_Emissao AS Data_Ultima_Compra,
+    SUM(vir.Valor_Insumos) / SUM(vir.Quantidade) AS Valor_Ultima_Compra_Global
+  FROM 
+    View_Insumos_Recebidos vir
+  INNER JOIN (
+    SELECT 
+      ID_Insumo_Nivel_5,
+      MAX(Data_Emissao) AS Data_Ultima_Compra
+    FROM View_Insumos_Recebidos
+    GROUP BY ID_Insumo_Nivel_5
+  ) AS ultima_compra_global 
+  ON 
+    vir.ID_Insumo_Nivel_5 = ultima_compra_global.ID_Insumo_Nivel_5 
+    AND vir.Data_Emissao = ultima_compra_global.Data_Ultima_Compra
+  GROUP BY 
+    vir.ID_Insumo_Nivel_5, 
+    vir.Data_Emissao
+  ORDER BY 
+    vir.Nome_Insumo_Nivel_5, 
+    vir.Data_Emissao DESC
+  ''')
+
+
+
+@st.cache_data
+def GET_EVENTOS_CMV(data_inicio, data_fim):
+  return dataframe_query(f'''
+  SELECT 
+    te.ID AS 'ID_Loja',
+   	te.NOME_FANTASIA AS 'Loja',
+   	tec.VALOR_EVENTOS_A_B AS 'Valor',
+   	tec.`DATA` AS 'Data',
+    cast(date_format(cast(tec.`DATA` AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes'
+  FROM T_EVENTOS_CMV tec 
+  LEFT JOIN T_EMPRESAS te ON tec.FK_EMPRESA = te.ID 
+  WHERE tec.`DATA` BETWEEN '{data_inicio}' AND '{data_fim}'
+  GROUP BY te.ID
+  ''')
 
 
 @st.cache_data
@@ -529,7 +676,7 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO():
 
 
 @st.cache_data
-def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_coM_PEDIDO():
+def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO():
   return dataframe_query(f'''
   select
     vibmcp.ID_Loja AS ID_Loja,
@@ -651,38 +798,6 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_coM_PEDIDO():
 # ''')
 
 
-# @st.cache_data
-# def GET_TRANSF_ESTOQUE_AGRUPADOS():
-#   return dataframe_query(f'''
-#   SELECT
-#     vte.ID_Loja,
-#     vte.Loja,
-#     vte.Primeiro_Dia_Mes,
-#     SUM(vte.Entrada_Transf_Alim) AS Entrada_Transf_Alim,
-#     SUM(vte.Saida_Transf_Alim) AS Saida_Transf_Alim,
-#     SUM(vte.Entrada_Transf_Bebidas) AS Entrada_Transf_Bebidas,
-#     SUM(vte.Saida_Transf_Bebidas) AS Saida_Transf_Bebidas
-#   FROM (
-#     SELECT
-#       tte.ID AS ID_Transf,
-#       tl.ID AS ID_Loja,
-#       tl.NOME AS Loja,
-#       tte.DATA_TRANSFERENCIA AS Data_Transf,
-#       tte.ENTRADA_TRANSF_ALIMENTOS AS Entrada_Transf_Alim,
-#       tte.SAIDA_TRANSF_ALIMENTOS AS Saida_Transf_Alim,
-#       tte.ENTRADA_TRANSF_BEBIDAS AS Entrada_Transf_Bebidas,
-#       tte.SAIDA_TRANSF_BEBIDAS AS Saida_Transf_Bebidas,
-#       CAST(DATE_FORMAT(CAST(tte.DATA_TRANSFERENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
-#     FROM
-#       T_TRANSFERENCIAS_ESTOQUE tte
-#     JOIN T_LOJAS tl ON tte.FK_LOJA = tl.ID
-#   ) vte
-#   GROUP BY
-#     vte.ID_Loja,
-#     vte.Primeiro_Dia_Mes
-#   ORDER BY
-#     vte.ID_Loja;
-# ''')
 
 @st.cache_data
 def GET_TRANSF_ESTOQUE_AGRUPADOS():
@@ -717,7 +832,9 @@ def GET_TRANSF_ESTOQUE_AGRUPADOS():
     vte.ID_Loja;
 ''')
 
-
+@st.cache_data
+def GET_PRECIFICACAO_INSUMOS():
+  return dataframe_query(f''' ''')
 
 @st.cache_data
 def GET_PERDAS_E_CONSUMO_AGRUPADOS():
@@ -756,68 +873,9 @@ def GET_PERDAS_E_CONSUMO_AGRUPADOS():
     vpec.Primeiro_Dia_Mes;
 ''')
 
-  # WITH vpec AS (
-  #   SELECT
-  #     tpecc.ID AS Perdas_ID,
-  #     tl.ID AS ID_Loja,
-  #     tl.NOME_FANTASIA AS Loja,
-  #     tpecc.DATA_BAIXA AS Data_Baixa,        
-  #     CASE
-  #       WHEN tpecc.FK_MOTIVO = 106 THEN tpecc.VALOR
-  #       ELSE 0
-  #     END AS Consumo_Interno,
-  #     CASE
-  #       WHEN tpecc.FK_MOTIVO <> 106 THEN tpecc.VALOR
-  #       ELSE 0
-  #     END AS Quebras_e_Perdas,
-  #     CAST(DATE_FORMAT(CAST(tpecc.DATA_BAIXA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
-  #   FROM
-  #     T_PERDAS_E_CONSUMO_CONSOLIDADOS tpecc
-  #   JOIN T_EMPRESAS tl ON tpecc.FK_LOJA = tl.ID
-  # )
-  # SELECT
-  #   vpec.ID_Loja,
-  #   vpec.Loja,
-  #   vpec.Primeiro_Dia_Mes,
-  #   SUM(vpec.Consumo_Interno) AS Consumo_Interno,
-  #   SUM(vpec.Quebras_e_Perdas) AS Quebras_e_Perdas
-  # FROM vpec
-  # GROUP BY
-  #   vpec.ID_Loja,
-  #   vpec.Primeiro_Dia_Mes
-  # ORDER BY
-  #   vpec.ID_Loja,
-  #   vpec.Primeiro_Dia_Mes;
+  
 
-
-
-
-
-
-# @st.cache_data
-# def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
-#   return dataframe_query(f'''
-#   SELECT
-#     vbmcp.tdr_ID AS tdr_ID,
-#     vbmcp.ID_Loja AS ID_Loja,
-#     vbmcp.Loja AS Loja,
-#     vbmcp.Fornecedor AS Fornecedor,
-#     vbmcp.Doc_Serie AS Doc_Serie,
-#     vbmcp.Data_Emissao AS Data_Emissao,
-#     vbmcp.Valor_Liquido AS Valor_Liquido,
-#     vbmcp.Valor_Insumos AS Valor_Insumos,
-#     CAST(DATE_FORMAT(CAST(vbmcp.Data_Emissao AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-#     ROUND((vbmcp.Valor_Liquido * (virapc.Valor_Alimentos / virapc.Valor_Total_Insumos)), 2) AS Valor_Liq_Alimentos,
-#     ROUND((vbmcp.Valor_Liquido * (virapc.Valor_Bebidas / virapc.Valor_Total_Insumos)), 2) AS Valor_Liq_Bebidas,
-#     ROUND((vbmcp.Valor_Liquido * (virapc.Valor_Descartaveis_Higiene_Limpeza / virapc.Valor_Total_Insumos)), 2) AS Valor_Liq_Descart_Hig_Limp,
-#     ROUND((vbmcp.Valor_Liquido * (virapc.Valor_Outros / virapc.Valor_Total_Insumos)), 2) AS Valor_Liq_Outros
-#   FROM
-#     View_BlueMe_Com_Pedido vbmcp
-#   LEFT JOIN View_Insumos_Receb_Agrup_Por_Categ virapc ON
-#     vbmcp.tdr_ID = virapc.tdr_ID;
-# ''')
-
-
+@st.cache_data
 def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
   return dataframe_query(f'''
   SELECT

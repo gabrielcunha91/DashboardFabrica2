@@ -35,94 +35,140 @@ def main():
   lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()
 
-  dfFinal = config_tabelas_iniciais_cmv(lojas_selecionadas, data_inicio, data_fim)
- 
-  FaturamBrutoAliment = dfFinal['Faturam_Bruto_Aliment'].sum()
-  FaturamBrutoBebidas = dfFinal['Faturam_Bruto_Bebidas'].sum()
-  ComprasAlim = dfFinal['Compras_Alimentos'].sum()
-  ComprasBeb = dfFinal['Compras_Bebidas'].sum()
-  DeltaEstoqueAlim = ((dfFinal['Estoque_Final_Alimentos'].sum()) - (dfFinal['Estoque_Inicial_Alimentos'].sum()))
-  DeltaEstoqueBebidas = ((dfFinal['Estoque_Final_Bebidas'].sum()) - (dfFinal['Estoque_Inicial_Bebidas'].sum()))
-  CMVAlim = (ComprasAlim - DeltaEstoqueAlim)
-  CMVBebidas = (ComprasBeb - DeltaEstoqueBebidas)
-  if FaturamBrutoAliment != 0 and FaturamBrutoBebidas != 0:
-    CMVPercentualAlim = (CMVAlim / FaturamBrutoAliment) * 100
-    CMVPercentualBebidas = (CMVBebidas / FaturamBrutoBebidas) * 100
-    CMVPercentualGeral = ((CMVAlim + CMVBebidas)/(FaturamBrutoAliment+FaturamBrutoBebidas)) * 100
-  else:
-    CMVPercentualAlim = 0
-    CMVPercentualBebidas = 0
-    CMVPercentualGeral = 0
+  data_inicio_mes_anterior = (data_inicio.replace(day=1) - timedelta(days=1)).replace(day=1)
+  data_fim_mes_anterior = data_inicio.replace(day=1) - timedelta(days=1)
 
-  FaturamBrutoAliment = format_brazilian(FaturamBrutoAliment)
-  FaturamBrutoBebidas = format_brazilian(FaturamBrutoBebidas)
-  ComprasAlim = format_brazilian(ComprasAlim)
-  ComprasBeb = format_brazilian(ComprasBeb)
-  DeltaEstoqueAlim = format_brazilian(DeltaEstoqueAlim)
-  DeltaEstoqueBebidas = format_brazilian(DeltaEstoqueBebidas)
-  CMVAlim = format_brazilian(CMVAlim)
-  CMVBebidas = format_brazilian(CMVBebidas)
-  CMVPercentualAlim = format_brazilian(CMVPercentualAlim)
-  CMVPercentualBebidas = format_brazilian(CMVPercentualBebidas)
-  CMVPercentualGeral = format_brazilian(CMVPercentualGeral)
+  # dfFinal = config_tabelas_iniciais_cmv(lojas_selecionadas, data_inicio, data_fim)
+  df_faturamento_delivery, df_faturamento_zig, faturamento_bruto_alimentos, faturamento_bruto_bebidas, faturamento_alimentos_delivery, faturamento_bebidas_delivery = config_faturamento_bruto_zig(data_inicio, data_fim, lojas_selecionadas)
+  df_faturamento_eventos, faturamento_alimentos_eventos, faturamento_bebidas_eventos = config_faturamento_eventos(data_inicio, data_fim, lojas_selecionadas, faturamento_bruto_alimentos, faturamento_bruto_bebidas)
+  df_insumos_sem_pedido, df_insumos_com_pedido, compras_alimentos, compras_bebidas = config_compras(data_inicio, data_fim, lojas_selecionadas)
+  df_valoracao_estoque_atual = config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas)
+  df_valoracao_estoque_mes_anterior = config_valoracao_estoque(data_inicio_mes_anterior, data_fim_mes_anterior, lojas_selecionadas)
+
+  valoracao_estoque_atual_alimentos = df_valoracao_estoque_atual[df_valoracao_estoque_atual['Categoria'] == 'ALIMENTOS']['Valor_em_Estoque'].sum()
+  valoracao_estoque_atual_bebidas = df_valoracao_estoque_atual[df_valoracao_estoque_atual['Categoria'] == 'BEBIDAS']['Valor_em_Estoque'].sum()
+  valoracao_estoque_mes_anterior_alimentos = df_valoracao_estoque_mes_anterior[df_valoracao_estoque_mes_anterior['Categoria'] == 'ALIMENTOS']['Valor_em_Estoque'].sum()
+  valoracao_estoque_mes_anterior_bebidas = df_valoracao_estoque_mes_anterior[df_valoracao_estoque_mes_anterior['Categoria'] == 'BEBIDAS']['Valor_em_Estoque'].sum()
+  variacao_estoque_alimentos = valoracao_estoque_atual_alimentos - valoracao_estoque_mes_anterior_alimentos
+  variacao_estoque_bebidas = valoracao_estoque_atual_bebidas - valoracao_estoque_mes_anterior_bebidas
+
+
+
+  df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
+  st.dataframe(df_faturamento_total)
+
+
+  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos
+  cmv_bebidas = compras_bebidas - variacao_estoque_bebidas
+
+  faturamento_total_alimentos = faturamento_bruto_alimentos + faturamento_alimentos_delivery + faturamento_alimentos_eventos
+  faturamento_total_bebidas = faturamento_bruto_bebidas + faturamento_bebidas_delivery + faturamento_bebidas_eventos
+
+
+  if faturamento_total_alimentos != 0 and faturamento_total_bebidas != 0:
+    cmv_percentual_alim = (cmv_alimentos / faturamento_total_alimentos) * 100
+    cmv_percentual_bebidas = (cmv_bebidas / faturamento_total_bebidas) * 100
+    cmv_percentual_geral = ((cmv_alimentos + cmv_bebidas)/(faturamento_total_alimentos+faturamento_total_bebidas)) * 100
+  else:
+    cmv_percentual_alim = 0
+    cmv_percentual_bebidas = 0
+    cmv_percentual_geral = 0
+
+  faturamento_bruto_alimentos = format_brazilian(faturamento_bruto_alimentos)
+  faturamento_bruto_bebidas = format_brazilian(faturamento_bruto_bebidas)
+  faturamento_alimentos_delivery = format_brazilian(faturamento_alimentos_delivery)
+  faturamento_bebidas_delivery = format_brazilian(faturamento_bebidas_delivery)
+  faturamento_alimentos_eventos = format_brazilian(faturamento_alimentos_eventos)
+  faturamento_bebidas_eventos = format_brazilian(faturamento_bebidas_eventos)
+  compras_alimentos = format_brazilian(compras_alimentos)
+  compras_bebidas = format_brazilian(compras_bebidas)
+  variacao_estoque_alimentos = format_brazilian(variacao_estoque_alimentos)
+  variacao_estoque_bebidas = format_brazilian(variacao_estoque_bebidas) 
+  cmv_alimentos = format_brazilian(cmv_alimentos)
+  cmv_bebidas = format_brazilian(cmv_bebidas)
+  cmv_percentual_alim = format_brazilian(cmv_percentual_alim)
+  cmv_percentual_bebidas = format_brazilian(cmv_percentual_bebidas)
+  cmv_percentual_geral = format_brazilian(cmv_percentual_geral)
+
 
   col1, col2, col3, col4, col5, col6 = st.columns(6)
   with col1:
     with st.container(border=True):
       st.write('Faturam. Alimentos')
-      st.write('R$', FaturamBrutoAliment)
+      st.write('R$', faturamento_bruto_alimentos)
   with col2:
     with st.container(border=True):
       st.write('Faturam. Bebidas')
-      st.write('R$', FaturamBrutoBebidas)  
+      st.write('R$', faturamento_bruto_bebidas)  
   with col3:
     with st.container(border=True):
-      st.write('Compras Alim.')
-      st.write('R$', ComprasAlim)  
+      st.write('Faturam. Alim. Delivery.')
+      st.write('R$', faturamento_alimentos_delivery)  
   with col4:
     with st.container(border=True):
-      st.write('Compras Bebidas')
-      st.write('R$', ComprasBeb)
+      st.write('Faturam. Beb. Delivery.')
+      st.write('R$', faturamento_bebidas_delivery)
   with col5:
     with st.container(border=True):
-      st.write('Δ Estoque Alimentos')
-      st.write('R$', DeltaEstoqueAlim)
+      st.write('Faturam. Alim. Eventos.')
+      st.write('R$', faturamento_alimentos_eventos)
   with col6:
     with st.container(border=True):
-      st.write('Δ Estoque Bebidas')
-      st.write(' R$', DeltaEstoqueBebidas)
+      st.write('Faturam. Beb. Eventos.')
+      st.write('R$', faturamento_bebidas_eventos)
 
-  col7, col8, col9, col10, col11 = st.columns(5)
+  col7, col8, col9, col10 = st.columns(4)
   with col7:
     with st.container(border=True):
-      st.write('CMV Alimentos')
-      st.write(' R$', CMVAlim)
+      st.write('Variação Estoque Alimentos')
+      st.write('R$', variacao_estoque_alimentos)
   with col8:
     with st.container(border=True):
-      st.write('CMV Bebidas')
-      st.write('R$', CMVBebidas)
+      st.write('Variação Estoque Bebidas')
+      st.write('R$', variacao_estoque_bebidas)
   with col9:
     with st.container(border=True):
-      st.write('CMV Percentual Alimentos')
-      st.write(CMVPercentualAlim, '%')
+      st.write('Compras Alimentos')
+      st.write('R$', compras_alimentos)
   with col10:
     with st.container(border=True):
-      st.write('CMV Percentual Bebidas')
-      st.write(CMVPercentualBebidas, '%')
+      st.write('Compras Bebidas')
+      st.write('R$', compras_bebidas)
+
+      
+  
+  col11, col12, col13, col14, col15 = st.columns(5)
   with col11:
     with st.container(border=True):
+      st.write('CMV Alimentos')
+      st.write(' R$', cmv_alimentos)
+  with col12:
+    with st.container(border=True):
+      st.write('CMV Bebidas')
+      st.write('R$', cmv_bebidas)
+  with col13:
+    with st.container(border=True):
+      st.write('CMV Percentual Alimentos')
+      st.write(cmv_percentual_alim, '%')
+  with col14:
+    with st.container(border=True):
+      st.write('CMV Percentual Bebidas')
+      st.write(cmv_percentual_bebidas, '%')
+  with col15:
+    with st.container(border=True):
       st.write('CMV Percentual Geral')
-      st.write(CMVPercentualGeral, '%')
+      st.write(cmv_percentual_geral, '%')
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
       st.subheader('Faturamento Bruto e Estoque por Categoria')
-      dfFaturamento = config_tabela_CMV(dfFinal)
-      dfFaturamento['Mês'] = pd.to_datetime(dfFaturamento['Mês'], format='%d-%m-%Y')
-      # Formatando a data para "nome do mês/ano"
-      dfFaturamento['Mês'] = dfFaturamento['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
-      st.dataframe(dfFaturamento, use_container_width=True, hide_index=True)
+
+      # dfFaturamento = config_tabela_CMV(dfFinal)
+      # dfFaturamento['Mês'] = pd.to_datetime(dfFaturamento['Mês'], format='%d-%m-%Y')
+      # # Formatando a data para "nome do mês/ano"
+      # dfFaturamento['Mês'] = dfFaturamento['Mês'].apply(lambda x: format_date(x, format='MMMM/yyyy', locale='pt_BR'))
+      # st.dataframe(dfFaturamento, use_container_width=True, hide_index=True)
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:

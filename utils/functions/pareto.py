@@ -98,18 +98,17 @@ def config_diagramas_pareto(dfNomeEstoque, dfNomeCompras, categoria, categString
   # df_valor_unit_ajust = config_por_categ_avaliada(dfNomeEstoque.copy(), 'Valor Unit. Ajustado')  
 
   keyDiagrama1 = categoria + '_valor'
-  # keyDiagrama2 = categoria + '_valor_unitario'
-  # keyDiagrama3 = categoria + '_valor_unit_ajust'
+
+  # col1, col2 = st.columns([3, 2])
+  # with col2:
+  #   with st.container(border=True):
+  #     st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor total')
+  #     diagrama_pareto_por_categ_avaliada(df_por_valor, 'Valor Total', key=keyDiagrama1)  col1, col2 = st.columns([3, 2])
+
 
   with st.container(border=True):
     st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor total')
     diagrama_pareto_por_categ_avaliada(df_por_valor, 'Valor Total', key=keyDiagrama1)
-  # with st.container(border=True):    
-  #   st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor Unitário de cada')
-  #   diagrama_pareto_por_categ_avaliada(df_valor_unitario, 'Valor Unitário', key=keyDiagrama2)
-  # with st.container(border=True):
-  #   st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor unitário ajustado')
-  #   diagrama_pareto_por_categ_avaliada(df_valor_unit_ajust, 'Valor Unit. Ajustado', key=keyDiagrama3)
 
 
 def pesquisa_por_produto(dfNomeEstoque, key, titulo):

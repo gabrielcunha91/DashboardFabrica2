@@ -5,6 +5,7 @@ from utils.components import *
 
 
 def config_despesas_por_classe(df):
+  df = df[df['Class_Plano_de_Contas'] != 'a. Compras de Alimentos, Bebidas e Embalagens']
   df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
   df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
     'Orcamento': 'sum',

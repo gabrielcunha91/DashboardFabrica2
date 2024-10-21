@@ -130,7 +130,7 @@ def config_compras_insumos_detalhadas(categoria, key_data1, key_data2, keysearch
   data_inicio_default, data_fim_default = preparar_dados_datas()
   col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
   with col1: 
-    st.subheader('Detalhamenro de compras')
+    st.subheader('Detalhamento de compras')
   with col2:
     data_inicio = st.date_input('Data Início da Compra', value=data_inicio_default, key=key_data1, format="DD/MM/YYYY")
   with col3:

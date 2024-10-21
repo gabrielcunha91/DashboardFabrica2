@@ -12,11 +12,13 @@ def substituicao_deliverys(df):
     103: 116,
     112: 104,
     118: 114,
+    117: 114,
     139: 105
   }
 
   substituicoesNomes = {
     'Delivery Fabrica de Bares': 'Bar Brahma - Centro',
+    'Hotel Maraba': 'Bar Brahma - Centro',
     'Delivery Bar Leo Centro': 'Bar Léo - Centro',
     'Delivery Orfeu': 'Orfeu',
     'Delivery Jacaré': 'Jacaré'
@@ -192,7 +194,7 @@ def config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas):
     axis=1
   )
   df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df_merged = df_merged.drop(['ID_Contagem', 'Primeiro_Dia_Mes', 'Mes_Anterior_Texto', 'Nome_Insumo', 'Quantidade_Comprada_no_Mes', 'Preco_Medio_Pago_no_Mes', 'Valor_Total_Pago_no_Mes', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Valor_Ultima_Compra_Global'], axis=1)
+  df_merged = df_merged.drop(['ID_Contagem', 'Primeiro_Dia_Mes', 'Data_Contagem', 'Mes_Anterior_Texto', 'Nome_Insumo', 'Quantidade_Comprada_no_Mes', 'Preco_Medio_Pago_no_Mes', 'Valor_Total_Pago_no_Mes', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Valor_Ultima_Compra_Global'], axis=1)
 
   return df_merged
 
@@ -208,8 +210,6 @@ def config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes
 
   df_valoracao_estoque_atual = df_valoracao_estoque_atual.rename(columns={'Valor_em_Estoque': 'Estoque Atual', 'Quantidade': 'Quantidade Atual'})
   df_valoracao_estoque_mes_anterior = df_valoracao_estoque_mes_anterior.rename(columns={'Valor_em_Estoque': 'Estoque Mes Anterior', 'Quantidade': 'Quantidade Mes Anterior'})
-  df_valoracao_estoque_atual = df_valoracao_estoque_atual.drop(columns={'Data_Contagem'}, axis=1)
-  df_valoracao_estoque_mes_anterior = df_valoracao_estoque_mes_anterior.drop(columns={'Data_Contagem'}, axis=1)
 
   df_variacao_estoque = pd.merge(df_valoracao_estoque_mes_anterior, df_valoracao_estoque_atual, on=['ID_Loja', 'Loja', 'Categoria', 'ID_Insumo', 'Insumo', 'Unidade_Medida'], how='outer').fillna(0)
   df_variacao_estoque = df_variacao_estoque.rename(columns={'ID_Loja': 'ID Loja', 'Unidade_Medida': 'Unidade de Medida', 'ID_Insumo': 'ID Insumo'})
@@ -220,6 +220,7 @@ def config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes
   }).reset_index()
 
   df_variacao_estoque = df_variacao_estoque[df_variacao_estoque['Categoria'] != 0]
+  df_variacao_estoque = format_columns_brazilian(df_variacao_estoque, ['Estoque Mes Anterior', 'Estoque Atual'])
 
   return df_variacao_estoque, variacao_estoque_alimentos, variacao_estoque_bebidas
 
@@ -254,8 +255,8 @@ def config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_fat
   df_faturamento_total = df_faturamento_total.drop(['Data'], axis=1)  
 
   df_faturamento_total = primeiro_dia_mes_para_mes_ano(df_faturamento_total)
-
   df_faturamento_total = df_faturamento_total.rename(columns={'Primeiro_Dia_Mes': 'Mês'})
+  df_faturamento_total = format_columns_brazilian(df_faturamento_total, ['Faturamento Alimentos', 'Faturamento Bebidas', 'Faturamento Delivery Alimentos', 'Faturamento Delivery Bebidas', 'Faturamento Eventos'])
 
   return df_faturamento_total
 
@@ -268,6 +269,9 @@ def config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas):
   df_transf_e_gastos = pd.merge(df_transf_estoque, df_perdas_e_consumo, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
   df_transf_e_gastos = filtrar_por_datas(df_transf_e_gastos, data_inicio, data_fim, 'Primeiro_Dia_Mes')
   df_transf_e_gastos = filtrar_por_classe_selecionada(df_transf_e_gastos, 'Loja', lojas_selecionadas)
+
   df_transf_e_gastos = primeiro_dia_mes_para_mes_ano(df_transf_e_gastos)
+  df_transf_e_gastos = df_transf_e_gastos.rename(columns={'Primeiro_Dia_Mes': 'Mês'})
+  df_transf_e_gastos = format_columns_brazilian(df_transf_e_gastos, ['Entrada_Transf_Alim', 'Saida_Transf_Alim', 'Entrada_Transf_Bebidas', 'Saida_Transf_Bebidas', 'Consumo_Interno', 'Quebras_e_Perdas'])
 
   return df_transf_e_gastos

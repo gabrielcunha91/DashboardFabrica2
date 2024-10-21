@@ -50,6 +50,7 @@ def main():
   df_transf_e_gastos = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
 
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
+  df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
 
   cmv_alimentos = compras_alimentos - variacao_estoque_alimentos
   cmv_bebidas = compras_bebidas - variacao_estoque_bebidas

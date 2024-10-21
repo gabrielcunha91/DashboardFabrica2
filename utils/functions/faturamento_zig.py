@@ -46,16 +46,17 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamFaturam = OrcamFaturam[OrcamFaturam['Categoria'].isin(categorias_desejadas)]
   FaturamZigAgregado = FaturamZigAgregado[FaturamZigAgregado['Categoria'].isin(categorias_desejadas)]
 
-
   substituicoesIds = {
-    '103': '116',
-    '112': '104',
-    '118': '114',
-    '139': '105'
+    103: 116,
+    112: 104,
+    118: 114,
+    117: 114,
+    139: 105
   }
 
   substituicoesNomes = {
     'Delivery Fabrica de Bares': 'Bar Brahma - Centro',
+    'Hotel Maraba': 'Bar Brahma - Centro',
     'Delivery Bar Leo Centro': 'Bar Léo - Centro',
     'Delivery Orfeu': 'Orfeu',
     'Delivery Jacaré': 'Jacaré'

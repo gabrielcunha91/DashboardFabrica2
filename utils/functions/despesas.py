@@ -5,6 +5,7 @@ from utils.components import *
 
 
 def config_despesas_por_classe(df):
+  df = df[df['Class_Plano_de_Contas'] != 'a. Compras de Alimentos, Bebidas e Embalagens']
   df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
   df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
     'Orcamento': 'sum',
@@ -53,7 +54,7 @@ def config_despesas_por_classe(df):
   return df
 
 def config_despesas_detalhado(df):
-  df.drop(['ID', 'Orcamento', 'Class_Plano_de_Contas'], axis=1, inplace=True)
+  df.drop(['Orcamento', 'Class_Plano_de_Contas'], axis=1, inplace=True)
   df = df.rename(columns = {'Loja': 'Loja', 'Plano_de_Contas' : 'Plano de Contas', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Evento': 'Data Emissão',
                              'Data_Vencimento': 'Data Vencimento', 'Descricao': 'Descrição', 'Status': 'Status', 'Valor_Liquido': 'Valor'})
 
@@ -63,5 +64,7 @@ def config_despesas_detalhado(df):
   df['Valor'] = pd.to_numeric(df['Valor'], errors='coerce')
   df.fillna({'Valor': 0}, inplace=True)
   df['Valor'] = df['Valor'].astype(float)
+
+  cols = ['Loja', 'Fornecedor', 'Doc_Serie', 'Valor', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Plano de Contas', 'Status']
   
-  return df
+  return df[cols]

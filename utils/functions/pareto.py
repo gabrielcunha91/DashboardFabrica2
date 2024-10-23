@@ -143,6 +143,18 @@ def config_compras_insumos_detalhadas(categoria, key_data1, key_data2, keysearch
     else:
       filtered_df = df
   filtered_df = filtrar_por_classe_selecionada(filtered_df, 'Loja', lojas_selecionadas)
+  # filtered_df['Valor Total'] = filtered_df['Valor Total'].astype(float)
+  # filtered_df['Quantidade'] = filtered_df['Quantidade'].astype(float)
+  # filtered_df['Fator de Proporção'] = filtered_df['Fator de Proporção'].astype(float)
+
+  # filtered_df['Valor Unitário'] = filtered_df['Valor Total'] / (filtered_df['Quantidade'] * filtered_df['Fator de Proporção'])
+  
+  # df['Quantidade Ajustada'] = df['Quantidade'] * df['Fator de Proporção']
+  # df['Valor Unitário'] = df['Valor Total'] / df['Quantidade']
+
+
+  # id prod, nome, loja, forn, data compra, tira data recebimento, qtd, unid, med, valor total, valor unitário; tira fator de proporção; ordena do mais recente pro mais antigo
+
   row1 = st.columns([1, 15, 1])
   row1[1].dataframe(filtered_df, use_container_width=True,hide_index=True)
 

@@ -5,8 +5,6 @@ from utils.components import *
 import calendar
 from babel.dates import format_date
 
-
-
 def substituicao_deliverys(df):
   substituicoesIds = {
     103: 116,

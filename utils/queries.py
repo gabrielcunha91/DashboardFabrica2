@@ -1018,19 +1018,23 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE():
   WHERE tdr.COMPETENCIA > '2024-01-01'
 ''')
 
+
+  # id prod, nome, loja, forn, data compra, tira data recebimento, qtd, unid, med, valor total, valor unitário; tira fator de proporção; ordena do mais recente pro mais antigo
+
+
 def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   return dataframe_query(f'''
   SELECT 	
   	tin5.ID AS 'ID Produto',
   	tin5.DESCRICAO AS 'Nome Produto', 
+	  tin.DESCRICAO AS 'Categoria',
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
-	  tin.DESCRICAO AS 'Categoria',
+  	tdr.COMPETENCIA AS 'Data Compra',
   	tdri.QUANTIDADE AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-  	tdr.COMPETENCIA AS 'Data Compra',
-  	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção',
+    (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor_Unitario',
   	tps.DATA AS 'Data_Recebida'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
@@ -1050,6 +1054,8 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   GROUP BY 
     tin5.ID,
     tdr.COMPETENCIA
+  ORDER BY
+    tdr.COMPETENCIA DESC
   ''')
 
 #################################### FLUXO DE CAIXA ########################################

@@ -1,16 +1,1 @@
-Faturamento zig: 
- - Criar um faturamento acumulado do ano corrente
 
-
-Despesas:
- - Higiene e limpeza nao tem classificação mas deve ser colocado na tabela (Vmarket?)
- - Processos trabalhistas na DRE - Aba separada (Não trazer pro dash)
-
-
-CMV:
- - Criação da tabela EPM para incluir os eventos e refazer os cálculos em função (Não sou eu quem faz)
-
-
-unir as duas blue notes do t empresas (nao fiz!! kkkk)
-
-FAZER UM MANUAL DO RELATÓRIO

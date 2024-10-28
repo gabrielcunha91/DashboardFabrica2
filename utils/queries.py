@@ -964,18 +964,86 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
 
 ######################## PARETO ##############################
 
+# @st.cache_data
+# def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
+#   return dataframe_query(f'''
+#   SELECT 	
+#   	tin5.ID AS 'ID Produto',
+#   	te.NOME_FANTASIA AS 'Loja', 
+#   	tf.FANTASY_NAME AS 'Fornecedor', 
+#   	tin5.DESCRICAO AS 'Nome Produto', 
+# 	tin.DESCRICAO AS 'Categoria',
+#   	tdri.QUANTIDADE AS 'Quantidade',
+#   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
+#   	tdri.VALOR AS 'Valor Total', 
+#     (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
+#   	tdr.COMPETENCIA AS 'Data Compra',
+#   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
+#   FROM T_DESPESA_RAPIDA_ITEM tdri
+#   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
+#   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
+#   LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
+#   LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
+#   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
+#   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
+#   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
+#   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
+#   LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tin5.ID = tice.FK_INSUMO_COMPRA 
+#   WHERE tdr.COMPETENCIA > '2024-01-01'
+# ''')
+  
+
+
+# def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
+#   return dataframe_query(f'''
+#   SELECT 	
+#   	tin5.ID AS 'ID Produto',
+#   	tin5.DESCRICAO AS 'Nome Produto', 
+# 	  tin.DESCRICAO AS 'Categoria',
+#   	te.NOME_FANTASIA AS 'Loja', 
+#   	tf.FANTASY_NAME AS 'Fornecedor', 
+#   	tdr.COMPETENCIA AS 'Data Compra',
+#   	tdri.QUANTIDADE AS 'Quantidade',
+#   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
+#   	tdri.VALOR AS 'Valor Total', 
+#     (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
+#   	tps.DATA AS 'Data_Recebida'
+#   FROM T_DESPESA_RAPIDA_ITEM tdri
+#   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
+#   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
+#   LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
+#   LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
+#   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
+#   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
+#   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
+#   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
+#   LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tin5.ID = tice.FK_INSUMO_COMPRA 
+#   LEFT JOIN T_PEDIDOS tp ON tp.ID = tdr.FK_PEDIDO
+#   LEFT JOIN T_PEDIDO_STATUS tps ON tps.FK_PEDIDO = tp.ID
+#   WHERE tdr.COMPETENCIA >= '{data_inicio}'
+#     AND tdr.COMPETENCIA <= '{data_fim}'
+#     AND tin.DESCRICAO = '{categoria}'
+#   GROUP BY 
+#     tin5.ID,
+#     tdr.COMPETENCIA
+#   ORDER BY
+#     tdr.COMPETENCIA DESC
+#   ''')
+
+
 @st.cache_data
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   return dataframe_query(f'''
   SELECT 	
-  	tin5.ID AS 'ID Produto',
+  	tin4.ID AS 'ID Produto Nivel 4',	
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
-  	tin5.DESCRICAO AS 'Nome Produto', 
-	tin.DESCRICAO AS 'Categoria',
+  	tin4.DESCRICAO AS 'Nome Produto', 
+	  tin.DESCRICAO AS 'Categoria',
   	tdri.QUANTIDADE AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
+    (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
   	tdr.COMPETENCIA AS 'Data Compra',
   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri
@@ -991,42 +1059,13 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   WHERE tdr.COMPETENCIA > '2024-01-01'
 ''')
   
-@st.cache_data
-def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_ESTOQUE():
-  return dataframe_query(f'''
-    SELECT 	
-  	tin5.ID AS 'ID Produto',
-  	te.NOME_FANTASIA AS 'Loja', 
-  	tf.FANTASY_NAME AS 'Fornecedor', 
-  	tin5.DESCRICAO AS 'Nome Produto', 
-	  tin.DESCRICAO AS 'Categoria',
-  	tdri.QUANTIDADE AS 'Quantidade',
-  	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
-  	tdri.VALOR AS 'Valor Total', 
-  	tdr.COMPETENCIA AS 'Data Compra',
-  	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
-  FROM T_DESPESA_RAPIDA_ITEM tdri
-  LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tdri.FK_INSUMO = tice.FK_INSUMO_COMPRA
-  LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tice.FK_INSUMO_ESTOQUE = tin5.ID
-  LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
-  LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
-  LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
-  LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
-  LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
-  LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
-  LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
-  WHERE tdr.COMPETENCIA > '2024-01-01'
-''')
-
-
-  # id prod, nome, loja, forn, data compra, tira data recebimento, qtd, unid, med, valor total, valor unitário; tira fator de proporção; ordena do mais recente pro mais antigo
 
 
 def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   return dataframe_query(f'''
   SELECT 	
-  	tin5.ID AS 'ID Produto',
-  	tin5.DESCRICAO AS 'Nome Produto', 
+  	tin4.ID AS 'ID Produto Nivel 4',
+  	tin4.DESCRICAO AS 'Nome Produto', 
 	  tin.DESCRICAO AS 'Categoria',
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
@@ -1034,7 +1073,7 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   	tdri.QUANTIDADE AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-    (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor_Unitario',
+    (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
   	tps.DATA AS 'Data_Recebida'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
@@ -1057,6 +1096,7 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   ORDER BY
     tdr.COMPETENCIA DESC
   ''')
+
 
 #################################### FLUXO DE CAIXA ########################################
 

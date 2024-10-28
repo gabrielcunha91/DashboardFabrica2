@@ -77,28 +77,23 @@ def config_compras(data_inicio, data_fim, lojas_selecionadas):
   df1 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO()  
   df2 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO()
 
-  df1 = substituicao_deliverys(df1)
-  df2 = substituicao_deliverys(df2)
-
-  df1 = filtrar_por_datas(df1, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df2 = filtrar_por_datas(df2, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-
-  df1 = filtrar_por_classe_selecionada(df1, 'Loja', lojas_selecionadas)
-  df2 = filtrar_por_classe_selecionada(df2, 'Loja', lojas_selecionadas)
-
   Compras_Alimentos = df1['BlueMe_Sem_Pedido_Alimentos'].sum() + df2['BlueMe_Com_Pedido_Valor_Liq_Alimentos'].sum()
   Compras_Bebidas = df1['BlueMe_Sem_Pedido_Bebidas'].sum() + df2['BlueMe_Com_Pedido_Valor_Liq_Bebidas'].sum()
 
   Compras_Alimentos = float(Compras_Alimentos)
   Compras_Bebidas = float(Compras_Bebidas)
 
+  df1 = substituicao_deliverys(df1)
+  df2 = substituicao_deliverys(df2)
+
   df_compras = pd.merge(df2, df1, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
+
+  df_compras = filtrar_por_datas(df_compras, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+
+  df_compras = filtrar_por_classe_selecionada(df_compras, 'Loja', lojas_selecionadas)
+
   df_compras = df_compras.drop(columns={'BlueMe_Com_Pedido_Valor_Liquido', 'BlueMe_Com_Pedido_Valor_Insumos', 'BlueMe_Com_Pedido_Valor_Liq_Descart_Hig_Limp', 'BlueMe_Com_Pedido_Valor_Liq_Outros', 'BlueMe_Sem_Pedido_Valor_Liquido', 'BlueMe_Sem_Pedido_Descart_Hig_Limp', 'BlueMe_Sem_Pedido_Outros'})
   df_compras = primeiro_dia_mes_para_mes_ano(df_compras)
-  df1 = primeiro_dia_mes_para_mes_ano(df1)
-  df2 = primeiro_dia_mes_para_mes_ano(df2)
-  df1 = df1.rename(columns={'Primeiro_Dia_Mes': 'Mes Ano'})
-  df2 = df2.rename(columns={'Primeiro_Dia_Mes': 'Mes Ano'})
 
   df_compras['Compras Alimentos'] = df_compras['BlueMe_Com_Pedido_Valor_Liq_Alimentos'] + df_compras['BlueMe_Sem_Pedido_Alimentos']
   df_compras['Compras Bebidas'] = df_compras['BlueMe_Com_Pedido_Valor_Liq_Bebidas'] + df_compras['BlueMe_Sem_Pedido_Bebidas']
@@ -164,22 +159,13 @@ def config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas):
   ultimos_precos = filtrar_por_classe_selecionada(ultimos_precos, 'Loja', lojas_selecionadas)
 
   # 1. Left join entre Contagem_Insumos e Precos_Consolidados_Mes
-  df_merged = pd.merge(contagem_insumos, 
-                     precos_consolidados_mes, 
-                     on=['ID_Insumo', 'Mes_Anterior_Texto', 'Loja'], 
-                     how='left')
+  df_merged = pd.merge(contagem_insumos, precos_consolidados_mes, on=['ID_Insumo', 'Mes_Anterior_Texto', 'Loja'], how='left')
   
   # 2. Left join com Ultimos_Precos
-  df_merged = pd.merge(df_merged, 
-                     ultimos_precos[['ID_Insumo', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Loja']], 
-                     on=['ID_Insumo', 'Loja'], 
-                     how='left')
+  df_merged = pd.merge(df_merged, ultimos_precos[['ID_Insumo', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Loja']], on=['ID_Insumo', 'Loja'], how='left')
 
   # 3. Left join com Precos_Outras_Casas
-  df_merged = pd.merge(df_merged, 
-                     precos_outras_lojas[['ID_Insumo', 'Valor_Ultima_Compra_Global']], 
-                     on='ID_Insumo', 
-                     how='left')
+  df_merged = pd.merge(df_merged, precos_outras_lojas[['ID_Insumo', 'Valor_Ultima_Compra_Global']], on='ID_Insumo', how='left')
 
   df_merged['Valor_em_Estoque'] = df_merged.apply(
     lambda row: 

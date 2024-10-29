@@ -1040,10 +1040,10 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   	tf.FANTASY_NAME AS 'Fornecedor', 
   	tin4.DESCRICAO AS 'Nome Produto', 
 	  tin.DESCRICAO AS 'Categoria',
-  	tdri.QUANTIDADE AS 'Quantidade',
+  	CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)) AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-    (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
+    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
   	tdr.COMPETENCIA AS 'Data Compra',
   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri
@@ -1070,10 +1070,10 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
   	tdr.COMPETENCIA AS 'Data Compra',
-  	tdri.QUANTIDADE AS 'Quantidade',
+  	CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)) AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-    (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
+    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
   	tps.DATA AS 'Data_Recebida'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID

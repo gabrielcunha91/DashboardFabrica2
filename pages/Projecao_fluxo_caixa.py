@@ -38,7 +38,7 @@ with st.container(border=True):
   st.subheader('Projeção de bares agrupados:' )
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino, Bar da Granja*
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino, Bar Brahma - Granja, Edificio Rolim*
     """
   )
 
@@ -62,9 +62,9 @@ with st.container(border=True):
     checkbox = st.checkbox(label='Adicionar lojas agrupadas', key='checkbox_lojas_despesas')
     if checkbox:
       lojasAgrupadas = [
-        'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto',
-        'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 
-        'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar da Granja '
+        'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
+        'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 
+        'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar Brahma - Granja', 'Edificio Rolim'
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
     checkbox2 = st.checkbox(label='Apenas Pendentes', key='checkbox_despesas_pendentes')
@@ -101,8 +101,8 @@ with st.container(border=True):
       lojasAgrupadas = [
             'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
             'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
-            'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu',
-            'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar da Granja '
+            'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 
+            'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar Brahma - Granja', 'Edificio Rolim'
       ]
       lojasSelecionadas2.extend(lojasAgrupadas)
   with col3:

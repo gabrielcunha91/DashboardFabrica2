@@ -47,7 +47,7 @@ def config_projecao_bares():
   houses_to_group = [
     'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
     'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 
-    'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar da Granja '
+    'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar Brahma - Granja', 'Edificio Rolim'
   ]
 
   # Create a new column 'Group' based on the houses

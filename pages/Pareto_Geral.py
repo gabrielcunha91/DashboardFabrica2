@@ -24,7 +24,7 @@ def main ():
     """
   st.markdown(streamlit_style, unsafe_allow_html=True)
 
-  st.title('CURVA ABC - Diagrama de Pareto')
+  st.title('CURVA ABC')
 
   dfComparativo = GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA()
 

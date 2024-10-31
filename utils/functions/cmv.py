@@ -135,10 +135,30 @@ def config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas):
                        'Valor_Liq_Bebidas': 'Valor Líq. Bebidas', 'Valor_Liq_Descart_Hig_Limp': 'Valor Líq. Hig/Limp.', 'Valor_Gelo_Gas_Carvao_Velas': 'Valor Líq Gelo/Gas/Carvão/Velas',
                        'Valor_Utensilios': 'Valor Líq. Utensilios', 'Valor_Liq_Outros': 'Valor Líq. Outros'}, inplace=True)
 
+  valor_total = df['Valor Líquido'].sum()
+  valor_alimentos = df['Valor Líq. Alimentos'].sum()
+  valor_bebidas = df['Valor Líq. Bebidas'].sum()
+  valor_hig = df['Valor Líq. Hig/Limp.'].sum()
+  valor_gelo = df['Valor Líq Gelo/Gas/Carvão/Velas'].sum()
+  valor_utensilios = df['Valor Líq. Utensilios'].sum()
+  valor_outros = df['Valor Líq. Outros'].sum()
+
+  valor_total = format_brazilian(valor_total)
+  valor_alimentos = format_brazilian(valor_alimentos)
+  valor_bebidas = format_brazilian(valor_bebidas) 
+  valor_hig = format_brazilian(valor_hig) 
+  valor_gelo = format_brazilian(valor_gelo)
+  valor_utensilios = format_brazilian(valor_utensilios)
+  valor_outros = format_brazilian(valor_outros)
+
+  df = format_columns_brazilian(df, ['Valor Líquido', 'Valor Cotação', 'Insumos - V. Líq', 'Valor Líq. Alimentos','Valor Líq. Bebidas',
+                                     'Valor Líq. Hig/Limp.', 'Valor Líq Gelo/Gas/Carvão/Velas', 'Valor Líq. Utensilios', 'Valor Líq. Outros'])
+
+
   nova_ordem = ['tdr ID', 'ID Loja', 'Loja', 'Fornecedor', 'Doc_Serie', 'Data Emissão', 'Valor Líquido', 'Valor Cotação', 'Insumos - V. Líq', 'Valor Líq. Alimentos',
                 'Valor Líq. Bebidas', 'Valor Líq. Hig/Limp.', 'Valor Líq Gelo/Gas/Carvão/Velas', 'Valor Líq. Utensilios', 'Valor Líq. Outros']
   df = df[nova_ordem]
-  return df
+  return df, valor_total, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros
 
 
 def config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas):
@@ -167,14 +187,14 @@ def config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas):
   # 3. Left join com Precos_Outras_Casas
   df_merged = pd.merge(df_merged, precos_outras_lojas[['ID_Insumo', 'Valor_Ultima_Compra_Global']], on='ID_Insumo', how='left')
 
-  df_merged['Valor_em_Estoque'] = df_merged.apply(
+  df_merged.loc[df_merged['Valor_em_Estoque'].isna(), 'Valor_em_Estoque'] = df_merged.apply(
     lambda row: 
-        (float(row['Quantidade']) * float(row['Preco_Medio_Pago_no_Mes'])) 
-        if pd.notna(row['Preco_Medio_Pago_no_Mes']) else
-        (float(row['Quantidade']) * float(row['Valor_Unidade_Medida'])) 
-        if pd.notna(row['Valor_Unidade_Medida']) else
-        (float(row['Quantidade']) * float(row['Valor_Ultima_Compra_Global'])) 
-        if pd.notna(row['Valor_Ultima_Compra_Global']) else 0, 
+      (float(row['Quantidade']) * float(row['Preco_Medio_Pago_no_Mes'])) 
+      if pd.notna(row['Preco_Medio_Pago_no_Mes']) else
+      (float(row['Quantidade']) * float(row['Valor_Unidade_Medida'])) 
+      if pd.notna(row['Valor_Unidade_Medida']) else
+      (float(row['Quantidade']) * float(row['Valor_Ultima_Compra_Global'])) 
+      if pd.notna(row['Valor_Ultima_Compra_Global']) else 0,
     axis=1
   )
   df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')

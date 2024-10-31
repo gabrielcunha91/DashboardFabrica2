@@ -505,6 +505,7 @@ def GET_CONTAGEM_INSUMOS():
    	tci.FK_INSUMO AS 'ID_Insumo',
    	tin5.DESCRICAO AS 'Insumo',
    	tci.QUANTIDADE_INSUMO AS 'Quantidade',
+    tci.VALOR_INSUMOS AS 'Valor_em_Estoque',
     tudm.UNIDADE_MEDIDA as 'Unidade_Medida',
    	tin.DESCRICAO AS 'Categoria',
    	tci.DATA_CONTAGEM AS 'Data_Contagem',

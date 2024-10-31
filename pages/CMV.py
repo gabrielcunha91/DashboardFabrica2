@@ -45,7 +45,7 @@ def main():
   df_valoracao_estoque_mes_anterior = config_valoracao_estoque(data_inicio_mes_anterior, data_fim_mes_anterior, lojas_selecionadas)
   df_variacao_estoque, variacao_estoque_alimentos, variacao_estoque_bebidas = config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior)
   df_insumos_sem_pedido = config_insumos_blueme_sem_pedido(data_inicio, data_fim, lojas_selecionadas)
-  df_insumos_com_pedido = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
+  df_insumos_com_pedido, valor_total_com_pedido, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_transf_e_gastos = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
 
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
@@ -180,9 +180,18 @@ def main():
           fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores_com_pedido, key=2)
         df_insumos_com_pedido = filtrar_por_classe_selecionada(df_insumos_com_pedido, 'Fornecedor', fornecedores_selecionados)
         st.dataframe(df_insumos_com_pedido, use_container_width=True, hide_index=True)
-        valor_total = df_insumos_com_pedido['Valor Líquido'].sum()
-        valor_total = format_brazilian(valor_total)
-        st.write('Valor total = R$', valor_total)
+        st.write(
+          f"Valor total = R\$ {valor_total_com_pedido}, "
+          f"Valor Alimentos = R\$ {valor_alimentos}, "
+          f"Valor Bebidas = R\$ {valor_bebidas}, "
+          f"Valor Hig/Limp. = R\$ {valor_hig}, "
+          f"Valor Gelo = R\$ {valor_gelo}, "
+          f"Valor Utensílios = R\$ {valor_utensilios}, "
+          f"Valor Outros = R\$ {valor_outros}"
+        )
+
+
+
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])

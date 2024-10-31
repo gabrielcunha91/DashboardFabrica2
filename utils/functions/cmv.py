@@ -135,10 +135,30 @@ def config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas):
                        'Valor_Liq_Bebidas': 'Valor Líq. Bebidas', 'Valor_Liq_Descart_Hig_Limp': 'Valor Líq. Hig/Limp.', 'Valor_Gelo_Gas_Carvao_Velas': 'Valor Líq Gelo/Gas/Carvão/Velas',
                        'Valor_Utensilios': 'Valor Líq. Utensilios', 'Valor_Liq_Outros': 'Valor Líq. Outros'}, inplace=True)
 
+  valor_total = df['Valor Líquido'].sum()
+  valor_alimentos = df['Valor Líq. Alimentos'].sum()
+  valor_bebidas = df['Valor Líq. Bebidas'].sum()
+  valor_hig = df['Valor Líq. Hig/Limp.'].sum()
+  valor_gelo = df['Valor Líq Gelo/Gas/Carvão/Velas'].sum()
+  valor_utensilios = df['Valor Líq. Utensilios'].sum()
+  valor_outros = df['Valor Líq. Outros'].sum()
+
+  valor_total = format_brazilian(valor_total)
+  valor_alimentos = format_brazilian(valor_alimentos)
+  valor_bebidas = format_brazilian(valor_bebidas) 
+  valor_hig = format_brazilian(valor_hig) 
+  valor_gelo = format_brazilian(valor_gelo)
+  valor_utensilios = format_brazilian(valor_utensilios)
+  valor_outros = format_brazilian(valor_outros)
+
+  df = format_columns_brazilian(df, ['Valor Líquido', 'Valor Cotação', 'Insumos - V. Líq', 'Valor Líq. Alimentos','Valor Líq. Bebidas',
+                                     'Valor Líq. Hig/Limp.', 'Valor Líq Gelo/Gas/Carvão/Velas', 'Valor Líq. Utensilios', 'Valor Líq. Outros'])
+
+
   nova_ordem = ['tdr ID', 'ID Loja', 'Loja', 'Fornecedor', 'Doc_Serie', 'Data Emissão', 'Valor Líquido', 'Valor Cotação', 'Insumos - V. Líq', 'Valor Líq. Alimentos',
                 'Valor Líq. Bebidas', 'Valor Líq. Hig/Limp.', 'Valor Líq Gelo/Gas/Carvão/Velas', 'Valor Líq. Utensilios', 'Valor Líq. Outros']
   df = df[nova_ordem]
-  return df
+  return df, valor_total, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros
 
 
 def config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas):

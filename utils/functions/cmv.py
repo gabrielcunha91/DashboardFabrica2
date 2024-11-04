@@ -100,6 +100,9 @@ def config_compras(data_inicio, data_fim, lojas_selecionadas):
   df_compras = df_compras.rename(columns={'Primeiro_Dia_Mes': 'Mes Ano', 'BlueMe_Com_Pedido_Valor_Liq_Alimentos': 'BlueMe c/ Pedido Alim.', 'BlueMe_Com_Pedido_Valor_Liq_Bebidas': 'BlueMe c/ Pedido Bebidas', 'BlueMe_Sem_Pedido_Alimentos': 'BlueMe s/ Pedido Alim.', 'BlueMe_Sem_Pedido_Bebidas': 'BlueMe s/ Pedido Bebidas'})
 
   df_compras = df_compras[['ID_Loja', 'Loja', 'Mes Ano', 'BlueMe c/ Pedido Alim.', 'BlueMe s/ Pedido Alim.', 'Compras Alimentos', 'BlueMe c/ Pedido Bebidas', 'BlueMe s/ Pedido Bebidas', 'Compras Bebidas']]
+  
+  columns = ['BlueMe c/ Pedido Alim.', 'BlueMe s/ Pedido Alim.', 'Compras Alimentos', 'BlueMe c/ Pedido Bebidas', 'BlueMe s/ Pedido Bebidas', 'Compras Bebidas']
+  df_compras = format_columns_brazilian(df_compras, columns)
 
   return df_compras, Compras_Alimentos, Compras_Bebidas
 
@@ -115,7 +118,10 @@ def config_insumos_blueme_sem_pedido(data_inicio, data_fim, lojas_selecionadas):
   df.rename(columns = {'tdr_ID': 'tdr ID', 'ID_Loja': 'ID Loja', 'Loja': 'Loja', 'Fornecedor': 'Fornecedor', 'Plano_de_Contas': 'Classificacao',
                        'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão', 'Valor_Liquido': 'Valor Líquido'}, inplace=True)
   df['Valor Líquido'] = df['Valor Líquido'].astype(float)
-  return df
+  valor_total = df['Valor Líquido'].sum()
+  df = format_columns_brazilian(df, ['Valor Líquido'])
+  valor_total = format_brazilian(valor_total)
+  return valor_total, df
 
 
 def config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas):

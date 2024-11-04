@@ -44,7 +44,7 @@ def main():
   df_valoracao_estoque_atual = config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas)
   df_valoracao_estoque_mes_anterior = config_valoracao_estoque(data_inicio_mes_anterior, data_fim_mes_anterior, lojas_selecionadas)
   df_variacao_estoque, variacao_estoque_alimentos, variacao_estoque_bebidas = config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior)
-  df_insumos_sem_pedido = config_insumos_blueme_sem_pedido(data_inicio, data_fim, lojas_selecionadas)
+  valor_total, df_insumos_sem_pedido = config_insumos_blueme_sem_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_insumos_com_pedido, valor_total_com_pedido, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_transf_e_gastos = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
 
@@ -171,8 +171,6 @@ def main():
           fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores_sem_pedido, key=3)
         df_insumos_sem_pedido = filtrar_por_classe_selecionada(df_insumos_sem_pedido, 'Fornecedor', fornecedores_selecionados)
         st.dataframe(df_insumos_sem_pedido, use_container_width=True, hide_index=True)
-        valor_total = df_insumos_sem_pedido['Valor Líquido'].sum()
-        valor_total = format_brazilian(valor_total)
         st.write('Valor total = R$', valor_total)
       with st.expander("Detalhes Insumos BlueMe Com Pedido"):
         col3, col4, col5 = st.columns(3)
@@ -181,16 +179,14 @@ def main():
         df_insumos_com_pedido = filtrar_por_classe_selecionada(df_insumos_com_pedido, 'Fornecedor', fornecedores_selecionados)
         st.dataframe(df_insumos_com_pedido, use_container_width=True, hide_index=True)
         st.write(
-          f"Valor total = R\$ {valor_total_com_pedido}, "
-          f"Valor Alimentos = R\$ {valor_alimentos}, "
-          f"Valor Bebidas = R\$ {valor_bebidas}, "
-          f"Valor Hig/Limp. = R\$ {valor_hig}, "
-          f"Valor Gelo = R\$ {valor_gelo}, "
-          f"Valor Utensílios = R\$ {valor_utensilios}, "
-          f"Valor Outros = R\$ {valor_outros}"
+          f"Valor Total = R\\$ {valor_total_com_pedido},  \n"
+          f"Valor Alimentos = R\\$ {valor_alimentos},  \n"
+          f"Valor Bebidas = R\\$ {valor_bebidas},  \n"
+          f"Valor Hig/Limp. = R\\$ {valor_hig},  \n"
+          f"Valor Gelo = R\\$ {valor_gelo},  \n"
+          f"Valor Utensílios = R\\$ {valor_utensilios},  \n"
+          f"Valor Outros = R\\$ {valor_outros}"
         )
-
-
 
 
   with st.container(border=True):

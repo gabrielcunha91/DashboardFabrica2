@@ -32,7 +32,7 @@ def main():
 
   lojasComDados = preparar_dados_lojas_user()
   data_inicio_default, data_fim_default = preparar_datas_ultimo_mes()
-  lojas_selecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
+  lojas_selecionadas, data_inicio, data_fim = criar_seletores_cmv(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()
 
   data_inicio_mes_anterior = (data_inicio.replace(day=1) - timedelta(days=1)).replace(day=1)
@@ -51,7 +51,7 @@ def main():
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
   df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
 
-  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos
+  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos # - consumo interno + entrada - saida
   cmv_bebidas = compras_bebidas - variacao_estoque_bebidas
   faturamento_total_alimentos = faturamento_bruto_alimentos + faturamento_alimentos_delivery + faturamento_alimentos_eventos
   faturamento_total_bebidas = faturamento_bruto_bebidas + faturamento_bebidas_delivery + faturamento_bebidas_eventos
@@ -152,6 +152,7 @@ def main():
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
       st.subheader('Faturamento Bruto por Categoria')
+      
       st.dataframe(df_faturamento_total, hide_index=True)
 
   with st.container(border=True):

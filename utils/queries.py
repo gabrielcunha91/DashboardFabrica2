@@ -496,19 +496,19 @@ def GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio, data_fim):
 
 
 @st.cache_data
-def GET_CONTAGEM_INSUMOS():
+def GET_CONTAGEM_INSUMOS(loja):
   return dataframe_query(f'''  
 	SELECT
-    tci.ID as 'ID_Contagem',
    	te.ID AS 'ID_Loja',
+   	tci.DATA_CONTAGEM AS 'Data_Contagem',
    	te.NOME_FANTASIA AS 'Loja',
    	tci.FK_INSUMO AS 'ID_Insumo',
    	tin5.DESCRICAO AS 'Insumo',
+   	tin4.ID as 'ID_Nivel_4',
+   	tin.DESCRICAO AS 'Categoria',
    	tci.QUANTIDADE_INSUMO AS 'Quantidade',
     tci.VALOR_INSUMOS AS 'Valor_em_Estoque',
     tudm.UNIDADE_MEDIDA as 'Unidade_Medida',
-   	tin.DESCRICAO AS 'Categoria',
-   	tci.DATA_CONTAGEM AS 'Data_Contagem',
     cast(date_format(cast(tci.DATA_CONTAGEM AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes',
     DATE_FORMAT(DATE_SUB(tci.DATA_CONTAGEM, INTERVAL 1 MONTH), '%m/%Y') AS 'Mes_Anterior_Texto'
   FROM T_CONTAGEM_INSUMOS tci 
@@ -519,76 +519,61 @@ def GET_CONTAGEM_INSUMOS():
   LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id	
   LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tin5.FK_UNIDADE_MEDIDA = tudm.ID)
+  WHERE te.NOME_FANTASIA = '{loja}'
   ''')
 
   
 @st.cache_data
-def GET_PRECOS_CONSOLIDADOS_MES():
-  return dataframe_query(f'''
-   SELECT 
-    vir.Loja as Loja,
-    vir.ID_Insumo_Nivel_5 as ID_Insumo,
-    vir.Nome_Insumo_Nivel_5 as Nome_Insumo,
-    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS Mes_Anterior_Texto,
-    ROUND(SUM(vir.Quantidade), 2) AS Quantidade_Comprada_no_Mes,
-    ROUND(SUM(vir.Valor_Insumos), 2) AS Valor_Total_Pago_no_Mes,
-    ROUND(SUM(vir.Valor_Insumos) / SUM(vir.Quantidade), 2) AS Preco_Medio_Pago_no_Mes
-FROM View_Insumos_Recebidos vir
-GROUP BY Mes_Anterior_Texto, vir.ID_Insumo_Nivel_5;
-  ''')
-
-@st.cache_data
-def GET_ULTIMOS_PRECOS():
+def GET_PRECOS_CONSOLIDADOS_MES(loja):
   return dataframe_query(f'''
   SELECT 
-    vir.ID_Loja AS 'ID_Loja',
-    vir.Loja AS 'Loja',
-    vir.ID_Insumo_Nivel_5 AS 'ID_Insumo',
-    vir.Nome_Insumo_Nivel_5 AS 'Nome_Insumo',
-    ultima_compra.Data_Ultima_Compra as 'Data_Ultima_Compra',
-    vir.Quantidade AS 'Quantidade',
-    vir.Unidade_Medida AS 'Unidade_Medida',
-    vir.Valor_Insumos AS 'Valor_Cotado',
-    vir.Valor_Insumos / vir.Quantidade AS 'Valor_Unidade_Medida',
-    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS Mes_Anterior_Texto
-  FROM 
-    View_Insumos_Recebidos vir
-  INNER JOIN 
-    (SELECT 
-        ID_Insumo_Nivel_5, 
-        MAX(STR_TO_DATE(Data_Emissao, '%Y-%m-%d')) AS Data_Ultima_Compra
-     FROM View_Insumos_Recebidos
-     GROUP BY ID_Insumo_Nivel_5) AS ultima_compra
-  ON (vir.ID_Insumo_Nivel_5 = ultima_compra.ID_Insumo_Nivel_5) 
-  AND (STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d') = ultima_compra.Data_Ultima_Compra)
+    vir.Loja as 'Loja',
+    vir.ID_Insumo_Nivel_5 as 'ID_Insumo',
+    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS 'Mes_Anterior_Texto',
+    ROUND(SUM(vir.Quantidade), 2) AS 'Quantidade_Comprada_no_Mes',
+    ROUND(SUM(vir.Valor_Insumos), 2) AS 'Valor_Total_Pago_no_Mes',
+    ROUND(SUM(vir.Valor_Insumos) / SUM(vir.Quantidade), 2) AS 'Preco_Medio_Pago_no_Mes'
+  FROM View_Insumos_Recebidos vir
+  GROUP BY Mes_Anterior_Texto, vir.ID_Insumo_Nivel_5;
+  ORDER BY Mes_Anterior_Texto DESC, Nome_Insumo_Nivel_5 ASC
+  WHERE vir.Loja = '{loja}'
   ''')
 
 
+
+# 71k linhas
+@st.cache_data
+def GET_ULTIMOS_PRECOS(loja):
+  return dataframe_query(f'''
+  SELECT 
+    vir.Loja AS 'Loja',
+    vir.ID_Insumo_Nivel_5 AS 'ID_Insumo',
+    vir.Data_Emissao as 'Data_Ultima_Compra',
+    vir.Valor_Insumos / vir.Quantidade AS 'Valor_Unidade_Medida',
+    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS 'Mes_Anterior_Texto'
+  FROM 
+    View_Insumos_Recebidos vir
+  WHERE vir.Loja = '{loja}'
+	ORDER BY vir.Data_Emissao DESC
+  ''')
+
+
+
+# 53k linhas
 @st.cache_data
 def GET_PRECOS_OUTRAS_LOJAS():
   return dataframe_query(f'''
-  SELECT 
-    vir.ID_Insumo_Nivel_5 AS ID_Insumo,
-    vir.Nome_Insumo_Nivel_5 AS Insumo,
-    vir.Data_Emissao AS Data_Ultima_Compra,
-    SUM(vir.Valor_Insumos) / SUM(vir.Quantidade) AS Valor_Ultima_Compra_Global
-  FROM 
+  SELECT
+    vir.ID_Insumo_Nivel_5 AS 'ID_Insumo',
+    vir.Data_Emissao AS 'Data_Compra',
+    SUM(vir.Valor_Insumos) / SUM(vir.Quantidade) AS 'Valor_Ultima_Compra_Global'
+  FROM
     View_Insumos_Recebidos vir
-  INNER JOIN (
-    SELECT 
-      ID_Insumo_Nivel_5,
-      MAX(Data_Emissao) AS Data_Ultima_Compra
-    FROM View_Insumos_Recebidos
-    GROUP BY ID_Insumo_Nivel_5
-  ) AS ultima_compra_global 
-  ON 
-    vir.ID_Insumo_Nivel_5 = ultima_compra_global.ID_Insumo_Nivel_5 
-    AND vir.Data_Emissao = ultima_compra_global.Data_Ultima_Compra
-  GROUP BY 
-    vir.ID_Insumo_Nivel_5, 
+  GROUP BY
+    vir.ID_Insumo_Nivel_5,
     vir.Data_Emissao
-  ORDER BY 
-    vir.Nome_Insumo_Nivel_5, 
+  ORDER BY
+    vir.Nome_Insumo_Nivel_5,
     vir.Data_Emissao DESC
   ''')
 
@@ -700,105 +685,6 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO():
 ''')
 
 
-# @st.cache_data
-# def GET_DADOS_PARA_INSUMOS_COM_PEDIDO():
-#   return dataframe_query(f'''
-# WITH vibmcp AS (SELECT
-#     DISTINCT tdr.ID AS tdr_ID,
-#     te.ID AS ID_Loja,
-#     te.NOME_FANTASIA AS Loja,
-#     tf.CORPORATE_NAME AS Fornecedor,
-#     tdr.NF AS Doc_Serie,
-#     tdr.COMPETENCIA AS Data_Emissao,
-#     cast(date_format(cast(tdr.COMPETENCIA as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
-#     tdr.OBSERVACAO AS Observacao,
-#     tdr.VALOR_LIQUIDO AS Valor_Liquido,
-#     SUM(tdri.VALOR) OVER (PARTITION BY tdri.FK_DESPESA_RAPIDA) AS Valor_Total_Insumos_Compra,
-#     tin5.ID AS ID_Insumo_Nivel_5,
-#     tin5.DESCRICAO AS Nome_Insumo_Nivel_5,
-#     tin1.DESCRICAO AS Nome_Insumo_Nivel_1,
-#     tdri.QUANTIDADE AS Quantidade,
-#     tdri.UNIDADE_MEDIDA AS Unidade_Medida,
-#     tdri.VALOR AS Valor_Insumos,
-#     SUM(tdri.VALOR) AS Valor_Total_Insumos,
-#     SUM(CASE
-#         WHEN tin1.DESCRICAO = 'ALIMENTOS' THEN tdri.VALOR
-#         ELSE 0
-#     END) AS Valor_Alimentos,
-#     SUM(CASE
-#         WHEN tin1.DESCRICAO = 'BEBIDAS' THEN tdri.VALOR
-#         ELSE 0
-#     END) AS Valor_Bebidas,
-#     SUM(CASE
-#         WHEN tin1.DESCRICAO = 'DESCARTAVEIS/HIGIENE E LIMPEZA' THEN tdri.VALOR
-#         ELSE 0
-#     END) AS Valor_Descartaveis_Higiene_Limpeza,
-#     SUM(CASE
-#         WHEN tin1.DESCRICAO NOT IN ('ALIMENTOS', 'BEBIDAS', 'DESCARTAVEIS/HIGIENE E LIMPEZA') THEN tdri.VALOR
-#         ELSE 0
-#     END) AS Valor_Outros,
-#     ROUND(tdr.VALOR_LIQUIDO * (SUM(CASE WHEN tin1.DESCRICAO = 'ALIMENTOS' THEN tdri.VALOR ELSE 0 END) / SUM(tdri.VALOR)), 2) AS Valor_Liq_Alimentos,
-#     ROUND(tdr.VALOR_LIQUIDO * (SUM(CASE WHEN tin1.DESCRICAO = 'BEBIDAS' THEN tdri.VALOR ELSE 0 END) / SUM(tdri.VALOR)), 2) AS Valor_Liq_Bebidas,
-#     ROUND(tdr.VALOR_LIQUIDO * (SUM(CASE WHEN tin1.DESCRICAO = 'DESCARTAVEIS/HIGIENE E LIMPEZA' THEN tdri.VALOR ELSE 0 END) / SUM(tdri.VALOR)), 2) AS Valor_Liq_Descart_Hig_Limp,
-#     ROUND(tdr.VALOR_LIQUIDO * (SUM(CASE WHEN tin1.DESCRICAO NOT IN ('ALIMENTOS', 'BEBIDAS', 'DESCARTAVEIS/HIGIENE E LIMPEZA') THEN tdri.VALOR ELSE 0 END) / SUM(tdri.VALOR)), 2) AS Valor_Liq_Outros
-# FROM
-#     T_DESPESA_RAPIDA tdr
-#     JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
-#     LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON tdr.FK_FORMA_PAGAMENTO = tfdp.ID
-#     LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
-#     LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID
-#     LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
-#     LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID
-#     LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON tdr.FK_APROVACAO_DIRETORIA = tsad.ID
-#     LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON tdr.FK_APROVACAO_CAIXA = tsac.ID
-#     LEFT JOIN T_STATUS_PAGAMENTO tsp ON tdr.FK_STATUS_PGTO = tsp.ID
-#     LEFT JOIN T_CALENDARIO tc ON tdr.PREVISAO_PAGAMENTO = tc.ID
-#     LEFT JOIN T_CALENDARIO tc2 ON tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID
-#     LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
-#     LEFT JOIN View_Cargos_PJ vcpj ON tf.CORPORATE_NAME = vcpj.Codigo_PJ
-#     LEFT JOIN T_DESPESA_RAPIDA_ITEM tdri ON tdr.ID = tdri.FK_DESPESA_RAPIDA
-#     LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
-#     LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID
-#     LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID
-#     LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID
-#     LEFT JOIN T_INSUMOS_NIVEL_1 tin1 ON tin2.FK_INSUMOS_NIVEL_1 = tin1.ID
-# WHERE
-#     tdri.ID IS NOT NULL
-#     AND tin5.ID IS NOT NULL
-# GROUP BY
-#     tdr.ID,
-#     te.ID,
-#     te.NOME_FANTASIA,
-#     tf.CORPORATE_NAME,
-#     tdr.NF,
-#     tdr.COMPETENCIA,
-#     tdr.OBSERVACAO,
-#     tdr.VALOR_LIQUIDO,
-#     tin5.ID,
-#     tin5.DESCRICAO,
-#     tin1.DESCRICAO
-# ORDER BY tdr.ID )
-# select
-#     vibmcp.ID_Loja AS ID_Loja,
-#     vibmcp.Loja AS Loja,
-#     vibmcp.Primeiro_Dia_Mes AS Primeiro_Dia_Mes,
-#     sum(vibmcp.Valor_Liquido) AS BlueMe_Com_Pedido_Valor_Liquido,
-#     sum(vibmcp.Valor_Insumos) AS BlueMe_Com_Pedido_Valor_Insumos,
-#     sum(vibmcp.Valor_Liq_Alimentos) AS BlueMe_Com_Pedido_Valor_Liq_Alimentos,
-#     sum(vibmcp.Valor_Liq_Bebidas) AS BlueMe_Com_Pedido_Valor_Liq_Bebidas,
-#     sum(vibmcp.Valor_Liq_Descart_Hig_Limp) AS BlueMe_Com_Pedido_Valor_Liq_Descart_Hig_Limp,
-#     sum(vibmcp.Valor_Liq_Outros) AS BlueMe_Com_Pedido_Valor_Liq_Outros
-#   from
-#     vibmcp
-#   group by
-#     vibmcp.ID_Loja,
-#     vibmcp.Primeiro_Dia_Mes
-#   order by
-#     vibmcp.ID_Loja,
-#     vibmcp.Primeiro_Dia_Mes;
-# ''')
-
-
 
 @st.cache_data
 def GET_TRANSF_ESTOQUE_AGRUPADOS():
@@ -857,7 +743,7 @@ def GET_PERDAS_E_CONSUMO_AGRUPADOS():
       CAST(DATE_FORMAT(CAST(tpecc.DATA_BAIXA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
     FROM
       T_PERDAS_E_CONSUMO_CONSOLIDADOS tpecc
-    JOIN T_EMPRESAS tl ON tpecc.FK_LOJA = tl.ID
+    JOIN T_EMPRESAS tl ON tpecc.FK_EMPRESA = tl.ID
   )
   SELECT
     vpec.ID_Loja,

@@ -20,7 +20,7 @@ def mysql_connection():
 def execute_query(query):
   conn = mysql_connection()
   cursor = conn.cursor()
-  cursor.execute(query)
+  cursor.execute(query, multi=True)
 
   # Obter nomes das colunas
   column_names = [col[0] for col in cursor.description]
@@ -496,7 +496,7 @@ def GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio, data_fim):
 
 
 @st.cache_data
-def GET_CONTAGEM_INSUMOS(loja):
+def GET_CONTAGEM_INSUMOS(loja, data):
   return dataframe_query(f'''  
 	SELECT
    	te.ID AS 'ID_Loja',
@@ -520,6 +520,7 @@ def GET_CONTAGEM_INSUMOS(loja):
   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id	
   LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tin5.FK_UNIDADE_MEDIDA = tudm.ID)
   WHERE te.NOME_FANTASIA = '{loja}'
+  AND tci.DATA_CONTAGEM = '{data}'
   ''')
 
   
@@ -530,18 +531,18 @@ def GET_PRECOS_CONSOLIDADOS_MES(loja):
     vir.Loja as 'Loja',
     vir.ID_Insumo_Nivel_5 as 'ID_Insumo',
     DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS 'Mes_Anterior_Texto',
+    STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d') as 'Data_Emissao',
     ROUND(SUM(vir.Quantidade), 2) AS 'Quantidade_Comprada_no_Mes',
     ROUND(SUM(vir.Valor_Insumos), 2) AS 'Valor_Total_Pago_no_Mes',
     ROUND(SUM(vir.Valor_Insumos) / SUM(vir.Quantidade), 2) AS 'Preco_Medio_Pago_no_Mes'
   FROM View_Insumos_Recebidos vir
+  WHERE vir.Loja = '{loja}'
   GROUP BY Mes_Anterior_Texto, vir.ID_Insumo_Nivel_5;
   ORDER BY Mes_Anterior_Texto DESC, Nome_Insumo_Nivel_5 ASC
-  WHERE vir.Loja = '{loja}'
   ''')
 
 
 
-# 71k linhas
 @st.cache_data
 def GET_ULTIMOS_PRECOS(loja):
   return dataframe_query(f'''
@@ -559,7 +560,6 @@ def GET_ULTIMOS_PRECOS(loja):
 
 
 
-# 53k linhas
 @st.cache_data
 def GET_PRECOS_OUTRAS_LOJAS():
   return dataframe_query(f'''

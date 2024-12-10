@@ -188,14 +188,19 @@ def config_insumos_blueme_com_pedido(data_inicio, data_fim, loja):
 
 def config_valoracao_estoque(data_inicio, data_fim, loja):
   if data_inicio.month == 12:
-    data_inicio = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
+    data_inicio_nova = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
   else:
-    data_inicio = data_inicio.replace(month=data_inicio.month + 1, day=1)
+    data_inicio_nova = data_inicio.replace(month=data_inicio.month + 1, day=1)
 
-  data_fim = data_inicio.replace(day=calendar.monthrange(data_inicio.year, data_inicio.month)[1])
+  ultimo_dia = calendar.monthrange(data_inicio_nova.year, data_inicio_nova.month)[1]
 
-  contagem_insumos = GET_CONTAGEM_INSUMOS(loja)
+  contagem_insumos = GET_CONTAGEM_INSUMOS(loja, data_inicio_nova)
+  if contagem_insumos.empty:
+    st.warning("A contagem de insumos ainda não foi feita para o período selecionado e isso retornará um erro. Por favor, selecione o mês anterior.")	
+
   precos_consolidados_mes = GET_PRECOS_CONSOLIDADOS_MES(loja)
+  precos_consolidados_mes = filtrar_por_datas(precos_consolidados_mes, data_inicio, data_fim, 'Data_Emissao')
+
   ultimos_precos = GET_ULTIMOS_PRECOS(loja)
   precos_outras_lojas = GET_PRECOS_OUTRAS_LOJAS()
 
@@ -207,14 +212,6 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   precos_outras_lojas['Data_Compra'] = pd.to_datetime(precos_outras_lojas['Data_Compra'])
   ultimos_precos['Data_Ultima_Compra'] = pd.to_datetime(ultimos_precos['Data_Ultima_Compra'])
 
-
-  precos_consolidados_mes = precos_consolidados_mes.groupby(['ID_Insumo', 'Mes_Anterior_Texto', 'Loja'], as_index=False).agg({
-    'Quantidade_Comprada_no_Mes': 'sum',
-    'Valor_Total_Pago_no_Mes': 'sum',
-    'Preco_Medio_Pago_no_Mes': 'mean'
-  })
-
-
   ultimos_precos_filtrados = []
   for _, row in contagem_insumos.iterrows():
     id_insumo = row['ID_Insumo']
@@ -223,7 +220,6 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
     # Filtra os registros correspondentes
     filtro = ultimos_precos[
       (ultimos_precos['ID_Insumo'] == id_insumo) &
-      (ultimos_precos['Loja'] == loja) &
       (ultimos_precos['Data_Ultima_Compra'] < data_contagem)
     ]
     # Seleciona a linha com a maior Data_Ultima_Compra
@@ -272,7 +268,7 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
       if pd.notna(row['Valor_Ultima_Compra_Global']) else 0,
     axis=1
   )
-  df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+  # df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')
   df_merged = df_merged.drop(['Primeiro_Dia_Mes', 'Data_Contagem', 'Mes_Anterior_Texto', 'Quantidade_Comprada_no_Mes', 'Preco_Medio_Pago_no_Mes', 'Valor_Total_Pago_no_Mes', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Valor_Ultima_Compra_Global'], axis=1)
 
   return df_merged
@@ -327,6 +323,13 @@ def config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_fat
   df_faturamento_delivery_bebidas = df_faturamento_delivery_bebidas.drop(['Categoria'], axis=1)
 
   df_faturamento_eventos = df_faturamento_eventos.rename(columns={'Valor': 'Faturamento Eventos'})
+
+  df_faturamento_zig_alimentos['ID_Loja'] = df_faturamento_zig_alimentos['ID_Loja'].astype(str)
+  df_faturamento_zig_bebidas['ID_Loja'] = df_faturamento_zig_bebidas['ID_Loja'].astype(str)
+  df_faturamento_delivery_alimentos['ID_Loja'] = df_faturamento_delivery_alimentos['ID_Loja'].astype(str)
+  df_faturamento_delivery_bebidas['ID_Loja'] = df_faturamento_delivery_bebidas['ID_Loja'].astype(str)
+  df_faturamento_eventos['ID_Loja'] = df_faturamento_eventos['ID_Loja'].astype(str)
+
 
   df_faturamento_total = pd.merge(df_faturamento_zig_alimentos, df_faturamento_zig_bebidas, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
   df_faturamento_total = pd.merge(df_faturamento_total, df_faturamento_delivery_alimentos, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')

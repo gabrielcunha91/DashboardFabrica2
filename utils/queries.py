@@ -371,97 +371,6 @@ def GET_ORCAMENTOS_DESPESAS():
 
 ############################### CMV ###################################
 
-# @st.cache_data
-# def GET_FATURAM_ZIG_ALIM_BEB_MENSAL():
-#   return dataframe_query(f'''
-#   SELECT
-#     tfza.ID_LOJA AS ID_Loja,
-#     te.NOME_FANTASIA AS Loja,
-#     CAST(DATE_FORMAT(CAST(tfza.DATA_EVENTO AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-#     SUM(CASE
-#       WHEN tfza.CATEGORIA = 'Alimentos' THEN ROUND(CAST(tfza.VALOR_TRANSACAO_BRUTO AS DECIMAL(10, 2)), 2)
-#       ELSE 0
-#     END) AS Faturam_Bruto_Aliment,
-#     SUM(CASE
-#       WHEN tfza.CATEGORIA = 'Bebidas' THEN ROUND(CAST(tfza.VALOR_TRANSACAO_BRUTO AS DECIMAL(10, 2)), 2)
-#       ELSE 0
-#     END) AS Faturam_Bruto_Bebidas
-#   FROM
-#     T_FATURAMENTO_ZIG_AGREGADO tfza
-#   JOIN 
-#     T_EMPRESAS te ON tfza.ID_LOJA = te.ID 
-#   GROUP BY
-#     tfza.ID_LOJA,
-#     Primeiro_Dia_Mes
-#   ORDER BY
-#     tfza.ID_LOJA,
-#     Primeiro_Dia_Mes;
-# ''')
-
-
-# @st.cache_data
-# def GET_ESTOQUES_POR_CATEG_AGRUPADOS():
-#   return dataframe_query(f'''
-# SELECT
-#     te.ID AS ID_Loja,
-#     te.NOME_FANTASIA AS Loja,
-#     CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-#     LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) AS Ultimo_Dia_Mes,
-#     SUM(CASE
-#       WHEN tin.DESCRICAO = 'ALIMENTOS' THEN tvee.VALOR_EM_ESTOQUE
-#       ELSE 0
-#     END) AS Estoque_Inicial_Alimentos,
-#     SUM(CASE
-#     WHEN tin.DESCRICAO = 'BEBIDAS' THEN tvee.VALOR_EM_ESTOQUE
-#     ELSE 0
-#     END) AS Estoque_Inicial_Bebidas,
-#     SUM(CASE
-#       WHEN tin.DESCRICAO = 'DESCARTAVEIS/ HIGIENE E LIMPEZA' THEN tvee.VALOR_EM_ESTOQUE
-#       ELSE 0
-#     END) AS Estoque_Inicial_Descart_Hig_Limp,
-#     SUM(CASE
-#       WHEN tin.DESCRICAO = 'ALIMENTOS' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
-#                                             FROM T_VALOR_EM_ESTOQUE tvee2
-#                                             WHERE tvee2.FK_LOJA = tvee.FK_LOJA
-#                                               AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
-#                                               AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
-#                                               LIMIT 1)
-#       ELSE 0
-#     END) AS Estoque_Final_Alimentos,
-#     SUM(CASE
-#       WHEN tin.DESCRICAO = 'BEBIDAS' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
-#                                           FROM T_VALOR_EM_ESTOQUE tvee2
-#                                           WHERE tvee2.FK_LOJA = tvee.FK_LOJA
-#                                             AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
-#                                             AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
-#                                             LIMIT 1)
-#       ELSE 0
-#     END) AS Estoque_Final_Bebidas,
-#     SUM(CASE
-#       WHEN tin.DESCRICAO = 'DESCARTAVEIS/ HIGIENE E LIMPEZA' THEN (SELECT tvee2.VALOR_EM_ESTOQUE
-#                                                                   FROM T_VALOR_EM_ESTOQUE tvee2
-#                                                                   WHERE tvee2.FK_LOJA = tvee.FK_LOJA
-#                                                                     AND tvee2.FK_INSUMO_NIVEL_1 = tvee.FK_INSUMO_NIVEL_1
-#                                                                     AND DATE_FORMAT(CAST(tvee2.DATA_CONTAGEM AS DATE), '%Y-%m-01') = (LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE)) + INTERVAL 1 DAY)
-#                                                                     LIMIT 1)
-#            ELSE 0
-#     END) AS Estoque_Final_Descart_Hig_Limp
-#   FROM
-#     T_VALOR_EM_ESTOQUE tvee
-#     JOIN T_EMPRESAS te ON tvee.FK_LOJA = te.ID
-#     JOIN T_INSUMOS_NIVEL_1 tin ON tvee.FK_INSUMO_NIVEL_1 = tin.ID
-#   GROUP BY
-#     te.ID,
-#     te.NOME_FANTASIA ,
-#     Primeiro_Dia_Mes,
-#     LAST_DAY(CAST(DATE_FORMAT(CAST(tvee.DATA_CONTAGEM AS DATE), '%Y-%m-01') AS DATE))
-#   ORDER BY
-#     te.ID,
-#     Primeiro_Dia_Mes;
-# ''')
-
-
-
 @st.cache_data
 def GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio, data_fim):
   return dataframe_query(f'''
@@ -618,7 +527,7 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO():
     JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
     WHERE
       tdr.FK_DESPESA_TEKNISA IS NULL
-      AND tccg.ID = 162
+      AND tccg.ID IN (162, 205)
       AND NOT EXISTS (
         SELECT 1
         FROM T_DESPESA_RAPIDA_ITEM tdri
@@ -636,19 +545,19 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO():
     Primeiro_Dia_Mes,
     SUM(Valor_Liquido) AS BlueMe_Sem_Pedido_Valor_Liquido,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 = 'ALIMENTOS' THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 IN ('ALIMENTOS', 'Insumos - Alimentos') THEN Valor_Liquido
       ELSE 0
     END) AS BlueMe_Sem_Pedido_Alimentos,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 = 'BEBIDAS' THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 IN ('BEBIDAS', 'Insumos - Bebidas') THEN Valor_Liquido
       ELSE 0
     END) AS BlueMe_Sem_Pedido_Bebidas,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 = 'EMBALAGENS' THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 IN ('EMBALAGENS', 'Insumos - Embalagens') THEN Valor_Liquido
       ELSE 0
       END) AS BlueMe_Sem_Pedido_Descart_Hig_Limp,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 NOT IN ('ALIMENTOS', 'BEBIDAS', 'EMBALAGENS') THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 NOT IN ('ALIMENTOS', 'Insumos - Alimentos', 'BEBIDAS', 'Insumos - Bebidas', 'EMBALAGENS', 'Insumos - Embalagens') THEN Valor_Liquido
       ELSE 0
       END) AS BlueMe_Sem_Pedido_Outros
   FROM subquery
@@ -719,9 +628,6 @@ def GET_TRANSF_ESTOQUE_AGRUPADOS():
     vte.ID_Loja;
 ''')
 
-@st.cache_data
-def GET_PRECIFICACAO_INSUMOS():
-  return dataframe_query(f''' ''')
 
 @st.cache_data
 def GET_PERDAS_E_CONSUMO_AGRUPADOS():
@@ -843,7 +749,7 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
     WHERE
       tdri.ID IS NULL
       AND tdr.FK_DESPESA_TEKNISA IS NULL
-      AND tccg.ID = 162
+      AND tccg.ID IN (162, 205)
     ) subquery
   WHERE
     subquery.row_num = 1;

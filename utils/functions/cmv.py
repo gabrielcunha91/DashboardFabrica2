@@ -5,13 +5,15 @@ from utils.components import *
 import calendar
 from babel.dates import format_date
 
-def substituicao_deliverys(df):
+def substituicao_ids(df):
   substituicoesIds = {
     103: 116,
     112: 104,
     118: 114,
     117: 114,
-    139: 105
+    139: 105,
+    161: 149,
+    169: 149
   }
 
   substituicoesNomes = {
@@ -19,7 +21,9 @@ def substituicao_deliverys(df):
     'Hotel Maraba': 'Bar Brahma - Centro',
     'Delivery Bar Leo Centro': 'Bar Léo - Centro',
     'Delivery Orfeu': 'Orfeu',
-    'Delivery Jacaré': 'Jacaré'
+    'Delivery Jacaré': 'Jacaré',
+    'Notiê - Priceless': 'Priceless',
+    'Abaru - Priceless': 'Priceless'
   }
 
   df.loc[:, 'Loja'] = df['Loja'].replace(substituicoesNomes)
@@ -57,7 +61,8 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
   df_delivery = df[df['Delivery'] == 1]
   df_zig = df[df['Delivery'] == 0]
 
-  df_delivery = substituicao_deliverys(df_delivery)
+  df_delivery = substituicao_ids(df_delivery)
+  df_zig = substituicao_ids(df_zig)
 
   df_delivery = df_delivery[df_delivery['Loja'] == loja]
   df_zig = df_zig[df_zig['Loja'] == loja]
@@ -75,7 +80,7 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
 def config_faturamento_eventos(data_inicio, data_fim, loja, faturamento_bruto_alimentos, faturamento_bruto_bebidas):
   df = GET_EVENTOS_CMV(data_inicio=data_inicio, data_fim=data_fim)
   df = df[df['Loja'] == loja]
-  df = substituicao_deliverys(df)
+  df = substituicao_ids(df)
 
   df['Valor'] = df['Valor'].astype(float)
 
@@ -94,8 +99,8 @@ def config_compras(data_inicio, data_fim, loja):
   df1 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO()  
   df2 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO()
 
-  df1 = substituicao_deliverys(df1)
-  df2 = substituicao_deliverys(df2)
+  df1 = substituicao_ids(df1)
+  df2 = substituicao_ids(df2)
 
   df1 = df1[df1['Loja'] == loja]
   df2 = df2[df2['Loja'] == loja]
@@ -192,8 +197,6 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   else:
     data_inicio_nova = data_inicio.replace(month=data_inicio.month + 1, day=1)
 
-  ultimo_dia = calendar.monthrange(data_inicio_nova.year, data_inicio_nova.month)[1]
-
   contagem_insumos = GET_CONTAGEM_INSUMOS(loja, data_inicio_nova)
   if contagem_insumos.empty:
     st.warning("A contagem de insumos ainda não foi feita para o período selecionado e isso retornará um erro. Por favor, selecione o mês anterior.")	
@@ -215,7 +218,6 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   ultimos_precos_filtrados = []
   for _, row in contagem_insumos.iterrows():
     id_insumo = row['ID_Insumo']
-    loja = row['Loja']
     data_contagem = row['Data_Contagem']
     # Filtra os registros correspondentes
     filtro = ultimos_precos[
@@ -228,6 +230,8 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
       ultimos_precos_filtrados.append(linha_escolhida)
   # Converte a lista de resultados filtrados em um DataFrame
   ultimos_precos_filtrados = pd.DataFrame(ultimos_precos_filtrados)
+  if ultimos_precos_filtrados.empty:
+    ultimos_precos_filtrados = pd.DataFrame(columns=ultimos_precos.columns)
   ultimos_precos_filtrados.drop_duplicates(inplace=True)
 
   # Filtrar Preços Outras Lojas com base em Data_Contagem

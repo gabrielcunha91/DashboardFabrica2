@@ -38,7 +38,7 @@ with st.container(border=True):
   st.subheader('Projeção de bares agrupados:' )
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino, Bar Brahma - Granja, Edificio Rolim*
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino, Girondino CCBB, Bar Brahma - Granja, Edificio Rolim*
     """
   )
 

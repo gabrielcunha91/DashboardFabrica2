@@ -24,7 +24,23 @@ def criar_parciais(df):
 
   return df_parciais
 
+def criar_seletores_previsao(LojasComDados, data_inicio_default, data_fim_default):
+  col1, col2, col3, col4 = st.columns([4, 1, 2, 2])
 
+  # Adiciona seletores
+  with col1:
+    lojas_selecionadas = st.multiselect(label='Selecione Lojas', options=LojasComDados, key='lojas_multiselect')
+  with col2:
+    multiplicador = st.number_input("Multiplicador", value=1.0)
+  with col3:
+    data_inicio = st.date_input('Data de Início', value=data_inicio_default, key='data_inicio_input', format="DD/MM/YYYY")
+  with col4:
+    data_fim = st.date_input('Data de Fim', value=data_fim_default, key='data_fim_input', format="DD/MM/YYYY")
+
+  # Converte as datas selecionadas para o formato Timestamp
+  data_inicio = pd.to_datetime(data_inicio)
+  data_fim = pd.to_datetime(data_fim)
+  return lojas_selecionadas, multiplicador, data_inicio, data_fim
 
 def unificar_parciais(df):
   dfs = {}

@@ -5,13 +5,15 @@ from utils.components import *
 import calendar
 from babel.dates import format_date
 
-def substituicao_deliverys(df):
+def substituicao_ids(df):
   substituicoesIds = {
     103: 116,
     112: 104,
     118: 114,
     117: 114,
-    139: 105
+    139: 105,
+    161: 149,
+    169: 149
   }
 
   substituicoesNomes = {
@@ -19,7 +21,9 @@ def substituicao_deliverys(df):
     'Hotel Maraba': 'Bar Brahma - Centro',
     'Delivery Bar Leo Centro': 'Bar Léo - Centro',
     'Delivery Orfeu': 'Orfeu',
-    'Delivery Jacaré': 'Jacaré'
+    'Delivery Jacaré': 'Jacaré',
+    'Notiê - Priceless': 'Priceless',
+    'Abaru - Priceless': 'Priceless'
   }
 
   df.loc[:, 'Loja'] = df['Loja'].replace(substituicoesNomes)
@@ -57,7 +61,8 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
   df_delivery = df[df['Delivery'] == 1]
   df_zig = df[df['Delivery'] == 0]
 
-  df_delivery = substituicao_deliverys(df_delivery)
+  df_delivery = substituicao_ids(df_delivery)
+  df_zig = substituicao_ids(df_zig)
 
   df_delivery = df_delivery[df_delivery['Loja'] == loja]
   df_zig = df_zig[df_zig['Loja'] == loja]
@@ -75,7 +80,7 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
 def config_faturamento_eventos(data_inicio, data_fim, loja, faturamento_bruto_alimentos, faturamento_bruto_bebidas):
   df = GET_EVENTOS_CMV(data_inicio=data_inicio, data_fim=data_fim)
   df = df[df['Loja'] == loja]
-  df = substituicao_deliverys(df)
+  df = substituicao_ids(df)
 
   df['Valor'] = df['Valor'].astype(float)
 
@@ -94,8 +99,8 @@ def config_compras(data_inicio, data_fim, loja):
   df1 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO()  
   df2 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO()
 
-  df1 = substituicao_deliverys(df1)
-  df2 = substituicao_deliverys(df2)
+  df1 = substituicao_ids(df1)
+  df2 = substituicao_ids(df2)
 
   df1 = df1[df1['Loja'] == loja]
   df2 = df2[df2['Loja'] == loja]
@@ -188,14 +193,17 @@ def config_insumos_blueme_com_pedido(data_inicio, data_fim, loja):
 
 def config_valoracao_estoque(data_inicio, data_fim, loja):
   if data_inicio.month == 12:
-    data_inicio = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
+    data_inicio_nova = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
   else:
-    data_inicio = data_inicio.replace(month=data_inicio.month + 1, day=1)
+    data_inicio_nova = data_inicio.replace(month=data_inicio.month + 1, day=1)
 
-  data_fim = data_inicio.replace(day=calendar.monthrange(data_inicio.year, data_inicio.month)[1])
+  contagem_insumos = GET_CONTAGEM_INSUMOS(loja, data_inicio_nova)
+  if contagem_insumos.empty:
+    st.warning("A contagem de insumos ainda não foi feita para o período selecionado e isso retornará um erro. Por favor, selecione o mês anterior.")	
 
-  contagem_insumos = GET_CONTAGEM_INSUMOS(loja)
   precos_consolidados_mes = GET_PRECOS_CONSOLIDADOS_MES(loja)
+  precos_consolidados_mes = filtrar_por_datas(precos_consolidados_mes, data_inicio, data_fim, 'Data_Emissao')
+
   ultimos_precos = GET_ULTIMOS_PRECOS(loja)
   precos_outras_lojas = GET_PRECOS_OUTRAS_LOJAS()
 
@@ -207,23 +215,13 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   precos_outras_lojas['Data_Compra'] = pd.to_datetime(precos_outras_lojas['Data_Compra'])
   ultimos_precos['Data_Ultima_Compra'] = pd.to_datetime(ultimos_precos['Data_Ultima_Compra'])
 
-
-  precos_consolidados_mes = precos_consolidados_mes.groupby(['ID_Insumo', 'Mes_Anterior_Texto', 'Loja'], as_index=False).agg({
-    'Quantidade_Comprada_no_Mes': 'sum',
-    'Valor_Total_Pago_no_Mes': 'sum',
-    'Preco_Medio_Pago_no_Mes': 'mean'
-  })
-
-
   ultimos_precos_filtrados = []
   for _, row in contagem_insumos.iterrows():
     id_insumo = row['ID_Insumo']
-    loja = row['Loja']
     data_contagem = row['Data_Contagem']
     # Filtra os registros correspondentes
     filtro = ultimos_precos[
       (ultimos_precos['ID_Insumo'] == id_insumo) &
-      (ultimos_precos['Loja'] == loja) &
       (ultimos_precos['Data_Ultima_Compra'] < data_contagem)
     ]
     # Seleciona a linha com a maior Data_Ultima_Compra
@@ -232,6 +230,8 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
       ultimos_precos_filtrados.append(linha_escolhida)
   # Converte a lista de resultados filtrados em um DataFrame
   ultimos_precos_filtrados = pd.DataFrame(ultimos_precos_filtrados)
+  if ultimos_precos_filtrados.empty:
+    ultimos_precos_filtrados = pd.DataFrame(columns=ultimos_precos.columns)
   ultimos_precos_filtrados.drop_duplicates(inplace=True)
 
   # Filtrar Preços Outras Lojas com base em Data_Contagem
@@ -272,7 +272,7 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
       if pd.notna(row['Valor_Ultima_Compra_Global']) else 0,
     axis=1
   )
-  df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+  # df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')
   df_merged = df_merged.drop(['Primeiro_Dia_Mes', 'Data_Contagem', 'Mes_Anterior_Texto', 'Quantidade_Comprada_no_Mes', 'Preco_Medio_Pago_no_Mes', 'Valor_Total_Pago_no_Mes', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Valor_Ultima_Compra_Global'], axis=1)
 
   return df_merged
@@ -327,6 +327,13 @@ def config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_fat
   df_faturamento_delivery_bebidas = df_faturamento_delivery_bebidas.drop(['Categoria'], axis=1)
 
   df_faturamento_eventos = df_faturamento_eventos.rename(columns={'Valor': 'Faturamento Eventos'})
+
+  df_faturamento_zig_alimentos['ID_Loja'] = df_faturamento_zig_alimentos['ID_Loja'].astype(str)
+  df_faturamento_zig_bebidas['ID_Loja'] = df_faturamento_zig_bebidas['ID_Loja'].astype(str)
+  df_faturamento_delivery_alimentos['ID_Loja'] = df_faturamento_delivery_alimentos['ID_Loja'].astype(str)
+  df_faturamento_delivery_bebidas['ID_Loja'] = df_faturamento_delivery_bebidas['ID_Loja'].astype(str)
+  df_faturamento_eventos['ID_Loja'] = df_faturamento_eventos['ID_Loja'].astype(str)
+
 
   df_faturamento_total = pd.merge(df_faturamento_zig_alimentos, df_faturamento_zig_bebidas, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
   df_faturamento_total = pd.merge(df_faturamento_total, df_faturamento_delivery_alimentos, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')

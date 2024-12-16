@@ -35,7 +35,7 @@ sorted_df = grouped_df.sort_values(by=['Data_Parcial', 'Empresa'])
 lojasComDados = preparar_dados_lojas_user()
 data_inicio_default = datetime.today() - timedelta(days=8)
 data_fim_default = datetime.today() - timedelta(days=2)
-lojasSelecionadas, data_inicio, data_fim = criar_seletores(lojasComDados, data_inicio_default, data_fim_default)
+lojasSelecionadas, multiplicador, data_inicio, data_fim = criar_seletores_previsao(lojasComDados, data_inicio_default, data_fim_default)
 st.divider()
 
 sorted_df.rename(columns = {'Empresa': 'Loja', 'Data_Parcial': 'Data', 'Valor_Parcial': 'Valor Projetado'}, inplace=True)
@@ -51,6 +51,11 @@ dfComparacao = filtrar_por_classe_selecionada(dfComparacao, 'Loja', lojasSelecio
 dfComparacao.rename(columns = {'Valor_Faturado': 'Valor Faturado'}, inplace=True)
 dfComparacao['Valor Projetado'] = dfComparacao['Valor Projetado'].fillna(0)
 dfComparacao['Valor Faturado'] = dfComparacao['Valor Faturado'].fillna(0)
+
+dfComparacao['Valor Projetado'] = dfComparacao['Valor Projetado'].astype(float)
+dfComparacao['Valor Faturado'] = dfComparacao['Valor Faturado'].astype(float)
+dfComparacao['Valor Projetado'] = dfComparacao['Valor Projetado'] * multiplicador
+
 dfComparacao['Diferença'] = dfComparacao['Valor Faturado'] - dfComparacao['Valor Projetado']
 
 
@@ -63,12 +68,14 @@ dfComparacaoAgg = dfComparacao.groupby('Loja').agg({
 dfComparacaoAgg['Diferença'] = dfComparacaoAgg['Valor Faturado'] - dfComparacaoAgg['Valor Projetado']
 
 
+
 dfComparacao = format_date_brazilian(dfComparacao, 'Data')
 dfComparacao = format_columns_brazilian(dfComparacao, ['Valor Projetado', 'Valor Faturado', 'Diferença'])
 dfComparacaoStyled = dfComparacao.style.map(highlight_values, subset=['Diferença'])
-
 dfComparacaoAgg = format_columns_brazilian(dfComparacaoAgg, ['Valor Projetado', 'Valor Faturado', 'Diferença'])
 dfComparacaoAggStyled = dfComparacaoAgg.style.map(highlight_values, subset=['Diferença'])
+
+
 
 
 with st.container(border=True):

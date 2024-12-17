@@ -31,6 +31,17 @@ def main():
   st.divider()
 
   lojasComDados = preparar_dados_lojas_user()
+
+  if 'Abaru - Priceless' in lojasComDados and 'Notiê - Priceless' in lojasComDados:
+    lojasComDados.remove('Abaru - Priceless')
+    lojasComDados.remove('Notiê - Priceless')
+  if 'Blue Note - São Paulo' in lojasComDados and 'Blue Note SP (Novo)' in lojasComDados:
+    lojasComDados.remove('Blue Note - São Paulo')
+    lojasComDados.remove('Blue Note SP (Novo)')
+    lojasComDados.append('Blue Note - Agregado')
+
+  lojasComDados.sort()
+
   data_inicio_default, data_fim_default = preparar_datas_ultimo_mes()
   lojas_selecionadas, data_inicio, data_fim = criar_seletores_cmv(lojasComDados, data_inicio_default, data_fim_default)
   st.divider()

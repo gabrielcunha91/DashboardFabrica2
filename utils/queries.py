@@ -20,7 +20,7 @@ def mysql_connection():
 def execute_query(query):
   conn = mysql_connection()
   cursor = conn.cursor()
-  cursor.execute(query, multi=True)
+  cursor.execute(query)
 
   # Obter nomes das colunas
   column_names = [col[0] for col in cursor.description]

@@ -13,7 +13,8 @@ def substituicao_ids(df):
     117: 114,
     139: 105,
     161: 149,
-    169: 149
+    169: 149,
+    110: 131
   }
 
   substituicoesNomes = {
@@ -23,7 +24,9 @@ def substituicao_ids(df):
     'Delivery Orfeu': 'Orfeu',
     'Delivery Jacaré': 'Jacaré',
     'Notiê - Priceless': 'Priceless',
-    'Abaru - Priceless': 'Priceless'
+    'Abaru - Priceless': 'Priceless',
+    'Blue Note - São Paulo': 'Blue Note - Agregado',
+    'Blue Note SP (Novo)': 'Blue Note - Agregado'
   }
 
   df.loc[:, 'Loja'] = df['Loja'].replace(substituicoesNomes)
@@ -55,14 +58,13 @@ def primeiro_dia_mes_para_mes_ano(df):
 
 def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
   df = GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio=data_inicio, data_fim=data_fim)
+  df = substituicao_ids(df)
+
   df['Valor_Bruto'] = df['Valor_Bruto'].astype(float)
   df = df.dropna(subset=['ID_Loja'])
 
   df_delivery = df[df['Delivery'] == 1]
   df_zig = df[df['Delivery'] == 0]
-
-  df_delivery = substituicao_ids(df_delivery)
-  df_zig = substituicao_ids(df_zig)
 
   df_delivery = df_delivery[df_delivery['Loja'] == loja]
   df_zig = df_zig[df_zig['Loja'] == loja]
@@ -79,8 +81,8 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
 
 def config_faturamento_eventos(data_inicio, data_fim, loja, faturamento_bruto_alimentos, faturamento_bruto_bebidas):
   df = GET_EVENTOS_CMV(data_inicio=data_inicio, data_fim=data_fim)
-  df = df[df['Loja'] == loja]
   df = substituicao_ids(df)
+  df = df[df['Loja'] == loja]
 
   df['Valor'] = df['Valor'].astype(float)
 
@@ -134,6 +136,7 @@ def config_compras(data_inicio, data_fim, loja):
 
 def config_insumos_blueme_sem_pedido(data_inicio, data_fim, loja):
   df = GET_INSUMOS_BLUE_ME_SEM_PEDIDO()
+  df = substituicao_ids(df)
   df = df.drop(['Primeiro_Dia_Mes'], axis=1)
   df = df[df['Loja'] == loja]
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Emissao')
@@ -150,6 +153,7 @@ def config_insumos_blueme_sem_pedido(data_inicio, data_fim, loja):
 
 def config_insumos_blueme_com_pedido(data_inicio, data_fim, loja):
   df = GET_INSUMOS_BLUE_ME_COM_PEDIDO()
+  df = substituicao_ids(df)
   df = df.drop(['Primeiro_Dia_Mes'], axis=1)
   df = df[df['Loja'] == loja]
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Emissao')
@@ -196,6 +200,10 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
     data_inicio_nova = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
   else:
     data_inicio_nova = data_inicio.replace(month=data_inicio.month + 1, day=1)
+
+  if loja == 'Blue Note - Agregado':
+    loja = 'Blue Note - São Paulo'
+    loja2 = 'Blue Note SP (Novo)'
 
   contagem_insumos = GET_CONTAGEM_INSUMOS(loja, data_inicio_nova)
   if contagem_insumos.empty:

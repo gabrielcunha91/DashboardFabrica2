@@ -7,8 +7,7 @@ from utils.functions.dados_gerais import *
 import openpyxl
 import os
 
-def config_projecao_bares():
-  # Função auxiliar para converter colunas de data
+def config_projecao_bares(multiplicador):
   def convert_to_datetime(df, cols):
     for col in cols:
       df[col] = pd.to_datetime(df[col])
@@ -42,24 +41,26 @@ def config_projecao_bares():
 
   # Aplicando lógica de negócios
   merged_df['Valor_Projetado_Zig'] = merged_df.apply(lambda row: 0 if row['Valor_Liquido_Recebido'] > 0 else row['Valor_Projetado_Zig'], axis=1)
+  merged_df['Valor_Projetado_Zig'] = merged_df['Valor_Projetado_Zig'] * multiplicador
+
   merged_df['Saldo_Final'] = merged_df['Saldo_Inicio_Dia'] + merged_df['Valor_Liquido_Recebido'] + merged_df['Valor_Projetado_Zig'] + merged_df['Receita_Projetada_Extraord'] - merged_df['Despesas_Aprovadas_Pendentes'] - merged_df['Despesas_Pagas']
 
+  return merged_df
+
+def is_in_group(empresa, houses_to_group):
+  return any(house in empresa for house in houses_to_group)
+
+def config_grouped_projecao(df_projecao_bares):
   houses_to_group = [
     'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
     'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 
     'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar Brahma - Granja', 'Edificio Rolim'
   ]
 
-  # Create a new column 'Group' based on the houses
-  merged_df['Group'] = merged_df['Empresa'].apply(lambda x: 'Group' if any(house in x for house in houses_to_group) else 'Other')
-
-  return merged_df
-
-def config_grouped_projecao(df_projecao_bares):
-  # Group by 'Data', 'Group', and 'Empresa', and sum the values
-  grouped_df = df_projecao_bares.groupby(['Data', 'Group']).sum().reset_index()
-  grouped_df = grouped_df[grouped_df['Group'] == 'Group'].reset_index(drop=True)
+  grouped_df = df_projecao_bares[df_projecao_bares['Empresa'].apply(lambda x: is_in_group(x, houses_to_group))]
+  grouped_df = grouped_df.groupby(['Data']).sum().reset_index()
   return grouped_df
+
 
 def config_feriados():
   calendario_brasil = Brazil()

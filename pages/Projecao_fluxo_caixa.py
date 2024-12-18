@@ -23,19 +23,28 @@ df_projecao_grouped = config_grouped_projecao(df_projecao_bares.copy())
 
 bares = df_projecao_bares["Empresa"].unique()
 with st.container(border=True):
-  bar = st.selectbox("Bar", bares)
+  col1, col2 = st.columns([3, 1])
+  with col1:
+    bar = st.selectbox("Bar", bares)
+  with col2:
+    multiplicador = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input')
   df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"] == bar]
   df_projecao_bar_com_soma = somar_total(df_projecao_bar)
   columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                                  'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
   df_projecao_bar_com_soma = df_projecao_bar_com_soma[columns_projecao_bar_com_soma]
+  df_projecao_bar_com_soma['Valor_Projetado_Zig'] = df_projecao_bar_com_soma['Valor_Projetado_Zig'] * multiplicador
   st.dataframe(df_projecao_bar_com_soma, use_container_width=True, hide_index=True)
 
 st.divider()
 
 # Projeção Agrupada
 with st.container(border=True):
-  st.subheader('Projeção de bares agrupados:' )
+  col1, col2 = st.columns([3, 1])
+  with col1:
+    st.subheader('Projeção de bares agrupados:' )
+  with col2:
+    multiplicador2 = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input2')
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
     Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino, Girondino CCBB, Bar Brahma - Granja, Edificio Rolim*
@@ -46,6 +55,8 @@ with st.container(border=True):
 
   columns_projecao_grouped = ['Data', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                             'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
+  
+  df_projecao_grouped_com_soma['Valor_Projetado_Zig'] = df_projecao_grouped_com_soma['Valor_Projetado_Zig'] * multiplicador2
 
   st.dataframe(df_projecao_grouped_com_soma[columns_projecao_grouped], use_container_width=True, hide_index=True)
 

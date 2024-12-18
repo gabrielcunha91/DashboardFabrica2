@@ -18,16 +18,17 @@ if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
 st.title('PROJEÇÃO - Fluxo de Caixa')
 config_sidebar()
 
-df_projecao_bares = config_projecao_bares()
-df_projecao_grouped = config_grouped_projecao(df_projecao_bares.copy())
 
-bares = df_projecao_bares["Empresa"].unique()
+bares = preparar_dados_lojas_user()
+# bares = df_projecao_bares["Empresa"].unique()
+
 with st.container(border=True):
   col1, col2 = st.columns([3, 1])
   with col1:
     bar = st.selectbox("Bar", bares)
   with col2:
     multiplicador = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input')
+  df_projecao_bares = config_projecao_bares(multiplicador)
   df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"] == bar]
   df_projecao_bar_com_soma = somar_total(df_projecao_bar)
   columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
@@ -37,6 +38,7 @@ with st.container(border=True):
   st.dataframe(df_projecao_bar_com_soma, use_container_width=True, hide_index=True)
 
 st.divider()
+
 
 # Projeção Agrupada
 with st.container(border=True):
@@ -51,6 +53,8 @@ with st.container(border=True):
     """
   )
 
+  df_projecao_grouped = config_projecao_bares(multiplicador2)
+  df_projecao_grouped = config_grouped_projecao(df_projecao_grouped)
   df_projecao_grouped_com_soma = somar_total(df_projecao_grouped)
 
   columns_projecao_grouped = ['Data', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',

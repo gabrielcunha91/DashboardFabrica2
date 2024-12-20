@@ -34,7 +34,6 @@ with st.container(border=True):
   columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                                  'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
   df_projecao_bar_com_soma = df_projecao_bar_com_soma[columns_projecao_bar_com_soma]
-  df_projecao_bar_com_soma['Valor_Projetado_Zig'] = df_projecao_bar_com_soma['Valor_Projetado_Zig'] * multiplicador
   st.dataframe(df_projecao_bar_com_soma, use_container_width=True, hide_index=True)
 
 st.divider()
@@ -60,7 +59,6 @@ with st.container(border=True):
   columns_projecao_grouped = ['Data', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                             'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
   
-  df_projecao_grouped_com_soma['Valor_Projetado_Zig'] = df_projecao_grouped_com_soma['Valor_Projetado_Zig'] * multiplicador2
 
   st.dataframe(df_projecao_grouped_com_soma[columns_projecao_grouped], use_container_width=True, hide_index=True)
 

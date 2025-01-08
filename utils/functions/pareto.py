@@ -5,6 +5,8 @@ from datetime import timedelta
 from utils.functions.dados_gerais import *
 from utils.queries import *
 from utils.components import *
+from dateutil.relativedelta import relativedelta
+from streamlit_echarts import st_echarts
 
 
 def config_media_anterior(df, data_inicio, data_fim, lojas_selecionadas):
@@ -35,6 +37,8 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
 
   df2 = config_media_anterior(df, data_inicio, data_fim, lojas_selecionadas)
 
+  dfSemFiltroData = df.copy()
+
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
 
   df = df.groupby(['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
@@ -42,8 +46,7 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
     'Valor Total': 'sum',
     'Valor Unitário': 'mean',
     'Unidade de Medida': 'first',
-    'Fator de Proporção': 'first',
-    'Fornecedor': 'first'
+    'Fator de Proporção': 'first'
   })
 
   df = df.merge(df2, how='left', on=['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria'])
@@ -55,18 +58,19 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df['Valor Total'] = df['Valor Total'].round(2)
   df['Valor Unitário'] = df['Valor Unitário'].round(2)
   df['V. Unit. 3 Meses Anteriores'] = df['V. Unit. 3 Meses Ant.'].round(2)
-  nova_ordem = ['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário', 'V. Unit. 3 Meses Anteriores', 'Fornecedor']
+  nova_ordem = ['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário', 'V. Unit. 3 Meses Anteriores']
   df = df[nova_ordem]
 
-  return df
-
+  return df, dfSemFiltroData
 
 
 def config_por_categ_avaliada(df, categoria):
   df.sort_values(by=categoria, ascending=False, inplace=True)
   df['Porcentagem Acumulada'] = df[categoria].cumsum() / df[categoria].sum() * 100
   df['Porcentagem'] = (df[categoria] / df[categoria].sum()) * 100
-  return df
+  produto = []
+  produto.append(df['Nome Produto'].iloc[0])
+  return df, produto
 
 
 def preparar_filtros(tabIndex):
@@ -79,35 +83,110 @@ def preparar_filtros(tabIndex):
 
 def config_tabela_para_pareto(dfNomeCompras, categoria, key):
   lojas_selecionadas, data_inicio, data_fim = preparar_filtros(key)
-  dfNomeCompras = config_compras_quantias(dfNomeCompras, data_inicio, data_fim, lojas_selecionadas)
+  dfNomeCompras, dfSemFiltroData = config_compras_quantias(dfNomeCompras, data_inicio, data_fim, lojas_selecionadas)
 
   dfNomeCompras = dfNomeCompras[dfNomeCompras['Categoria'] == categoria]
-  return dfNomeCompras, lojas_selecionadas
+  dfSemFiltroData = dfSemFiltroData[dfSemFiltroData['Categoria'] == categoria]
+  
+  return dfNomeCompras, lojas_selecionadas, dfSemFiltroData, data_fim
 
 
 def config_diagramas_pareto(dfNomeCompras, categoria, categString):
-  df_por_valor = config_por_categ_avaliada(dfNomeCompras.copy(), 'Valor Total')
+  df_por_valor, produto = config_por_categ_avaliada(dfNomeCompras.copy(), 'Valor Total')
 
   keyDiagrama1 = categoria + '_valor'
 
   with st.container(border=True):
     st.subheader('Diagrama de Pareto sobre ' + categString + ' em relação ao valor total')
     diagrama_pareto_por_categ_avaliada(df_por_valor, 'Valor Total', key=keyDiagrama1)
+  
+  return produto
+
+def grafico_historico_precos(df_filtrado, key):
+
+  df_filtrado = df_filtrado[df_filtrado['Valor Unitário'].notna() & (df_filtrado['Valor Unitário'] != 0)]
+
+  # Obtém os produtos únicos
+  produtos = df_filtrado['Nome Produto'].unique()
+  
+  # Prepara os dados para o eixo X (meses)
+  meses = df_filtrado['Mês'].unique()
+  meses = sorted(meses, key=lambda x: pd.to_datetime(x, format='%m/%Y'))  # Ordena os meses
+  
+  # Prepara os dados para o gráfico
+  series = []
+  for produto in produtos:
+    df_produto = df_filtrado[df_filtrado['Nome Produto'] == produto]
+    valores = [
+      df_produto[df_produto['Mês'] == mes]['Valor Unitário'].iloc[0] if mes in df_produto['Mês'].values else None
+      for mes in meses
+    ]
+    series.append({
+      "name": produto,
+      "type": "line",
+      "data": valores
+    })
+  
+  # Configurações do gráfico
+  option = {
+    "tooltip": {"trigger": "axis"},
+    "legend": {"data": list(produtos)},
+    "xAxis": {"type": "category", "data": list(meses)},
+    "yAxis": {"type": "value"},
+    "series": series
+  }
+  
+  # Renderiza o gráfico no Streamlit
+  st_echarts(options=option, key=key)
 
 
-def pesquisa_por_produto(dfNomeCompras, key, titulo):
-  dfNomeCompras = dfNomeCompras.drop(['Fornecedor'], axis=1)
+def config_historico_valores(df, data_fim, key):
+  df.drop(['ID Produto Nivel 4', 'Loja', 'Fornecedor', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Fator de Proporção'], axis=1, inplace=True)
+  df['Data Compra'] = pd.to_datetime(df['Data Compra'], format='%Y-%m-%d')
+  data_fim = pd.to_datetime(data_fim, format='%d-%m-%Y', errors='coerce')
+  # Calculando os últimos 6 meses
+  data_anterior = [data_fim - relativedelta(months=i) for i in range(0, 6)]
+
+  # Filtrando o DataFrame por produto e meses
+  dfs_mensais = []
+  for i, data in enumerate(data_anterior):
+    mes = data.strftime('%m/%Y')
+    df_mes = df[
+      (df['Data Compra'].dt.month == data.month) &
+      (df['Data Compra'].dt.year == data.year)
+    ]
+    df_mes['Mês'] = mes
+
+    df_mes_grouped = df_mes.groupby(['Nome Produto', 'Mês'], as_index=False).agg({
+      'Valor Unitário': 'mean'
+    })
+    dfs_mensais.append(df_mes_grouped)
+
+  df_filtrado = pd.concat(dfs_mensais, ignore_index=True)    
+  grafico_historico_precos(df_filtrado, key)
+  return
+
+def pesquisa_por_produto(dfNomeCompras, key, data_fim, dfSemDataFiltrada, key_grafico, produto_mais_significativo):
   col0, col, col1, col2 = st.columns([1.6, 15, 8, 2])
   with col:
-    st.subheader(titulo)
+    st.subheader('Compras de insumos agrupadas por período selecionado')
   with col1:
     search_term = st.text_input('Pesquisar por nome do produto:', '', key=key)
     if search_term:
       filtered_df = dfNomeCompras[dfNomeCompras['Nome Produto'].str.contains(search_term, case=False, na=False)]
+      dfSemDataFiltrada = dfSemDataFiltrada[dfSemDataFiltrada['Nome Produto'].str.contains(search_term, case=False, na=False)]
     else:
       filtered_df = dfNomeCompras
+      dfSemDataFiltrada = filtrar_por_classe_selecionada(dfSemDataFiltrada, 'Nome Produto', produto_mais_significativo)
   row1 = st.columns([1, 15, 1])
   row1[1].dataframe(filtered_df, use_container_width=True,hide_index=True)
+  st.divider()
+  col0, col, col1, col2 = st.columns([1.6, 15, 8, 2])
+  with col:
+    st.subheader('Histórico de preço do produto selecionado')
+  row1 = st.columns([1, 15, 1])
+  with row1[1]:
+    config_historico_valores(dfSemDataFiltrada, data_fim, key_grafico)
 
 
 def config_compras_insumos_detalhadas(categoria, key_data1, key_data2, keysearch, lojas_selecionadas):

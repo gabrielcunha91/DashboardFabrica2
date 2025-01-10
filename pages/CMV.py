@@ -54,12 +54,12 @@ def main():
   df_compras, compras_alimentos, compras_bebidas = config_compras(data_inicio, data_fim, lojas_selecionadas)
   df_valoracao_estoque_atual = config_valoracao_estoque(data_inicio, data_fim, lojas_selecionadas)
   df_valoracao_estoque_mes_anterior = config_valoracao_estoque(data_inicio_mes_anterior, data_fim_mes_anterior, lojas_selecionadas)
+  df_diferenca_estoque = config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior)
   df_variacao_estoque, variacao_estoque_alimentos, variacao_estoque_bebidas = config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior)
   valor_total, df_insumos_sem_pedido = config_insumos_blueme_sem_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_insumos_com_pedido, valor_total_com_pedido, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_transf_e_gastos = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
 
-  df_diferenca_estoque = config_diferenca_estoque(df_variacao_estoque, df_valoracao_estoque_mes_anterior)
 
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
   df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])

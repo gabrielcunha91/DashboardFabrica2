@@ -446,7 +446,7 @@ def GET_PRECOS_CONSOLIDADOS_MES(loja):
     ROUND(SUM(vir.Valor_Insumos) / SUM(vir.Quantidade), 2) AS 'Preco_Medio_Pago_no_Mes'
   FROM View_Insumos_Recebidos vir
   WHERE vir.Loja = '{loja}'
-  GROUP BY Mes_Anterior_Texto DESC, vir.ID_Insumo_Nivel_5 ASC;
+  GROUP BY Mes_Anterior_Texto, vir.ID_Insumo_Nivel_5
   ''')
 
 

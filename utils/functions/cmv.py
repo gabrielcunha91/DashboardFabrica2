@@ -285,6 +285,11 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
 
   return df_merged
 
+
+def config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior):
+
+  return
+
 def config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior):
   df_valoracao_estoque_atual['Valor_em_Estoque'] = df_valoracao_estoque_atual['Valor_em_Estoque'].astype(float)
   df_valoracao_estoque_mes_anterior['Valor_em_Estoque'] = df_valoracao_estoque_mes_anterior['Valor_em_Estoque'].astype(float)

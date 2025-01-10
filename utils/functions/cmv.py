@@ -286,9 +286,27 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   return df_merged
 
 
-def config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior):
 
-  return
+def config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior):
+  df_valoracao_estoque_atual = df_valoracao_estoque_atual.copy()
+  df_valoracao_estoque_mes_anterior = df_valoracao_estoque_mes_anterior.copy()
+  df_valoracao_estoque_atual.rename(columns={'Valor_em_Estoque': 'Valor_em_Estoque_Atual', 'Quantidade': 'Quantidade_Atual'}, inplace=True)
+  df_valoracao_estoque_mes_anterior.rename(columns={'Valor_em_Estoque': 'Valor_em_Estoque_Mes_Anterior', 'Quantidade': 'Quantidade_Mes_Anterior'}, inplace=True)
+  df_valoracao_estoque_atual.drop(['Unidade_Medida', 'Data_Emissao'], axis=1, inplace=True)
+  df_valoracao_estoque_mes_anterior.drop(['Unidade_Medida', 'Data_Emissao'], axis=1, inplace=True)
+  df_diferenca_estoque = pd.merge(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior, on=['ID_Loja', 'Loja', 'ID_Insumo', 'Insumo', 'ID_Nivel_4', 'Categoria'], how='outer')
+  df_diferenca_estoque.fillna(0, inplace=True)
+  df_diferenca_estoque['Valor_em_Estoque_Atual'] = df_diferenca_estoque['Valor_em_Estoque_Atual'].astype(float)
+  df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'] = df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'].astype(float)
+  df_diferenca_estoque['Quantidade_Atual'] = df_diferenca_estoque['Quantidade_Atual'].astype(float)
+  df_diferenca_estoque['Quantidade_Mes_Anterior'] = df_diferenca_estoque['Quantidade_Mes_Anterior'].astype(float)
+  df_diferenca_estoque['Diferenca_Estoque'] = df_diferenca_estoque['Valor_em_Estoque_Atual'] - df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior']
+  df_diferenca_estoque.sort_values(by=['Diferenca_Estoque', 'Categoria'], inplace=True)
+  df_diferenca_estoque = format_columns_brazilian(df_diferenca_estoque, ['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior', 'Diferenca_Estoque'])
+  df_diferenca_estoque.rename(columns={'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Mes_Anterior': 'Quantidade Mes Anterior', 'Diferenca_Estoque': 'Diferença Valor Estoque', 'Valor_em_Estoque_Atual': 'Valor em Estoque Atual', 'Valor_em_Estoque_Mes_Anterior': 'Valor em Estoque Mes Anterior'}, inplace=True)
+  df_diferenca_estoque.drop(['ID_Loja', 'ID_Insumo', 'ID_Nivel_4'], axis=1, inplace=True)
+  return df_diferenca_estoque
+
 
 def config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior):
   df_valoracao_estoque_atual['Valor_em_Estoque'] = df_valoracao_estoque_atual['Valor_em_Estoque'].astype(float)
@@ -341,11 +359,11 @@ def config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_fat
 
   df_faturamento_eventos = df_faturamento_eventos.rename(columns={'Valor': 'Faturamento Eventos'})
 
-  df_faturamento_zig_alimentos['ID_Loja'] = df_faturamento_zig_alimentos['ID_Loja'].astype(str)
-  df_faturamento_zig_bebidas['ID_Loja'] = df_faturamento_zig_bebidas['ID_Loja'].astype(str)
-  df_faturamento_delivery_alimentos['ID_Loja'] = df_faturamento_delivery_alimentos['ID_Loja'].astype(str)
-  df_faturamento_delivery_bebidas['ID_Loja'] = df_faturamento_delivery_bebidas['ID_Loja'].astype(str)
-  df_faturamento_eventos['ID_Loja'] = df_faturamento_eventos['ID_Loja'].astype(str)
+  df_faturamento_zig_alimentos['ID_Loja'] = df_faturamento_zig_alimentos['ID_Loja'].astype(int)
+  df_faturamento_zig_bebidas['ID_Loja'] = df_faturamento_zig_bebidas['ID_Loja'].astype(int)
+  df_faturamento_delivery_alimentos['ID_Loja'] = df_faturamento_delivery_alimentos['ID_Loja'].astype(int)
+  df_faturamento_delivery_bebidas['ID_Loja'] = df_faturamento_delivery_bebidas['ID_Loja'].astype(int)
+  df_faturamento_eventos['ID_Loja'] = df_faturamento_eventos['ID_Loja'].astype(int)
 
 
   df_faturamento_total = pd.merge(df_faturamento_zig_alimentos, df_faturamento_zig_bebidas, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')

@@ -59,6 +59,8 @@ def main():
   df_insumos_com_pedido, valor_total_com_pedido, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_transf_e_gastos = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
 
+  df_diferenca_estoque = config_diferenca_estoque(df_variacao_estoque, df_valoracao_estoque_mes_anterior)
+
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
   df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
 
@@ -208,6 +210,8 @@ def main():
       st.dataframe(df_variacao_estoque, use_container_width=True, hide_index=True)
       with st.expander("Detalhes Valoração Estoque Atual"):
         st.dataframe(df_valoracao_estoque_atual, use_container_width=True, hide_index=True)
+      with st.expander("Diferença de Estoque"):
+        st.dataframe(df_diferenca_estoque, use_container_width=True, hide_index=True)
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])

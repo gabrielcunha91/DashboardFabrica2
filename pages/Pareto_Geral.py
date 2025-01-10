@@ -7,7 +7,7 @@ from utils.components import *
 
 st.set_page_config(
   layout = 'wide',
-  page_title = 'Análise Pereto',
+  page_title = 'Curva ABC',
   page_icon='🎯',
   initial_sidebar_state="collapsed"
 )

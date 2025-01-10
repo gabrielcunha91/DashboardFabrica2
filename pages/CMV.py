@@ -62,7 +62,7 @@ def main():
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
   df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
 
-  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos # - consumo interno + entrada - saida
+  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos # - consumo interno + entrada transf - saida transf
   cmv_bebidas = compras_bebidas - variacao_estoque_bebidas
   faturamento_total_alimentos = faturamento_bruto_alimentos + faturamento_alimentos_delivery + faturamento_alimentos_eventos
   faturamento_total_bebidas = faturamento_bruto_bebidas + faturamento_bebidas_delivery + faturamento_bebidas_eventos

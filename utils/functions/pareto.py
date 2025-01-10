@@ -141,6 +141,7 @@ def grafico_historico_precos(df_filtrado, key):
 
 
 def config_historico_valores(df, data_fim, key):
+  df = df.copy()
   df.drop(['ID Produto Nivel 4', 'Loja', 'Fornecedor', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Fator de Proporção'], axis=1, inplace=True)
   df['Data Compra'] = pd.to_datetime(df['Data Compra'], format='%Y-%m-%d')
   data_fim = pd.to_datetime(data_fim, format='%d-%m-%Y', errors='coerce')
@@ -154,13 +155,14 @@ def config_historico_valores(df, data_fim, key):
     df_mes = df[
       (df['Data Compra'].dt.month == data.month) &
       (df['Data Compra'].dt.year == data.year)
-    ]
-    df_mes['Mês'] = mes
+    ].copy()
 
-    df_mes_grouped = df_mes.groupby(['Nome Produto', 'Mês'], as_index=False).agg({
+    df_mes.loc[:, 'Mês'] = mes
+
+    df_mes = df_mes.groupby(['Nome Produto', 'Mês'], as_index=False).agg({
       'Valor Unitário': 'mean'
     })
-    dfs_mensais.append(df_mes_grouped)
+    dfs_mensais.append(df_mes)
 
   df_filtrado = pd.concat(dfs_mensais, ignore_index=True)    
   grafico_historico_precos(df_filtrado, key)
@@ -180,12 +182,8 @@ def pesquisa_por_produto(dfNomeCompras, key, data_fim, dfSemDataFiltrada, key_gr
       dfSemDataFiltrada = filtrar_por_classe_selecionada(dfSemDataFiltrada, 'Nome Produto', produto_mais_significativo)
   row1 = st.columns([1, 15, 1])
   row1[1].dataframe(filtered_df, use_container_width=True,hide_index=True)
-  st.divider()
   col0, col, col1, col2 = st.columns([1.6, 15, 8, 2])
-  with col:
-    st.subheader('Histórico de preço do produto selecionado')
-  row1 = st.columns([1, 15, 1])
-  with row1[1]:
+  with st.expander('Histórico de preço do produto selecionado'):
     config_historico_valores(dfSemDataFiltrada, data_fim, key_grafico)
 
 

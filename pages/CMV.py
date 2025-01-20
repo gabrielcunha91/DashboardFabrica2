@@ -58,14 +58,16 @@ def main():
   df_variacao_estoque, variacao_estoque_alimentos, variacao_estoque_bebidas = config_variacao_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior)
   valor_total, df_insumos_sem_pedido = config_insumos_blueme_sem_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_insumos_com_pedido, valor_total_com_pedido, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
-  df_transf_e_gastos = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
+  df_transf_e_gastos, saida_alimentos, saida_bebidas, entrada_alimentos, entrada_bebidas, consumo_interno, quebras_e_perdas = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
+  df_transf_entradas, df_transf_saidas = config_transferencias_detalhadas(data_inicio, data_fim, lojas_selecionadas)
 
+ ###Onde calcular quebras e perdas??
 
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
   df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
 
-  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos # - consumo interno + entrada transf - saida transf
-  cmv_bebidas = compras_bebidas - variacao_estoque_bebidas
+  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos - saida_alimentos + entrada_alimentos - consumo_interno
+  cmv_bebidas = compras_bebidas - variacao_estoque_bebidas - saida_bebidas + entrada_bebidas
   faturamento_total_alimentos = faturamento_bruto_alimentos + faturamento_alimentos_delivery + faturamento_alimentos_eventos
   faturamento_total_bebidas = faturamento_bruto_bebidas + faturamento_bebidas_delivery + faturamento_bebidas_eventos
 
@@ -93,6 +95,11 @@ def main():
   cmv_percentual_alim = format_brazilian(cmv_percentual_alim)
   cmv_percentual_bebidas = format_brazilian(cmv_percentual_bebidas)
   cmv_percentual_geral = format_brazilian(cmv_percentual_geral)
+  entrada_alimentos = format_brazilian(entrada_alimentos)
+  entrada_bebidas = format_brazilian(entrada_bebidas)
+  saida_alimentos = format_brazilian(saida_alimentos)
+  saida_bebidas = format_brazilian(saida_bebidas)
+  consumo_interno = format_brazilian(consumo_interno)
 
 
   col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -121,14 +128,14 @@ def main():
       st.write('Faturam. Beb. Eventos.')
       st.write('R$', faturamento_bebidas_eventos)
 
-  col7, col8, col9, col10 = st.columns(4)
+  col7, col8, col9, col10, col20 = st.columns(5)
   with col7:
     with st.container(border=True):
-      st.write('Variação Estoque Alimentos')
+      st.write('Δ Estoque Alimentos')
       st.write('R$', variacao_estoque_alimentos)
   with col8:
     with st.container(border=True):
-      st.write('Variação Estoque Bebidas')
+      st.write('Δ Estoque Bebidas')
       st.write('R$', variacao_estoque_bebidas)
   with col9:
     with st.container(border=True):
@@ -138,25 +145,47 @@ def main():
     with st.container(border=True):
       st.write('Compras Bebidas')
       st.write('R$', compras_bebidas)
+  with col20:
+    with st.container(border=True):
+      st.write('Consumo Interno')
+      st.write('R$', consumo_interno)
 
-  col11, col12, col13, col14, col15 = st.columns(5)
+  col11, col12, col18, col19 = st.columns(4)
   with col11:
+    with st.container(border=True):
+      st.write('Entrada Alimentos')
+      st.write('R$', entrada_alimentos)
+  with col12:
+    with st.container(border=True):
+      st.write('Saída Alimentos')
+      st.write('R$', saida_alimentos)
+  with col18:
+    with st.container(border=True):
+      st.write('Entrada Bebidas')
+      st.write('R$', entrada_bebidas)
+  with col19:
+    with st.container(border=True):
+      st.write('Saída Bebidas')
+      st.write('R$', saida_bebidas)
+
+  col13, col14, col15, col16, col17 = st.columns(5)
+  with col13:
     with st.container(border=True):
       st.write('CMV Alimentos')
       st.write(' R$', cmv_alimentos)
-  with col12:
+  with col14:
     with st.container(border=True):
       st.write('CMV Bebidas')
       st.write('R$', cmv_bebidas)
-  with col13:
+  with col15:
     with st.container(border=True):
       st.write('CMV Percentual Alimentos')
       st.write(cmv_percentual_alim, '%')
-  with col14:
+  with col16:
     with st.container(border=True):
       st.write('CMV Percentual Bebidas')
       st.write(cmv_percentual_bebidas, '%')
-  with col15:
+  with col17:
     with st.container(border=True):
       st.write('CMV Percentual Geral')
       st.write(cmv_percentual_geral, '%')
@@ -218,6 +247,10 @@ def main():
     with col1:
       st.subheader('Transferências e Gastos Extras')
       st.dataframe(df_transf_e_gastos, use_container_width=True, hide_index=True)
+      with st.expander("Detalhes Transferências Entradas"):
+        st.dataframe(df_transf_entradas, use_container_width=True, hide_index=True)
+      with st.expander("Detalhes Transferências Saídas"):
+        st.dataframe(df_transf_saidas, use_container_width=True, hide_index=True)
 
 
 if __name__ == '__main__':

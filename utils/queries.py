@@ -595,36 +595,30 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO():
 
 
 @st.cache_data
-def GET_TRANSF_ESTOQUE_AGRUPADOS():
+def GET_TRANSF_ESTOQUE():
   return dataframe_query(f'''
   SELECT
-    vte.ID_Loja,
-    vte.Loja,
-    vte.Primeiro_Dia_Mes,
-    SUM(vte.Entrada_Transf_Alim) AS Entrada_Transf_Alim,
-    SUM(vte.Saida_Transf_Alim) AS Saida_Transf_Alim,
-    SUM(vte.Entrada_Transf_Bebidas) AS Entrada_Transf_Bebidas,
-    SUM(vte.Saida_Transf_Bebidas) AS Saida_Transf_Bebidas
-  FROM (
-    SELECT
-      tte.ID AS ID_Transf,
-      tl.ID AS ID_Loja,
-      tl.NOME_FANTASIA AS Loja,
-      tte.DATA_TRANSFERENCIA AS Data_Transf,
-      tte.ENTRADA_TRANSF_ALIMENTOS AS Entrada_Transf_Alim,
-      tte.SAIDA_TRANSF_ALIMENTOS AS Saida_Transf_Alim,
-      tte.ENTRADA_TRANSF_BEBIDAS AS Entrada_Transf_Bebidas,
-      tte.SAIDA_TRANSF_BEBIDAS AS Saida_Transf_Bebidas,
-      CAST(DATE_FORMAT(CAST(tte.DATA_TRANSFERENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes
-    FROM
-      T_TRANSFERENCIAS_ESTOQUE tte
-    JOIN T_EMPRESAS tl ON tte.FK_LOJA = tl.ID
-  ) vte
-  GROUP BY
-    vte.ID_Loja,
-    vte.Primeiro_Dia_Mes
-  ORDER BY
-    vte.ID_Loja;
+    tti.ID as 'ID_Transferencia',
+    te.NOME_FANTASIA as 'Casa_Saida',
+    te2.NOME_FANTASIA as 'Casa_Entrada',
+    tti.DATA_TRANSFERENCIA as 'Data_Transferencia',
+    tin5.ID as 'ID_Insumo_Nivel_5',
+    tin5.DESCRICAO as 'Insumo_Nivel_5',
+    tin.DESCRICAO as 'Categoria',
+    tti.QUANTIDADE as 'Quantidade',
+    tudm.UNIDADE_MEDIDA_NAME as 'Unidade_Medida',
+    tti.VALOR_TRANSFERENCIA as 'Valor_Transferencia',
+    tti.OBSERVACAO as 'Observacao'
+  FROM T_TRANSFERENCIAS_INSUMOS tti 
+    LEFT JOIN T_EMPRESAS te ON (tti.FK_EMRPESA_SAIDA = te.ID)
+    LEFT JOIN T_EMPRESAS te2 ON tti.FK_EMPRESA_ENTRADA = te2.ID
+    LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tti.FK_INSUMO_NIVEL_5 = tin5.ID
+    LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
+    LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
+    LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
+    LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
+    LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tin5.FK_UNIDADE_MEDIDA = tudm.ID)
+  ORDER BY tti.ID DESC
 ''')
 
 

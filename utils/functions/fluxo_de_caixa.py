@@ -7,12 +7,21 @@ from utils.functions.dados_gerais import *
 import openpyxl
 import os
 
-def config_projecao_bares(multiplicador):
-  def convert_to_datetime(df, cols):
-    for col in cols:
-      df[col] = pd.to_datetime(df[col])
-    return df
+def convert_to_datetime(df, cols):
+  for col in cols:
+    df[col] = pd.to_datetime(df[col])
+  return df
 
+
+def filtrar_data_fim(dataframe, data_fim, categoria):
+  data_fim = pd.Timestamp(data_fim)
+  dataframe.loc[:, categoria] = pd.to_datetime(dataframe[categoria], errors='coerce')
+  dataframe_filtered = dataframe.loc[
+    (dataframe[categoria] <= data_fim)
+  ]
+  return dataframe_filtered
+
+def config_projecao_bares(multiplicador, data_fim):
   df_saldos_bancarios = GET_SALDOS_BANCARIOS()
   df_valor_liquido = GET_VALOR_LIQUIDO_RECEBIDO()
   df_projecao_zig = GET_PROJECAO_ZIG()
@@ -34,6 +43,9 @@ def config_projecao_bares(multiplicador):
   merged_df = merged_df.fillna(0)
   merged_df = merged_df.rename(columns={'Valor_Projetado': 'Valor_Projetado_Zig'})
   merged_df = merged_df.sort_values(by='Data').reset_index(drop=True)
+
+  # Filtrando por data de fim
+  merged_df = filtrar_data_fim(merged_df, data_fim, 'Data')
 
   # Ajustando formatação
   cols = ['Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord', 'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas']

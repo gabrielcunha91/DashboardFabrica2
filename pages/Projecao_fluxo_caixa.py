@@ -23,12 +23,14 @@ bares = preparar_dados_lojas_user()
 # bares = df_projecao_bares["Empresa"].unique()
 
 with st.container(border=True):
-  col1, col2 = st.columns([3, 1])
+  col1, col2, col3 = st.columns([3, 1, 1])
   with col1:
     bar = st.selectbox("Bar", bares)
   with col2:
+    data_fim = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=7))
+  with col3:
     multiplicador = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input')
-  df_projecao_bares = config_projecao_bares(multiplicador)
+  df_projecao_bares = config_projecao_bares(multiplicador, data_fim)
   df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"] == bar]
   df_projecao_bar_com_soma = somar_total(df_projecao_bar)
   columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
@@ -41,10 +43,12 @@ st.divider()
 
 # Projeção Agrupada
 with st.container(border=True):
-  col1, col2 = st.columns([3, 1])
+  col1, col2, col3 = st.columns([3, 1, 1])
   with col1:
     st.subheader('Projeção de bares agrupados:' )
   with col2:
+    data_fim2 = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input2', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=7))
+  with col3:
     multiplicador2 = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input2')
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
@@ -52,7 +56,7 @@ with st.container(border=True):
     """
   )
 
-  df_projecao_grouped = config_projecao_bares(multiplicador2)
+  df_projecao_grouped = config_projecao_bares(multiplicador2, data_fim2)
   df_projecao_grouped = config_grouped_projecao(df_projecao_grouped)
   df_projecao_grouped_com_soma = somar_total(df_projecao_grouped)
 
@@ -85,7 +89,7 @@ with st.container(border=True):
   with col3:
     dataSelecionada = st.date_input('Data de Início (da Previsão de pagamento)', value=datetime.today(), key='data_inicio_input', format="DD/MM/YYYY")
   with col4:
-    dataSelecionada2 = st.date_input('Data de Fim (da Previsão de pagamento)', value=datetime.today(), key='data_fim_input', format="DD/MM/YYYY")
+    dataSelecionada2 = st.date_input('Data de Fim (da Previsão de pagamento)', value=datetime.today(), key='data_fim_input3', format="DD/MM/YYYY")
 
   dataSelecionada = pd.to_datetime(dataSelecionada)
   dataSelecionada2 = pd.to_datetime(dataSelecionada2)

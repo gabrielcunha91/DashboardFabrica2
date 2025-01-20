@@ -382,16 +382,80 @@ def config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_fat
 
 
 
+def processar_transferencias(df, casa_col, loja, data_inicio, data_fim):
+  # Filtrar pelo nome da loja e pelo intervalo de datas
+  df = df[df[casa_col] == loja]
+  df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Transferencia')
+  
+  # Agrupar por casa e categoria, somando os valores
+  df_grouped = df.groupby([casa_col, 'Categoria']).agg({
+    'Valor_Transferencia': 'sum'
+  }).reset_index()
+  
+  # Ajustar categoria para formato capitalizado
+  df_grouped['Categoria'] = df_grouped['Categoria'].str.capitalize()
+  
+  # Pivotar para transformar categorias em colunas
+  df_pivot = df_grouped.pivot_table(
+    index=casa_col,
+    columns='Categoria',
+    values='Valor_Transferencia',
+    fill_value=0
+  ).reset_index()
+  
+  # Renomear colunas para refletir o tipo de operação
+  operacao = 'Entrada' if casa_col == 'Casa_Entrada' else 'Saída'
+  df_pivot.columns = [f'{operacao} {col}' if col != casa_col else 'Loja' for col in df_pivot.columns]
+  
+  return df_pivot
+
+
+
+
 def config_transferencias_gastos(data_inicio, data_fim, loja):
-  df_transf_estoque = GET_TRANSF_ESTOQUE_AGRUPADOS()  
+  df_transf_estoque = GET_TRANSF_ESTOQUE()
+  df_entradas_pivot = processar_transferencias(df_transf_estoque, 'Casa_Entrada', loja, data_inicio, data_fim)
+  df_saidas_pivot = processar_transferencias(df_transf_estoque, 'Casa_Saida', loja, data_inicio, data_fim)
+
   df_perdas_e_consumo = GET_PERDAS_E_CONSUMO_AGRUPADOS()
+  df_perdas_e_consumo = filtrar_por_datas(df_perdas_e_consumo, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+  df_perdas_e_consumo = df_perdas_e_consumo[df_perdas_e_consumo['Loja'] == loja]
 
-  df_transf_e_gastos = pd.merge(df_transf_estoque, df_perdas_e_consumo, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
-  df_transf_e_gastos = filtrar_por_datas(df_transf_e_gastos, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df_transf_e_gastos = df_transf_e_gastos[df_transf_e_gastos['Loja'] == loja]
-
+  df_transf_e_gastos = pd.merge(df_entradas_pivot, df_saidas_pivot, on='Loja', how='outer')
+  df_transf_e_gastos = pd.merge(df_transf_e_gastos, df_perdas_e_consumo, on='Loja', how='outer')
   df_transf_e_gastos = primeiro_dia_mes_para_mes_ano(df_transf_e_gastos)
-  df_transf_e_gastos = df_transf_e_gastos.rename(columns={'Primeiro_Dia_Mes': 'Mês'})
-  df_transf_e_gastos = format_columns_brazilian(df_transf_e_gastos, ['Entrada_Transf_Alim', 'Saida_Transf_Alim', 'Entrada_Transf_Bebidas', 'Saida_Transf_Bebidas', 'Consumo_Interno', 'Quebras_e_Perdas'])
+  df_transf_e_gastos = df_transf_e_gastos.rename(columns={
+    'Primeiro_Dia_Mes': 'Mês',
+    'ID_Loja': 'ID Loja',
+    'Consumo_Interno': 'Consumo Interno',
+    'Quebras_e_Perdas': 'Quebras e Perdas'
+  })
+  cols = ['ID Loja', 'Loja', 'Entrada Alimentos', 'Entrada Bebidas', 'Saída Alimentos', 'Saída Bebidas', 'Consumo Interno', 'Quebras e Perdas']
+  df_transf_e_gastos = df_transf_e_gastos[cols]
 
-  return df_transf_e_gastos
+  # Conversão para float para evitar erros de tipo
+  saida_alimentos = float(df_saidas_pivot['Saída Alimentos'].iloc[0]) if 'Saída Alimentos' in df_saidas_pivot.columns else 0.0
+  saida_bebidas = float(df_saidas_pivot['Saída Bebidas'].iloc[0]) if 'Saída Bebidas' in df_saidas_pivot.columns else 0.0
+  entrada_alimentos = float(df_entradas_pivot['Entrada Alimentos'].iloc[0]) if 'Entrada Alimentos' in df_entradas_pivot.columns else 0.0
+  entrada_bebidas = float(df_entradas_pivot['Entrada Bebidas'].iloc[0]) if 'Entrada Bebidas' in df_entradas_pivot.columns else 0.0
+  consumo_interno = float(df_transf_e_gastos['Consumo Interno'].iloc[0]) if 'Consumo Interno' in df_transf_e_gastos.columns else 0.0
+  quebras_e_perdas = float(df_transf_e_gastos['Quebras e Perdas'].iloc[0]) if 'Quebras e Perdas' in df_transf_e_gastos.columns else 0.0
+
+  df_transf_e_gastos = format_columns_brazilian(df_transf_e_gastos, ['Entrada Alimentos', 'Entrada Bebidas', 'Saída Alimentos', 'Saída Bebidas', 'Consumo Interno', 'Quebras e Perdas'])
+
+  return df_transf_e_gastos, saida_alimentos, saida_bebidas, entrada_alimentos, entrada_bebidas, consumo_interno, quebras_e_perdas
+
+def config_transferencias_detalhadas(data_inicio, data_fim, loja):
+  df_transf_estoque = GET_TRANSF_ESTOQUE()
+  df_transf_estoque = filtrar_por_datas(df_transf_estoque, data_inicio, data_fim, 'Data_Transferencia')
+  df_transf_estoque = df_transf_estoque.rename(columns={'Casa_Saida': 'Casa Saída', 'Casa_Entrada': 'Casa Entrada', 'Data_Transferencia': 'Data Transferência', 
+                                                        'Valor_Transferencia': 'Valor Transferência', 'ID_Insumo_Nivel_5': 'ID Insumo Nível 5', 
+                                                        'Unidade_Medida': 'Unidade de Medida', 'Insumo_Nivel_5': 'Nome Insumo'})
+  df_transf_estoque.drop(['ID_Transferencia'], axis=1, inplace=True)
+  df_saidas = df_transf_estoque[df_transf_estoque['Casa Saída'] == loja]
+  df_entradas = df_transf_estoque[df_transf_estoque['Casa Entrada'] == loja]
+  df_saidas = format_date_brazilian(df_saidas, 'Data Transferência')
+  df_entradas = format_date_brazilian(df_entradas, 'Data Transferência')
+  df_entradas = format_columns_brazilian(df_entradas, ['Valor Transferência'])
+  df_saidas = format_columns_brazilian(df_saidas, ['Valor Transferência'])
+  return df_entradas, df_saidas

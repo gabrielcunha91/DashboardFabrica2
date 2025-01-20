@@ -431,6 +431,10 @@ def config_transferencias_gastos(data_inicio, data_fim, loja):
     'Quebras_e_Perdas': 'Quebras e Perdas'
   })
   cols = ['ID Loja', 'Loja', 'Entrada Alimentos', 'Entrada Bebidas', 'Saída Alimentos', 'Saída Bebidas', 'Consumo Interno', 'Quebras e Perdas']
+  for col in cols:
+    if col not in df_transf_e_gastos.columns:
+        df_transf_e_gastos[col] = 0
+
   df_transf_e_gastos = df_transf_e_gastos[cols]
 
   # Conversão para float para evitar erros de tipo

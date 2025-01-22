@@ -195,6 +195,47 @@ def config_insumos_blueme_com_pedido(data_inicio, data_fim, loja):
   return df, valor_total, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros
 
 
+
+def config_valoracao_producao(data_inicio, loja):
+  if data_inicio.month == 12:
+    data_contagem = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
+  else:
+    data_contagem = data_inicio.replace(month=data_inicio.month + 1, day=1)
+  df_valoracao_producao = GET_VALORACAO_PRODUCAO(loja, data_contagem)
+  df_valoracao_producao = substituicao_ids(df_valoracao_producao)
+  df_valoracao_producao = df_valoracao_producao[df_valoracao_producao['Loja'] == loja]
+  df_valoracao_producao = df_valoracao_producao.drop(['Mes_Texto', 'ID_Loja', 'Loja', 'Data_Contagem'], axis=1)
+  df_valoracao_producao['Valor_Total'] = df_valoracao_producao['Valor_Total'].astype(float)
+  df_valoracao_producao['Quantidade'] = df_valoracao_producao['Quantidade'].astype(float)
+  df_valoracao_producao['Valor_Unidade_Medida'] = df_valoracao_producao['Valor_Unidade_Medida'].astype(float)
+  df_producao_alimentos = df_valoracao_producao[df_valoracao_producao['Categoria'] == 'ALIMENTOS']
+  df_producao_bebidas = df_valoracao_producao[df_valoracao_producao['Categoria'] == 'BEBIDAS']
+  valor_producao_alimentos = df_producao_alimentos['Valor_Total'].sum()
+  valor_producao_bebidas = df_producao_bebidas['Valor_Total'].sum()
+  return df_producao_alimentos, df_producao_bebidas, valor_producao_alimentos, valor_producao_bebidas
+
+def config_diferenca_producao(df_atual, df_anterior):
+  df_atual = df_atual.copy()
+  df_anterior = df_anterior.copy()
+  df_atual.rename(columns={'Valor_Total': 'Valor_Total_Atual', 'Quantidade': 'Quantidade_Atual'}, inplace=True)
+  df_anterior.rename(columns={'Valor_Total': 'Valor_Total_Anterior', 'Quantidade': 'Quantidade_Anterior'}, inplace=True)
+  df_atual.drop(['Unidade_Medida', 'Valor_Unidade_Medida'], axis=1, inplace=True)
+  df_anterior.drop(['Unidade_Medida', 'Valor_Unidade_Medida'], axis=1, inplace=True)
+  df_diferenca_producao = pd.merge(df_atual, df_anterior, on=['Item_Produzido', 'Categoria'], how='outer')
+  df_diferenca_producao.fillna(0, inplace=True)
+  df_diferenca_producao['Valor_Total_Atual'] = df_diferenca_producao['Valor_Total_Atual'].astype(float)
+  df_diferenca_producao['Valor_Total_Anterior'] = df_diferenca_producao['Valor_Total_Anterior'].astype(float)
+  df_diferenca_producao['Quantidade_Atual'] = df_diferenca_producao['Quantidade_Atual'].astype(float)
+  df_diferenca_producao['Quantidade_Anterior'] = df_diferenca_producao['Quantidade_Anterior'].astype(float)
+  df_diferenca_producao['Diferenca_Valor_Total'] = df_diferenca_producao['Valor_Total_Atual'] - df_diferenca_producao['Valor_Total_Anterior']
+  df_diferenca_producao['Diferenca_Quantidade'] = df_diferenca_producao['Quantidade_Atual'] - df_diferenca_producao['Quantidade_Anterior']
+  df_diferenca_producao.sort_values(by=['Diferenca_Valor_Total', 'Categoria'], inplace=True)
+  df_diferenca_producao = format_columns_brazilian(df_diferenca_producao, ['Quantidade_Atual', 'Quantidade_Anterior', 'Valor_Total_Atual', 'Valor_Total_Anterior', 'Diferenca_Valor_Total', 'Diferenca_Quantidade'])
+  df_diferenca_producao.rename(columns={'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Anterior': 'Quantidade Anterior', 'Diferenca_Valor_Total': 'Diferença Valor Total', 'Diferenca_Quantidade': 'Diferença Quantidade', 'Valor_Total_Atual': 'Valor Total Atual', 'Valor_Total_Anterior': 'Valor Total Anterior'}, inplace=True)
+  return df_diferenca_producao
+
+
+
 def config_valoracao_estoque(data_inicio, data_fim, loja):
   if data_inicio.month == 12:
     data_inicio_nova = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
@@ -438,12 +479,19 @@ def config_transferencias_gastos(data_inicio, data_fim, loja):
   df_transf_e_gastos = df_transf_e_gastos[cols]
 
   # Conversão para float para evitar erros de tipo
-  saida_alimentos = float(df_saidas_pivot['Saída Alimentos'].iloc[0]) if 'Saída Alimentos' in df_saidas_pivot.columns else 0.0
-  saida_bebidas = float(df_saidas_pivot['Saída Bebidas'].iloc[0]) if 'Saída Bebidas' in df_saidas_pivot.columns else 0.0
-  entrada_alimentos = float(df_entradas_pivot['Entrada Alimentos'].iloc[0]) if 'Entrada Alimentos' in df_entradas_pivot.columns else 0.0
-  entrada_bebidas = float(df_entradas_pivot['Entrada Bebidas'].iloc[0]) if 'Entrada Bebidas' in df_entradas_pivot.columns else 0.0
-  consumo_interno = float(df_transf_e_gastos['Consumo Interno'].iloc[0]) if 'Consumo Interno' in df_transf_e_gastos.columns else 0.0
-  quebras_e_perdas = float(df_transf_e_gastos['Quebras e Perdas'].iloc[0]) if 'Quebras e Perdas' in df_transf_e_gastos.columns else 0.0
+  saida_alimentos = float(df_saidas_pivot['Saída Alimentos'].iloc[0]) if not df_saidas_pivot.empty and 'Saída Alimentos' in df_saidas_pivot.columns else 0.0
+  saida_bebidas = float(df_saidas_pivot['Saída Bebidas'].iloc[0]) if not df_saidas_pivot.empty and 'Saída Bebidas' in df_saidas_pivot.columns else 0.0
+  entrada_alimentos = float(df_entradas_pivot['Entrada Alimentos'].iloc[0]) if not df_entradas_pivot.empty and 'Entrada Alimentos' in df_entradas_pivot.columns else 0.0
+  entrada_bebidas = float(df_entradas_pivot['Entrada Bebidas'].iloc[0]) if not df_entradas_pivot.empty and 'Entrada Bebidas' in df_entradas_pivot.columns else 0.0
+  consumo_interno = float(df_transf_e_gastos['Consumo Interno'].iloc[0]) if not df_transf_e_gastos.empty and 'Consumo Interno' in df_transf_e_gastos.columns else 0.0
+  quebras_e_perdas = float(df_transf_e_gastos['Quebras e Perdas'].iloc[0]) if not df_transf_e_gastos.empty and 'Quebras e Perdas' in df_transf_e_gastos.columns else 0.0
+
+  # saida_alimentos = float(df_saidas_pivot['Saída Alimentos'].iloc[0]) if 'Saída Alimentos' in df_saidas_pivot.columns else 0.0
+  # saida_bebidas = float(df_saidas_pivot['Saída Bebidas'].iloc[0]) if 'Saída Bebidas' in df_saidas_pivot.columns else 0.0
+  # entrada_alimentos = float(df_entradas_pivot['Entrada Alimentos'].iloc[0]) if 'Entrada Alimentos' in df_entradas_pivot.columns else 0.0
+  # entrada_bebidas = float(df_entradas_pivot['Entrada Bebidas'].iloc[0]) if 'Entrada Bebidas' in df_entradas_pivot.columns else 0.0
+  # consumo_interno = float(df_transf_e_gastos['Consumo Interno'].iloc[0]) if 'Consumo Interno' in df_transf_e_gastos.columns else 0.0
+  # quebras_e_perdas = float(df_transf_e_gastos['Quebras e Perdas'].iloc[0]) if 'Quebras e Perdas' in df_transf_e_gastos.columns else 0.0
 
   df_transf_e_gastos = format_columns_brazilian(df_transf_e_gastos, ['Entrada Alimentos', 'Entrada Bebidas', 'Saída Alimentos', 'Saída Bebidas', 'Consumo Interno', 'Quebras e Perdas'])
 

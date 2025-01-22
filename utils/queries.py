@@ -748,6 +748,35 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
     subquery.row_num = 1;
 ''')
 
+
+
+def GET_VALORACAO_PRODUCAO(loja, data):
+  return dataframe_query(f'''
+  SELECT
+    te.ID as 'ID_Loja',
+    te.NOME_FANTASIA as 'Loja',
+    tipc.DATA_CONTAGEM as 'Data_Contagem',
+    DATE_FORMAT(DATE_SUB(tipc.DATA_CONTAGEM, INTERVAL 1 MONTH), '%m/%Y') AS 'Mes_Texto',
+    tip.NOME_ITEM_PRODUZIDO as 'Item_Produzido',
+    tudm.UNIDADE_MEDIDA_NAME as 'Unidade_Medida',
+    tipc.QUANTIDADE_INSUMO as 'Quantidade',
+    tin.DESCRICAO as 'Categoria',
+    tipv.VALOR as 'Valor_Unidade_Medida',
+    ROUND(tipc.QUANTIDADE_INSUMO * tipv.VALOR, 2) as 'Valor_Total'
+  FROM T_ITENS_PRODUCAO_CONTAGEM tipc
+  LEFT JOIN T_ITENS_PRODUCAO_VALORACAO tipv ON (tipc.FK_ITEM_PRODUZIDO = tipv.FK_ITEM_PRODUZIDO) AND (DATE_FORMAT(tipc.DATA_CONTAGEM, '%m/%Y') = DATE_FORMAT(tipv.DATA_VALORACAO, '%m/%Y'))
+  LEFT JOIN T_ITENS_PRODUCAO tip ON (tipv.FK_ITEM_PRODUZIDO = tip.ID)
+  LEFT JOIN T_EMPRESAS te ON (tip.FK_EMPRESA = te.ID)
+  LEFT JOIN T_INSUMOS_NIVEL_1 tin ON (tip.FK_INSUMO_NIVEL_1 = tin.ID)
+  LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tip.FK_UNIDADE_MEDIDA = tudm.ID)
+  WHERE te.NOME_FANTASIA = '{loja}' AND tipc.DATA_CONTAGEM = '{data}'
+  ''')
+
+
+
+
+
+
 ######################## PARETO ##############################
 
 # @st.cache_data

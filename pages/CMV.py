@@ -60,14 +60,21 @@ def main():
   df_insumos_com_pedido, valor_total_com_pedido, valor_alimentos, valor_bebidas, valor_hig, valor_gelo, valor_utensilios, valor_outros = config_insumos_blueme_com_pedido(data_inicio, data_fim, lojas_selecionadas)
   df_transf_e_gastos, saida_alimentos, saida_bebidas, entrada_alimentos, entrada_bebidas, consumo_interno, quebras_e_perdas = config_transferencias_gastos(data_inicio, data_fim, lojas_selecionadas)
   df_transf_entradas, df_transf_saidas = config_transferencias_detalhadas(data_inicio, data_fim, lojas_selecionadas)
+  df_producao_alimentos, df_producao_bebidas, valor_producao_alimentos, valor_producao_bebidas = config_valoracao_producao(data_inicio, lojas_selecionadas)
+  df_producao_alimentos_mes_anterior, df_producao_bebidas_mes_anterior, valor_producao_alimentos_mes_anterior, valor_producao_bebidas_mes_anterior = config_valoracao_producao(data_inicio_mes_anterior, lojas_selecionadas)
+  df_diferenca_producao_alimentos = config_diferenca_producao(df_producao_alimentos, df_producao_alimentos_mes_anterior)
+  df_diferenca_producao_bebidas = config_diferenca_producao(df_producao_bebidas, df_producao_bebidas_mes_anterior)
 
- ###Onde calcular quebras e perdas??
 
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
   df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
+  df_producao_alimentos = format_columns_brazilian(df_producao_alimentos, ['Valor_Total', 'Quantidade', 'Valor_Unidade_Medida'])
+  df_producao_bebidas = format_columns_brazilian(df_producao_bebidas, ['Valor_Total', 'Quantidade', 'Valor_Unidade_Medida'])
+  diferenca_producao_alimentos = valor_producao_alimentos - valor_producao_alimentos_mes_anterior
+  diferenca_producao_bebidas = valor_producao_bebidas - valor_producao_bebidas_mes_anterior
 
-  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos - saida_alimentos + entrada_alimentos - consumo_interno
-  cmv_bebidas = compras_bebidas - variacao_estoque_bebidas - saida_bebidas + entrada_bebidas
+  cmv_alimentos = compras_alimentos - variacao_estoque_alimentos - saida_alimentos + entrada_alimentos - consumo_interno - diferenca_producao_alimentos
+  cmv_bebidas = compras_bebidas - variacao_estoque_bebidas - saida_bebidas + entrada_bebidas - diferenca_producao_bebidas
   faturamento_total_alimentos = faturamento_bruto_alimentos + faturamento_alimentos_delivery + faturamento_alimentos_eventos
   faturamento_total_bebidas = faturamento_bruto_bebidas + faturamento_bebidas_delivery + faturamento_bebidas_eventos
 
@@ -100,6 +107,8 @@ def main():
   saida_alimentos = format_brazilian(saida_alimentos)
   saida_bebidas = format_brazilian(saida_bebidas)
   consumo_interno = format_brazilian(consumo_interno)
+  diferenca_producao_alimentos = format_brazilian(diferenca_producao_alimentos)
+  diferenca_producao_bebidas = format_brazilian(diferenca_producao_bebidas)
 
 
   col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -139,34 +148,45 @@ def main():
       st.write('R$', variacao_estoque_bebidas)
   with col9:
     with st.container(border=True):
-      st.write('Compras Alimentos')
-      st.write('R$', compras_alimentos)
+      st.write('Δ Produção Alimentos')
+      st.write('R$', diferenca_producao_alimentos)
   with col10:
     with st.container(border=True):
-      st.write('Compras Bebidas')
-      st.write('R$', compras_bebidas)
+      st.write('Δ Produção Bebidas')
+      st.write('R$', diferenca_producao_bebidas)
   with col20:
     with st.container(border=True):
       st.write('Consumo Interno')
       st.write('R$', consumo_interno)
 
-  col11, col12, col18, col19 = st.columns(4)
+
+
+  col11, col12, col18, col19, col21, col22 = st.columns(6)
   with col11:
+    with st.container(border=True):
+      st.write('Compras Alimentos')
+      st.write('R$', compras_alimentos)
+  with col12:
+    with st.container(border=True):
+      st.write('Compras Bebidas')
+      st.write('R$', compras_bebidas)
+  with col18:
     with st.container(border=True):
       st.write('Entrada Alimentos')
       st.write('R$', entrada_alimentos)
-  with col12:
+  with col19:
     with st.container(border=True):
       st.write('Saída Alimentos')
       st.write('R$', saida_alimentos)
-  with col18:
+  with col21:
     with st.container(border=True):
       st.write('Entrada Bebidas')
       st.write('R$', entrada_bebidas)
-  with col19:
+  with col22:
     with st.container(border=True):
       st.write('Saída Bebidas')
       st.write('R$', saida_bebidas)
+
 
   col13, col14, col15, col16, col17 = st.columns(5)
   with col13:
@@ -241,6 +261,22 @@ def main():
         st.dataframe(df_valoracao_estoque_atual, use_container_width=True, hide_index=True)
       with st.expander("Diferença de Estoque"):
         st.dataframe(df_diferenca_estoque, use_container_width=True, hide_index=True)
+
+  with st.container(border=True):
+    col0, col1, col2 = st.columns([1, 12, 1])
+    with col1:
+      st.subheader('Inventário de Produção')
+      st.dataframe(df_variacao_estoque, use_container_width=True, hide_index=True)
+      with st.expander("Detalhes Valoração Estoque Atual"):
+        st.subheader('Valoração de Produção Alimentos')
+        st.dataframe(df_producao_alimentos, use_container_width=True, hide_index=True)
+        st.subheader('Valoração de Produção Bebidas')
+        st.dataframe(df_producao_bebidas, use_container_width=True, hide_index=True)
+      with st.expander("Diferença de valoração de Produção"):
+        st.subheader('Diferença de Produção Alimentos')
+        st.dataframe(df_diferenca_producao_alimentos, use_container_width=True, hide_index=True)
+        st.subheader('Diferença de Produção Bebidas')
+        st.dataframe(df_diferenca_producao_bebidas, use_container_width=True, hide_index=True)
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 12, 1])

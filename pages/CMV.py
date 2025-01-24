@@ -64,12 +64,19 @@ def main():
   df_producao_alimentos_mes_anterior, df_producao_bebidas_mes_anterior, valor_producao_alimentos_mes_anterior, valor_producao_bebidas_mes_anterior = config_valoracao_producao(data_inicio_mes_anterior, lojas_selecionadas)
   df_diferenca_producao_alimentos = config_diferenca_producao(df_producao_alimentos, df_producao_alimentos_mes_anterior)
   df_diferenca_producao_bebidas = config_diferenca_producao(df_producao_bebidas, df_producao_bebidas_mes_anterior)
+  df_producao_total = config_producao_agregada(df_producao_alimentos, df_producao_bebidas, df_producao_alimentos_mes_anterior, df_producao_bebidas_mes_anterior)
+
+  df_producao_alimentos.drop(columns=['ID_Loja', 'Loja'], inplace=True)
+  df_producao_bebidas.drop(columns=['ID_Loja', 'Loja'], inplace=True)
+  df_valoracao_estoque_atual.drop(columns=['ID_Loja', 'Loja'], inplace=True)
+  df_diferenca_estoque.drop(columns=['Loja'], inplace=True)
 
 
   df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
-  df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque'])
+  df_valoracao_estoque_atual = format_columns_brazilian(df_valoracao_estoque_atual, ['Valor_em_Estoque', 'Quantidade'])
   df_producao_alimentos = format_columns_brazilian(df_producao_alimentos, ['Valor_Total', 'Quantidade', 'Valor_Unidade_Medida'])
   df_producao_bebidas = format_columns_brazilian(df_producao_bebidas, ['Valor_Total', 'Quantidade', 'Valor_Unidade_Medida'])
+  df_producao_total = format_columns_brazilian(df_producao_total, ['Valor Produção Mês Anterior', 'Valor Produção Atual'])
   diferenca_producao_alimentos = valor_producao_alimentos - valor_producao_alimentos_mes_anterior
   diferenca_producao_bebidas = valor_producao_bebidas - valor_producao_bebidas_mes_anterior
 
@@ -266,7 +273,7 @@ def main():
     col0, col1, col2 = st.columns([1, 12, 1])
     with col1:
       st.subheader('Inventário de Produção')
-      st.dataframe(df_variacao_estoque, use_container_width=True, hide_index=True)
+      st.dataframe(df_producao_total, use_container_width=True, hide_index=True)
       with st.expander("Detalhes Valoração Estoque Atual"):
         st.subheader('Valoração de Produção Alimentos')
         st.dataframe(df_producao_alimentos, use_container_width=True, hide_index=True)

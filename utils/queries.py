@@ -402,87 +402,32 @@ def GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio, data_fim):
     Primeiro_Dia_Mes;
 ''')
 
-
-
-@st.cache_data
-def GET_CONTAGEM_INSUMOS(loja, data):
-  return dataframe_query(f'''  
-	SELECT
-   	te.ID AS 'ID_Loja',
-   	tci.DATA_CONTAGEM AS 'Data_Contagem',
-   	te.NOME_FANTASIA AS 'Loja',
-   	tci.FK_INSUMO AS 'ID_Insumo',
-   	tin5.DESCRICAO AS 'Insumo',
-   	tin4.ID as 'ID_Nivel_4',
-   	tin.DESCRICAO AS 'Categoria',
-   	tci.QUANTIDADE_INSUMO AS 'Quantidade',
-    tci.VALOR_INSUMOS AS 'Valor_em_Estoque',
-    tudm.UNIDADE_MEDIDA as 'Unidade_Medida',
-    cast(date_format(cast(tci.DATA_CONTAGEM AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes',
-    DATE_FORMAT(DATE_SUB(tci.DATA_CONTAGEM, INTERVAL 1 MONTH), '%m/%Y') AS 'Mes_Anterior_Texto'
-  FROM T_CONTAGEM_INSUMOS tci 
+def GET_VALORACAO_ESTOQUE(loja, data_contagem):
+  return dataframe_query(f'''
+  SELECT 
+  	te.ID AS 'ID_Loja',
+  	te.NOME_FANTASIA AS 'Loja',
+  	tin5.ID AS 'ID_Insumo',
+  	tin5.DESCRICAO AS 'Insumo',
+  	tci.QUANTIDADE_INSUMO AS 'Quantidade',
+  	tin5.FK_INSUMOS_NIVEL_4 AS 'ID_Nivel_4',
+  	tudm.UNIDADE_MEDIDA_NAME AS 'Unidade_Medida',
+    tin.DESCRICAO AS 'Categoria',
+  	tve.VALOR_EM_ESTOQUE AS 'Valor_em_Estoque',
+  	tci.DATA_CONTAGEM
+  FROM T_VALORACAO_ESTOQUE tve 
+  LEFT JOIN T_CONTAGEM_INSUMOS tci ON tve.FK_CONTAGEM = tci.ID 
   LEFT JOIN T_EMPRESAS te ON tci.FK_EMPRESA = te.ID 
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tci.FK_INSUMO = tin5.ID
   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
   LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
-  LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
-  LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id	
-  LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tin5.FK_UNIDADE_MEDIDA = tudm.ID)
-  WHERE te.NOME_FANTASIA = '{loja}'
-  AND tci.DATA_CONTAGEM = '{data}'
-  ''')
-
-  
-@st.cache_data
-def GET_PRECOS_CONSOLIDADOS_MES(loja):
-  return dataframe_query(f'''
-  SELECT 
-    vir.Loja as 'Loja',
-    vir.ID_Insumo_Nivel_5 as 'ID_Insumo',
-    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS 'Mes_Anterior_Texto',
-    STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d') as 'Data_Emissao',
-    ROUND(SUM(vir.Quantidade), 2) AS 'Quantidade_Comprada_no_Mes',
-    ROUND(SUM(vir.Valor_Insumos), 2) AS 'Valor_Total_Pago_no_Mes',
-    ROUND(SUM(vir.Valor_Insumos) / SUM(vir.Quantidade), 2) AS 'Preco_Medio_Pago_no_Mes'
-  FROM View_Insumos_Recebidos vir
-  WHERE vir.Loja = '{loja}'
-  GROUP BY Mes_Anterior_Texto, vir.ID_Insumo_Nivel_5
-  ''')
-
-
-
-@st.cache_data
-def GET_ULTIMOS_PRECOS(loja):
-  return dataframe_query(f'''
-  SELECT 
-    vir.Loja AS 'Loja',
-    vir.ID_Insumo_Nivel_5 AS 'ID_Insumo',
-    vir.Data_Emissao as 'Data_Ultima_Compra',
-    vir.Valor_Insumos / vir.Quantidade AS 'Valor_Unidade_Medida',
-    DATE_FORMAT(STR_TO_DATE(vir.Data_Emissao, '%Y-%m-%d'), '%m/%Y') AS 'Mes_Anterior_Texto'
-  FROM 
-    View_Insumos_Recebidos vir
-  WHERE vir.Loja = '{loja}'
-	ORDER BY vir.Data_Emissao DESC
-  ''')
-
-
-
-@st.cache_data
-def GET_PRECOS_OUTRAS_LOJAS():
-  return dataframe_query(f'''
-  SELECT
-    vir.ID_Insumo_Nivel_5 AS 'ID_Insumo',
-    vir.Data_Emissao AS 'Data_Compra',
-    SUM(vir.Valor_Insumos) / SUM(vir.Quantidade) AS 'Valor_Ultima_Compra_Global'
-  FROM
-    View_Insumos_Recebidos vir
-  GROUP BY
-    vir.ID_Insumo_Nivel_5,
-    vir.Data_Emissao
-  ORDER BY
-    vir.Nome_Insumo_Nivel_5,
-    vir.Data_Emissao DESC
+  LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID
+  LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.ID
+  LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON tin5.FK_UNIDADE_MEDIDA = tudm.ID
+  WHERE tci.QUANTIDADE_INSUMO != 0
+    AND tci.DATA_CONTAGEM = '{data_contagem}'
+    AND te.NOME_FANTASIA = '{loja}'
+  ORDER BY DATA_CONTAGEM DESC
   ''')
 
 
@@ -506,13 +451,13 @@ def GET_EVENTOS_CMV(data_inicio, data_fim):
 @st.cache_data
 def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO():
   return dataframe_query(f'''
-  WITH subquery AS (
+    WITH subquery AS (
     SELECT
       tdr.ID AS tdr_ID,
       te.ID AS ID_Loja,
       te.NOME_FANTASIA AS Loja,
       CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-      tdr.VALOR_LIQUIDO AS Valor_Liquido,
+      tdr.VALOR_PAGAMENTO AS Valor,
       tccg2.DESCRICAO AS Class_Cont_Grupo_2
     FROM
       T_DESPESA_RAPIDA tdr
@@ -542,21 +487,21 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO():
     ID_Loja,
     Loja,
     Primeiro_Dia_Mes,
-    SUM(Valor_Liquido) AS BlueMe_Sem_Pedido_Valor_Liquido,
+    SUM(Valor) AS BlueMe_Sem_Pedido_Valor,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 IN ('ALIMENTOS', 'Insumos - Alimentos') THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 IN ('ALIMENTOS', 'Insumos - Alimentos') THEN Valor
       ELSE 0
     END) AS BlueMe_Sem_Pedido_Alimentos,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 IN ('BEBIDAS', 'Insumos - Bebidas') THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 IN ('BEBIDAS', 'Insumos - Bebidas') THEN Valor
       ELSE 0
     END) AS BlueMe_Sem_Pedido_Bebidas,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 IN ('EMBALAGENS', 'Insumos - Embalagens') THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 IN ('EMBALAGENS', 'Insumos - Embalagens') THEN Valor
       ELSE 0
       END) AS BlueMe_Sem_Pedido_Descart_Hig_Limp,
     SUM(CASE
-      WHEN Class_Cont_Grupo_2 NOT IN ('ALIMENTOS', 'Insumos - Alimentos', 'BEBIDAS', 'Insumos - Bebidas', 'EMBALAGENS', 'Insumos - Embalagens') THEN Valor_Liquido
+      WHEN Class_Cont_Grupo_2 NOT IN ('ALIMENTOS', 'Insumos - Alimentos', 'BEBIDAS', 'Insumos - Bebidas', 'EMBALAGENS', 'Insumos - Embalagens') THEN Valor
       ELSE 0
       END) AS BlueMe_Sem_Pedido_Outros
   FROM subquery
@@ -690,14 +635,14 @@ def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
 @st.cache_data
 def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
   return dataframe_query(f'''
-  SELECT
+      SELECT
     subquery.tdr_ID AS tdr_ID,
     subquery.ID_Loja AS ID_Loja,
     subquery.Loja AS Loja,
     subquery.Fornecedor AS Fornecedor,
     subquery.Doc_Serie AS Doc_Serie,
     subquery.Data_Emissao AS Data_Emissao,
-    subquery.Valor_Liquido AS Valor_Liquido,
+    subquery.Valor AS Valor,
     subquery.Plano_de_Contas AS Plano_de_Contas,
     subquery.Primeiro_Dia_Mes AS Primeiro_Dia_Mes
   FROM
@@ -713,7 +658,7 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
       tccg2.DESCRICAO AS Class_Cont_Grupo_2,
       tccg.DESCRICAO AS Class_Cont_Grupo_1,
       tdr.OBSERVACAO AS Observacao,
-      tdr.VALOR_LIQUIDO AS Valor_Liquido,
+      tdr.VALOR_PAGAMENTO AS Valor,
       tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
       tsp2.DESCRICAO AS Status,
       CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,

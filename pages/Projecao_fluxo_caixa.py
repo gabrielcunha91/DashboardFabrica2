@@ -27,7 +27,7 @@ with st.container(border=True):
   with col1:
     bar = st.selectbox("Bar", bares)
   with col2:
-    data_fim = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=7))
+    data_fim = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=12))
   with col3:
     multiplicador = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input')
   df_projecao_bares = config_projecao_bares(multiplicador, data_fim)
@@ -36,6 +36,8 @@ with st.container(border=True):
   columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                                  'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
   df_projecao_bar_com_soma = df_projecao_bar_com_soma[columns_projecao_bar_com_soma]
+  df_projecao_bar_com_soma = format_columns_brazilian(df_projecao_bar_com_soma, ['Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
+                                 'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final'])
   st.dataframe(df_projecao_bar_com_soma, use_container_width=True, hide_index=True)
 
 st.divider()
@@ -47,12 +49,12 @@ with st.container(border=True):
   with col1:
     st.subheader('Projeção de bares agrupados:' )
   with col2:
-    data_fim2 = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input2', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=7))
+    data_fim2 = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input2', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=12))
   with col3:
     multiplicador2 = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input2')
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Girondino, Girondino CCBB, Bar Brahma - Granja, Edificio Rolim*
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Bar Brahma - Granja, Edificio Rolim*
     """
   )
 
@@ -62,9 +64,11 @@ with st.container(border=True):
 
   columns_projecao_grouped = ['Data', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                             'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']
-  
+  df_projecao_grouped_com_soma = df_projecao_grouped_com_soma[columns_projecao_grouped]
+  df_projecao_grouped_com_soma = format_columns_brazilian(df_projecao_grouped_com_soma, ['Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
+                            'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final'])
 
-  st.dataframe(df_projecao_grouped_com_soma[columns_projecao_grouped], use_container_width=True, hide_index=True)
+  st.dataframe(df_projecao_grouped_com_soma, use_container_width=True, hide_index=True)
 
 st.divider()
 
@@ -81,7 +85,7 @@ with st.container(border=True):
       lojasAgrupadas = [
         'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
         'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 
-        'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar Brahma - Granja', 'Edificio Rolim'
+        'Escritório Fabrica de Bares', 'Priceless', 'Bar Brahma - Granja', 'Edificio Rolim'
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
     checkbox2 = st.checkbox(label='Apenas Pendentes', key='checkbox_despesas_pendentes')
@@ -98,10 +102,10 @@ with st.container(border=True):
     df = filtrar_por_classe_selecionada(df, 'Status_Pgto', ['Pendente'])
   if checkbox3:
     df = filtrar_por_classe_selecionada(df, 'Status_Pgto', ['Pago'])
-  st.dataframe(df, use_container_width=True, hide_index=True)
   valorTotal = df['Valor'].sum()
   valorTotal = format_brazilian(valorTotal)
   df = format_columns_brazilian(df, ['Valor'])
+  st.dataframe(df, use_container_width=True, hide_index=True)
   st.write('Valor total das despesas selecionadas = R$', valorTotal)
 
 
@@ -119,7 +123,7 @@ with st.container(border=True):
             'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
             'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
             'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 
-            'Escritório Fabrica de Bares', 'Priceless', 'Girondino - CCBB', 'Girondino ', 'Bar Brahma - Granja', 'Edificio Rolim'
+            'Escritório Fabrica de Bares', 'Priceless', 'Bar Brahma - Granja', 'Edificio Rolim'
       ]
       lojasSelecionadas2.extend(lojasAgrupadas)
   with col3:
@@ -129,8 +133,8 @@ with st.container(border=True):
   df = GET_RECEITAS_EXTRAORD_DO_DIA(dataSelecionada2)
   df = filtrar_por_classe_selecionada(df, 'Empresa', lojasSelecionadas2)
   df = filtrar_por_datas(df, dataSelecionada2, dataSelecionada2, 'Data_Vencimento_Parcela')
-  st.dataframe(df, use_container_width=True, hide_index=True)
   valorTotal = df['Valor_Parcela'].sum()
   valorTotal = format_brazilian(valorTotal)
   df = format_columns_brazilian(df, ['Valor_Parcela'])
+  st.dataframe(df, use_container_width=True, hide_index=True)
   st.write('Valor total das receitas extraordinárias selecionadas = R$', valorTotal)

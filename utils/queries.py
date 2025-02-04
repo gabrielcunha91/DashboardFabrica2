@@ -720,8 +720,6 @@ def GET_VALORACAO_PRODUCAO(loja, data):
 
 
 
-
-
 ######################## PARETO ##############################
 
 # @st.cache_data
@@ -865,7 +863,7 @@ def GET_SALDOS_BANCARIOS():
   return dataframe_query(f"""
 SELECT * FROM View_Saldos_Bancarios
 WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
 ORDER BY `Data` ASC
 """)
@@ -892,7 +890,7 @@ LEFT JOIN T_RECEITAS_EXTRATOS_MANUAL trem on
 LEFT JOIN T_EMPRESAS te on
   trem.FK_LOJA = te.ID
 WHERE tc.DATA >= CURDATE() 
-	AND tc.DATA < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+	AND tc.DATA < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 	AND te.NOME_FANTASIA IS NOT NULL
 GROUP BY
   te.NOME_FANTASIA,
@@ -904,7 +902,7 @@ def GET_PROJECAO_ZIG():
   return dataframe_query(f'''
 SELECT * FROM View_Projecao_Zig_Agrupadas
 WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
 ORDER BY `Data` ASC
 ''')
@@ -932,7 +930,7 @@ def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
     vpa.DATA_VENCIMENTO IS NOT NULL
     AND vpa.DATA_RECEBIMENTO IS NULL
     AND Data >= CURDATE() 
-    AND Data < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+    AND Data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
     AND te.NOME_FANTASIA IS NOT NULL
   GROUP BY
     te.NOME_FANTASIA,
@@ -1033,7 +1031,7 @@ vvap.`Data` as 'Data',
 SUM(vvap.Valores_Aprovados_Previsao) as 'Despesas_Aprovadas_Pendentes' 
 FROM View_Valores_Aprovados_Previsao vvap
 WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
 GROUP BY `Data`, Empresa  
 ORDER BY `Data` ASC
@@ -1047,7 +1045,7 @@ vvap.`Data` as 'Data',
 SUM(vvap.Valores_Pagos) as 'Despesas_Pagas' 
 FROM View_Valores_Pagos_por_Previsao vvap
 WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
 GROUP BY `Data`, Empresa  
 ORDER BY `Data` ASC
@@ -1144,50 +1142,7 @@ WHERE vpa.DATA_VENCIMENTO IS NOT NULL
 ORDER BY vpa.DATA_RECEBIMENTO DESC;
 ''')
 
-# def GET_CUSTOS_BLUEME_SEM_PARCELAMENTO():
-#   return dataframe_query(f'''
-# SELECT 
-# tdr.ID as 'ID_Despesa',
-# tdr.FK_DESPESA_TEKNISA as 'FK_Despesa_Teknisa',
-# te.ID as 'ID_Loja',
-# te.NOME_FANTASIA as 'Casa',
-# tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
-# tdr.VALOR_LIQUIDO as 'Valor',
-# tdr.VENCIMENTO as 'Data_Vencimento',
-# tc.`DATA` as 'Previsao_Pgto',
-# tc2.`DATA` as 'Realizacao_Pgto',    
-# tdr.COMPETENCIA as 'Data_Competencia',
-# tdr.LANCAMENTO as 'Data_Lancamento',
-# tfdp.DESCRICAO as 'Forma_Pagamento',
-# tccg.DESCRICAO as 'Class_Cont_1',
-# tccg2.DESCRICAO as 'Class_Cont_2',
-# CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Vencimento', 
-# tscd.DESCRICAO as 'Status_Conf_Document',
-# tsad.DESCRICAO as 'Status_Aprov_Diret',
-# tsac.DESCRICAO as 'Status_Aprov_Caixa',
-# tsp.DESCRICAO as 'Status_Pgto',
-# FROM T_DESPESA_RAPIDA tdr
-# INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
-# LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
-# LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
-# LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
-# LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID)
-# LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON (tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID)
-# LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsad.ID)
-# LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
-# LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
-# LEFT JOIN T_CALENDARIO tc ON (tdr.PREVISAO_PAGAMENTO = tc.ID)	
-# LEFT JOIN T_CALENDARIO tc2 ON (tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID)
-# LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
-# WHERE 
-#     te.ID IS NOT NULL
-#     AND tdp.FK_DESPESA IS NULL
-#     AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
-#     AND tsp.DESCRICAO = "Pago"
-#     AND tc2.`DATA` >= '2024-05-01 00:00:00'
-# ORDER BY 
-#     tc2.`DATA` DESC
-# ''')
+
 
 def GET_CUSTOS_BLUEME_SEM_PARCELAMENTO():
   return dataframe_query(f'''

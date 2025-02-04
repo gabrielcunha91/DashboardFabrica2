@@ -21,6 +21,26 @@ def filtrar_data_fim(dataframe, data_fim, categoria):
   ]
   return dataframe_filtered
 
+
+def prolongar_projecao(df_projecao_zig, dias_prolongados=7):
+  df_projecao_zig = df_projecao_zig.copy()
+  df_projecao_zig['Data'] = pd.to_datetime(df_projecao_zig['Data'])
+  novas_linhas = []
+  
+  for empresa, grupo in df_projecao_zig.groupby('Empresa'):
+    for i in range(1, dias_prolongados + 1):
+      df_temp = grupo.copy()
+      df_temp['Data'] += pd.Timedelta(days=7)  # Avança 7 dias mantendo padrão de semana
+      novas_linhas.append(df_temp)
+
+  df_projecao_estendida = pd.concat([df_projecao_zig] + novas_linhas, ignore_index=True)
+  df_projecao_estendida = df_projecao_estendida.sort_values(by=['Empresa', 'Data']).reset_index(drop=True)
+  df_projecao_estendida.drop_duplicates(subset=['Data', 'Empresa'], keep='first', inplace=True)
+
+  return df_projecao_estendida
+
+
+
 def config_projecao_bares(multiplicador, data_fim):
   df_saldos_bancarios = GET_SALDOS_BANCARIOS()
   df_valor_liquido = GET_VALOR_LIQUIDO_RECEBIDO()
@@ -29,6 +49,7 @@ def config_projecao_bares(multiplicador, data_fim):
   df_despesas_aprovadas = GET_DESPESAS_APROVADAS()
   df_despesas_pagas = GET_DESPESAS_PAGAS()
 
+  df_projecao_zig = prolongar_projecao(df_projecao_zig, dias_prolongados=7)
   # Converter colunas de data
   dfs = [df_saldos_bancarios, df_valor_liquido, df_projecao_zig, df_receitas_extraord_proj, df_despesas_aprovadas, df_despesas_pagas]
   for df in dfs:
@@ -56,7 +77,7 @@ def config_projecao_bares(multiplicador, data_fim):
   merged_df['Valor_Projetado_Zig'] = merged_df['Valor_Projetado_Zig'] * multiplicador
 
   merged_df['Saldo_Final'] = merged_df['Saldo_Inicio_Dia'] + merged_df['Valor_Liquido_Recebido'] + merged_df['Valor_Projetado_Zig'] + merged_df['Receita_Projetada_Extraord'] - merged_df['Despesas_Aprovadas_Pendentes'] - merged_df['Despesas_Pagas']
-
+  merged_df = format_date_brazilian(merged_df, 'Data')
   return merged_df
 
 def is_in_group(empresa, houses_to_group):

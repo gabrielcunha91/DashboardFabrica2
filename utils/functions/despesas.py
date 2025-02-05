@@ -17,8 +17,6 @@ def config_despesas_por_classe(df):
   df['Orcamento'] = df.apply(lambda row: row['Orcamento'] / row['Qtd_Lancamentos'] if row['Qtd_Lancamentos'] > 0 else row['Orcamento'], axis=1)
 
 
-  # df['Orcamento'] = df['Orcamento'] / df['Qtd_Lancamentos']
-
   formatted_rows = []
   current_category = None
 

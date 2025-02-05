@@ -153,5 +153,5 @@ def format_date_brazilian(df, date_column):
 
 
 def highlight_values(val):
-    color = 'red' if '-' in val else 'green'
-    return f'color: {color}'
+  color = 'red' if '-' in val else 'green'
+  return f'color: {color}'

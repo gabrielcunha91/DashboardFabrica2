@@ -13,8 +13,9 @@ def substituicao_ids(df):
     117: 114,
     139: 105,
     161: 149,
-    169: 149,
-    110: 131
+    162: 149,
+    110: 131,
+    160: 156
   }
 
   substituicoesNomes = {
@@ -26,7 +27,8 @@ def substituicao_ids(df):
     'Notiê - Priceless': 'Priceless',
     'Abaru - Priceless': 'Priceless',
     'Blue Note - São Paulo': 'Blue Note - Agregado',
-    'Blue Note SP (Novo)': 'Blue Note - Agregado'
+    'Blue Note SP (Novo)': 'Blue Note - Agregado',
+    'Girondino - CCBB': 'Girondino '
   }
 
   df.loc[:, 'Loja'] = df['Loja'].replace(substituicoesNomes)
@@ -66,6 +68,13 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
   df['Valor_Bruto'] = df['Valor_Bruto'].astype(float)
   df = df.dropna(subset=['ID_Loja'])
 
+  df = df.groupby(['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Categoria', 'Delivery', 'Ano_Mes']).agg({
+    'Valor_Bruto': 'sum',
+    'Desconto': 'sum',
+    'Valor_Liquido': 'sum',
+    'Data_Evento': 'first'
+  }).reset_index()
+
   df_delivery = df[df['Delivery'] == 1]
   df_zig = df[df['Delivery'] == 0]
 
@@ -100,28 +109,27 @@ def config_faturamento_eventos(data_inicio, data_fim, loja, faturamento_bruto_al
 
 
 def config_compras(data_inicio, data_fim, loja):
-# ARRUMAR: primeiro fazer o merge dos insumos agrupados e depois filtrar tudo
   df1 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO()  
   df2 = GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_COM_PEDIDO()
 
-  df1 = substituicao_ids(df1)
-  df2 = substituicao_ids(df2)
+  df_compras = pd.merge(df2, df1, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
 
-  df1 = df1[df1['Loja'] == loja]
-  df2 = df2[df2['Loja'] == loja]
+  df_compras = substituicao_ids(df_compras)
+  df_compras = df_compras[df_compras['Loja'] == loja]
+  df_compras = df_compras.groupby(['ID_Loja', 'Loja', 'Primeiro_Dia_Mes']).agg(
+    {'BlueMe_Sem_Pedido_Alimentos': 'sum', 
+     'BlueMe_Sem_Pedido_Bebidas': 'sum', 
+     'BlueMe_Com_Pedido_Valor_Liq_Alimentos': 'sum', 
+     'BlueMe_Com_Pedido_Valor_Liq_Bebidas': 'sum'}).reset_index()
 
-  df1 = filtrar_por_datas(df1, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  df2 = filtrar_por_datas(df2, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+  df_compras = filtrar_por_datas(df_compras, data_inicio, data_fim, 'Primeiro_Dia_Mes')
 
-  Compras_Alimentos = df1['BlueMe_Sem_Pedido_Alimentos'].sum() + df2['BlueMe_Com_Pedido_Valor_Liq_Alimentos'].sum()
-  Compras_Bebidas = df1['BlueMe_Sem_Pedido_Bebidas'].sum() + df2['BlueMe_Com_Pedido_Valor_Liq_Bebidas'].sum()
+  Compras_Alimentos = df_compras['BlueMe_Sem_Pedido_Alimentos'].sum() + df_compras['BlueMe_Com_Pedido_Valor_Liq_Alimentos'].sum()
+  Compras_Bebidas = df_compras['BlueMe_Sem_Pedido_Bebidas'].sum() + df_compras['BlueMe_Com_Pedido_Valor_Liq_Bebidas'].sum()
 
   Compras_Alimentos = float(Compras_Alimentos)
   Compras_Bebidas = float(Compras_Bebidas)
 
-  df_compras = pd.merge(df2, df1, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
-
-  df_compras = df_compras.drop(columns={'BlueMe_Com_Pedido_Valor_Liquido', 'BlueMe_Com_Pedido_Valor_Insumos', 'BlueMe_Com_Pedido_Valor_Liq_Descart_Hig_Limp', 'BlueMe_Com_Pedido_Valor_Liq_Outros', 'BlueMe_Sem_Pedido_Valor', 'BlueMe_Sem_Pedido_Descart_Hig_Limp', 'BlueMe_Sem_Pedido_Outros'})
   df_compras = primeiro_dia_mes_para_mes_ano(df_compras)
 
   df_compras['Compras Alimentos'] = df_compras['BlueMe_Com_Pedido_Valor_Liq_Alimentos'] + df_compras['BlueMe_Sem_Pedido_Alimentos']
@@ -177,16 +185,17 @@ def config_insumos_blueme_com_pedido(data_inicio, data_fim, loja):
   return df
 
 
-
 def config_valoracao_producao(data_inicio, loja):
   if data_inicio.month == 12:
     data_contagem = data_inicio.replace(year=data_inicio.year + 1, month=1, day=1)
   else:
     data_contagem = data_inicio.replace(month=data_inicio.month + 1, day=1)
-  df_valoracao_producao = GET_VALORACAO_PRODUCAO(loja, data_contagem)
+  df_valoracao_producao = GET_VALORACAO_PRODUCAO(data_contagem)
+
   df_valoracao_producao = substituicao_ids(df_valoracao_producao)
   df_valoracao_producao = df_valoracao_producao[df_valoracao_producao['Loja'] == loja]
   df_valoracao_producao = df_valoracao_producao.drop(['Mes_Texto', 'Data_Contagem'], axis=1)
+
   df_valoracao_producao['Valor_Total'] = df_valoracao_producao['Valor_Total'].astype(float)
   df_valoracao_producao['Quantidade'] = df_valoracao_producao['Quantidade'].astype(float)
   df_valoracao_producao['Valor_Unidade_Medida'] = df_valoracao_producao['Valor_Unidade_Medida'].astype(float)

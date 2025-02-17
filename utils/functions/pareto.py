@@ -264,14 +264,13 @@ def comparativo_entre_lojas(df):
 
     data_inicio = pd.to_datetime(data_inicio)
     data_fim = pd.to_datetime(data_fim)
+    df['Data Compra'] = pd.to_datetime(df['Data Compra'], errors='coerce')
+    df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
 
     # Filtrando os dataframes com base nas seleções
     if produto_selecionado:
       df_loja1 = df[(df['Loja'] == loja1) & (df['Nome Produto'] == produto_selecionado)]
       df_loja2 = df[(df['Loja'] == loja2) & (df['Nome Produto'] == produto_selecionado)]
-
-      filtrar_por_datas(df_loja1, data_inicio, data_fim, 'Data Compra')
-      filtrar_por_datas(df_loja2, data_inicio, data_fim, 'Data Compra')
 
       df_loja1 = create_columns_comparativo(df_loja1)
       df_loja2 = create_columns_comparativo(df_loja2)
@@ -334,7 +333,7 @@ def comparativo_valor_mais_baixo(df1):
     data_inicio = pd.to_datetime(data_inicio)
     data_fim = pd.to_datetime(data_fim)
 
-    filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
+    df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
 
     df2 = df.copy()
     df2 = create_columns_comparativo(df2)

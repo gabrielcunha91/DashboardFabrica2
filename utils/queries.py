@@ -408,7 +408,7 @@ def GET_VALORACAO_ESTOQUE(loja, data_contagem):
   	te.ID AS 'ID_Loja',
   	te.NOME_FANTASIA AS 'Loja',
   	tin5.ID AS 'ID_Insumo',
-  	tin5.DESCRICAO AS 'Insumo',
+  	REPLACE(tin5.DESCRICAO, ',', '.') AS 'Insumo',
   	tci.QUANTIDADE_INSUMO AS 'Quantidade',
   	tin5.FK_INSUMOS_NIVEL_4 AS 'ID_Nivel_4',
   	tudm.UNIDADE_MEDIDA_NAME AS 'Unidade_Medida',
@@ -438,7 +438,7 @@ def GET_EVENTOS_CMV(data_inicio, data_fim):
   SELECT 
     te.ID AS 'ID_Loja',
    	te.NOME_FANTASIA AS 'Loja',
-   	tec.VALOR_EVENTOS_A_B AS 'Valor',
+   	SUM(tec.VALOR_EVENTOS_A_B) AS 'Valor',
    	tec.`DATA` AS 'Data',
     cast(date_format(cast(tec.`DATA` AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes'
   FROM T_EVENTOS_CMV tec 
@@ -466,9 +466,9 @@ def GET_INSUMOS_AGRUPADOS_BLUE_ME_POR_CATEG_SEM_PEDIDO():
     LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID
     LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
     LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
-    JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA
-    JOIN T_STATUS ts ON tds.FK_STATUS_NAME = ts.ID
-    JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
+    LEFT JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA
+    LEFT JOIN T_STATUS ts ON tds.FK_STATUS_NAME = ts.ID
+    LEFT JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
     WHERE
       tdr.FK_DESPESA_TEKNISA IS NULL
       AND tccg.ID IN (162, 205)
@@ -635,7 +635,7 @@ def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
 @st.cache_data
 def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
   return dataframe_query(f'''
-      SELECT
+  SELECT
     subquery.tdr_ID AS tdr_ID,
     subquery.ID_Loja AS ID_Loja,
     subquery.Loja AS Loja,
@@ -681,13 +681,13 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
     LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
     LEFT JOIN T_TEKNISA_CONTAS_A_PAGAR ttcap ON tdr.FK_DESPESA_TEKNISA = ttcap.ID
     LEFT JOIN T_DESPESA_RAPIDA_ITEM tdri ON tdr.ID = tdri.FK_DESPESA_RAPIDA
-    JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA
-    JOIN T_STATUS ts ON tds.FK_STATUS_NAME = ts.ID
-    JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
+    LEFT JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA
+    LEFT JOIN T_STATUS ts ON tds.FK_STATUS_NAME = ts.ID
+    LEFT JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
     WHERE
       tdri.ID IS NULL
       AND tdr.FK_DESPESA_TEKNISA IS NULL
-      AND tccg.ID IN (162, 205)
+      AND tccg.ID IN (162, 205, 236)
     ) subquery
   WHERE
     subquery.row_num = 1;
@@ -695,7 +695,7 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
 
 
 
-def GET_VALORACAO_PRODUCAO(loja, data):
+def GET_VALORACAO_PRODUCAO(data):
   return dataframe_query(f'''
   SELECT
     te.ID as 'ID_Loja',
@@ -714,7 +714,7 @@ def GET_VALORACAO_PRODUCAO(loja, data):
   LEFT JOIN T_EMPRESAS te ON (tip.FK_EMPRESA = te.ID)
   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON (tip.FK_INSUMO_NIVEL_1 = tin.ID)
   LEFT JOIN T_UNIDADES_DE_MEDIDAS tudm ON (tip.FK_UNIDADE_MEDIDA = tudm.ID)
-  WHERE te.NOME_FANTASIA = '{loja}' AND tipc.DATA_CONTAGEM = '{data}'
+  WHERE tipc.DATA_CONTAGEM = '{data}'
   ''')
 
 

@@ -28,7 +28,8 @@ def substituicao_ids(df, colNome, colID):
     'Abaru - Priceless': 'Priceless',
     'Blue Note - São Paulo': 'Blue Note - Agregado',
     'Blue Note SP (Novo)': 'Blue Note - Agregado',
-    'Girondino - CCBB': 'Girondino '
+    'Girondino - CCBB': 'Girondino - Agregado',
+    'Girondino ': 'Girondino - Agregado'
   }
 
   df.loc[:, colNome] = df[colNome].replace(substituicoesNomes)

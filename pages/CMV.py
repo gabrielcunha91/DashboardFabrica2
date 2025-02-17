@@ -39,6 +39,10 @@ def main():
     lojasComDados.remove('Blue Note - São Paulo')
     lojasComDados.remove('Blue Note SP (Novo)')
     lojasComDados.append('Blue Note - Agregado')
+  if 'Girondino - CCBB' in lojasComDados and 'Girondino ' in lojasComDados:
+    lojasComDados.remove('Girondino - CCBB')
+    lojasComDados.remove('Girondino ')
+    lojasComDados.append('Girondino - Agregado')
 
   lojasComDados.sort()
 

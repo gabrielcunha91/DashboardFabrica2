@@ -408,7 +408,7 @@ def GET_VALORACAO_ESTOQUE(loja, data_contagem):
   	te.ID AS 'ID_Loja',
   	te.NOME_FANTASIA AS 'Loja',
   	tin5.ID AS 'ID_Insumo',
-  	tin5.DESCRICAO AS 'Insumo',
+  	REPLACE(tin5.DESCRICAO, ',', '.') AS 'Insumo',
   	tci.QUANTIDADE_INSUMO AS 'Quantidade',
   	tin5.FK_INSUMOS_NIVEL_4 AS 'ID_Nivel_4',
   	tudm.UNIDADE_MEDIDA_NAME AS 'Unidade_Medida',
@@ -635,7 +635,7 @@ def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
 @st.cache_data
 def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
   return dataframe_query(f'''
-      SELECT
+  SELECT
     subquery.tdr_ID AS tdr_ID,
     subquery.ID_Loja AS ID_Loja,
     subquery.Loja AS Loja,
@@ -687,7 +687,7 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
     WHERE
       tdri.ID IS NULL
       AND tdr.FK_DESPESA_TEKNISA IS NULL
-      AND tccg.ID IN (162, 205)
+      AND tccg.ID IN (162, 205, 236)
     ) subquery
   WHERE
     subquery.row_num = 1;

@@ -5,7 +5,7 @@ from utils.components import *
 import calendar
 from babel.dates import format_date
 
-def substituicao_ids(df):
+def substituicao_ids(df, colNome, colID):
   substituicoesIds = {
     103: 116,
     112: 104,
@@ -31,8 +31,8 @@ def substituicao_ids(df):
     'Girondino - CCBB': 'Girondino '
   }
 
-  df.loc[:, 'Loja'] = df['Loja'].replace(substituicoesNomes)
-  df.loc[:, 'ID_Loja'] = df['ID_Loja'].replace(substituicoesIds)
+  df.loc[:, colNome] = df[colNome].replace(substituicoesNomes)
+  df.loc[:, colID] = df[colID].replace(substituicoesIds)
   return df
 
 
@@ -63,7 +63,7 @@ def primeiro_dia_mes_para_mes_ano(df):
 
 def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
   df = GET_FATURAM_ZIG_ALIM_BEB_MENSAL(data_inicio=data_inicio, data_fim=data_fim)
-  df = substituicao_ids(df)
+  df = substituicao_ids(df, 'Loja', 'ID_Loja')
 
   df['Valor_Bruto'] = df['Valor_Bruto'].astype(float)
   df = df.dropna(subset=['ID_Loja'])
@@ -93,7 +93,7 @@ def config_faturamento_bruto_zig(data_inicio, data_fim, loja):
 
 def config_faturamento_eventos(data_inicio, data_fim, loja, faturamento_bruto_alimentos, faturamento_bruto_bebidas):
   df = GET_EVENTOS_CMV(data_inicio=data_inicio, data_fim=data_fim)
-  df = substituicao_ids(df)
+  df = substituicao_ids(df, 'Loja', 'ID_Loja')
   df = df[df['Loja'] == loja]
 
   df['Valor'] = df['Valor'].astype(float)
@@ -114,7 +114,7 @@ def config_compras(data_inicio, data_fim, loja):
 
   df_compras = pd.merge(df2, df1, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes'], how='outer')
 
-  df_compras = substituicao_ids(df_compras)
+  df_compras = substituicao_ids(df_compras, 'Loja', 'ID_Loja')
   df_compras = df_compras[df_compras['Loja'] == loja]
   df_compras = df_compras.groupby(['ID_Loja', 'Loja', 'Primeiro_Dia_Mes']).agg(
     {'BlueMe_Sem_Pedido_Alimentos': 'sum', 
@@ -147,7 +147,7 @@ def config_compras(data_inicio, data_fim, loja):
 
 def config_insumos_blueme_sem_pedido(data_inicio, data_fim, loja):
   df = GET_INSUMOS_BLUE_ME_SEM_PEDIDO()
-  df = substituicao_ids(df)
+  df = substituicao_ids(df, 'Loja', 'ID_Loja')
   df = df.drop(['Primeiro_Dia_Mes'], axis=1)
   df = df[df['Loja'] == loja]
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Emissao')
@@ -161,7 +161,7 @@ def config_insumos_blueme_sem_pedido(data_inicio, data_fim, loja):
 
 def config_insumos_blueme_com_pedido(data_inicio, data_fim, loja):
   df = GET_INSUMOS_BLUE_ME_COM_PEDIDO()
-  df = substituicao_ids(df)
+  df = substituicao_ids(df, 'Loja', 'ID_Loja')
   df = df.drop(['Primeiro_Dia_Mes'], axis=1)
   df = df[df['Loja'] == loja]
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data_Emissao')
@@ -192,7 +192,7 @@ def config_valoracao_producao(data_inicio, loja):
     data_contagem = data_inicio.replace(month=data_inicio.month + 1, day=1)
   df_valoracao_producao = GET_VALORACAO_PRODUCAO(data_contagem)
 
-  df_valoracao_producao = substituicao_ids(df_valoracao_producao)
+  df_valoracao_producao = substituicao_ids(df_valoracao_producao, 'Loja', 'ID_Loja')
   df_valoracao_producao = df_valoracao_producao[df_valoracao_producao['Loja'] == loja]
   df_valoracao_producao = df_valoracao_producao.drop(['Mes_Texto', 'Data_Contagem'], axis=1)
 
@@ -253,84 +253,6 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
 
 
   df_valoracao_estoque = GET_VALORACAO_ESTOQUE(loja, data_inicio_nova)
-
-  # contagem_insumos = GET_CONTAGEM_INSUMOS(loja, data_inicio_nova)
-  # if contagem_insumos.empty:
-  #   st.warning("A contagem de insumos ainda não foi feita para o período selecionado e isso retornará um erro. Por favor, selecione o mês anterior.")	
-
-  # precos_consolidados_mes = GET_PRECOS_CONSOLIDADOS_MES(loja)
-  # precos_consolidados_mes = filtrar_por_datas(precos_consolidados_mes, data_inicio, data_fim, 'Data_Emissao')
-
-  # ultimos_precos = GET_ULTIMOS_PRECOS(loja)
-  # precos_outras_lojas = GET_PRECOS_OUTRAS_LOJAS()
-
-  # contagem_insumos = contagem_insumos.drop_duplicates()
-  # precos_consolidados_mes = precos_consolidados_mes.drop_duplicates()
-  # ultimos_precos = ultimos_precos.drop_duplicates()
-  # precos_outras_lojas = precos_outras_lojas.drop_duplicates()
-
-  # precos_outras_lojas['Data_Compra'] = pd.to_datetime(precos_outras_lojas['Data_Compra'])
-  # ultimos_precos['Data_Ultima_Compra'] = pd.to_datetime(ultimos_precos['Data_Ultima_Compra'])
-
-  # ultimos_precos_filtrados = []
-  # for _, row in contagem_insumos.iterrows():
-  #   id_insumo = row['ID_Insumo']
-  #   data_contagem = row['Data_Contagem']
-  #   # Filtra os registros correspondentes
-  #   filtro = ultimos_precos[
-  #     (ultimos_precos['ID_Insumo'] == id_insumo) &
-  #     (ultimos_precos['Data_Ultima_Compra'] < data_contagem)
-  #   ]
-  #   # Seleciona a linha com a maior Data_Ultima_Compra
-  #   if not filtro.empty:
-  #     linha_escolhida = filtro.loc[filtro['Data_Ultima_Compra'].idxmax()]
-  #     ultimos_precos_filtrados.append(linha_escolhida)
-  # # Converte a lista de resultados filtrados em um DataFrame
-  # ultimos_precos_filtrados = pd.DataFrame(ultimos_precos_filtrados)
-  # if ultimos_precos_filtrados.empty:
-  #   ultimos_precos_filtrados = pd.DataFrame(columns=ultimos_precos.columns)
-  # ultimos_precos_filtrados.drop_duplicates(inplace=True)
-
-  # # Filtrar Preços Outras Lojas com base em Data_Contagem
-  # precos_outras_lojas_filtrados = []
-  # # Itera pelos IDs de insumo e associa corretamente
-  # for _, row in contagem_insumos.iterrows():
-  #   id_insumo = row['ID_Insumo']
-  #   data_contagem = row['Data_Contagem']
-  #   # Filtra os registros correspondentes
-  #   filtro = precos_outras_lojas[
-  #     (precos_outras_lojas['ID_Insumo'] == id_insumo) &
-  #     (precos_outras_lojas['Data_Compra'] < data_contagem)
-  #   ]
-  #   # Seleciona a linha com a maior Data_Compra
-  #   if not filtro.empty:
-  #     linha_escolhida = filtro.loc[filtro['Data_Compra'].idxmax()]
-  #     precos_outras_lojas_filtrados.append(linha_escolhida)
-
-  # # Converte a lista de resultados filtrados em um DataFrame
-  # precos_outras_lojas_filtrados = pd.DataFrame(precos_outras_lojas_filtrados)
-  # precos_outras_lojas_filtrados = precos_outras_lojas_filtrados.drop_duplicates(subset=['ID_Insumo'])
-
-  # # 1. Left join entre Contagem_Insumos e Precos_Consolidados_Mes
-  # df_merged = pd.merge(contagem_insumos, precos_consolidados_mes, on=['ID_Insumo', 'Mes_Anterior_Texto', 'Loja'], how='left')
-  # # 2. Left join com Ultimos_Precos
-  # df_merged = pd.merge(df_merged, ultimos_precos_filtrados[['ID_Insumo', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Loja']], on=['ID_Insumo', 'Loja'], how='left')
-  # # 3. Left join com Precos_Outras_Casas
-  # df_merged = pd.merge(df_merged, precos_outras_lojas_filtrados[['ID_Insumo', 'Valor_Ultima_Compra_Global']], on='ID_Insumo', how='left')
-  # df_merged = df_merged.drop_duplicates(subset=['ID_Insumo'])
-
-  # df_merged.loc[df_merged['Valor_em_Estoque'].isna(), 'Valor_em_Estoque'] = df_merged.apply(
-  #   lambda row: 
-  #     (float(row['Quantidade']) * float(row['Preco_Medio_Pago_no_Mes'])) 
-  #     if pd.notna(row['Preco_Medio_Pago_no_Mes']) else
-  #     (float(row['Quantidade']) * float(row['Valor_Unidade_Medida'])) 
-  #     if pd.notna(row['Valor_Unidade_Medida']) else
-  #     (float(row['Quantidade']) * float(row['Valor_Ultima_Compra_Global'])) 
-  #     if pd.notna(row['Valor_Ultima_Compra_Global']) else 0,
-  #   axis=1
-  # )
-  # # df_merged = filtrar_por_datas(df_merged, data_inicio, data_fim, 'Primeiro_Dia_Mes')
-  # df_merged = df_merged.drop(['Primeiro_Dia_Mes', 'Data_Contagem', 'Mes_Anterior_Texto', 'Quantidade_Comprada_no_Mes', 'Preco_Medio_Pago_no_Mes', 'Valor_Total_Pago_no_Mes', 'Data_Ultima_Compra', 'Valor_Unidade_Medida', 'Valor_Ultima_Compra_Global'], axis=1)
 
   df_valoracao_estoque.drop(['DATA_CONTAGEM'], axis=1, inplace=True)
   return df_valoracao_estoque
@@ -462,15 +384,16 @@ def processar_transferencias(df, casa_col, loja, data_inicio, data_fim):
   return df_pivot
 
 
-
-
 def config_transferencias_gastos(data_inicio, data_fim, loja):
   df_transf_estoque = GET_TRANSF_ESTOQUE()
+  df_transf_estoque = substituicao_ids(df_transf_estoque, 'Casa_Saida', 'ID_Loja_Saida')
+  df_transf_estoque = substituicao_ids(df_transf_estoque, 'Casa_Entrada', 'ID_Loja_Entrada')
   df_entradas_pivot = processar_transferencias(df_transf_estoque, 'Casa_Entrada', loja, data_inicio, data_fim)
   df_saidas_pivot = processar_transferencias(df_transf_estoque, 'Casa_Saida', loja, data_inicio, data_fim)
 
   df_perdas_e_consumo = GET_PERDAS_E_CONSUMO_AGRUPADOS()
   df_perdas_e_consumo = filtrar_por_datas(df_perdas_e_consumo, data_inicio, data_fim, 'Primeiro_Dia_Mes')
+  df_perdas_e_consumo = substituicao_ids(df_perdas_e_consumo, 'Loja', 'ID_Loja')
   df_perdas_e_consumo = df_perdas_e_consumo[df_perdas_e_consumo['Loja'] == loja]
   df_perdas_e_consumo.fillna(0, inplace=True)
 

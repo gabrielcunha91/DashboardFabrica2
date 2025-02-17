@@ -544,7 +544,9 @@ def GET_TRANSF_ESTOQUE():
   return dataframe_query(f'''
   SELECT
     tti.ID as 'ID_Transferencia',
+    te.ID as 'ID_Loja_Saida',
     te.NOME_FANTASIA as 'Casa_Saida',
+    te2.ID as 'ID_Loja_Entrada',
     te2.NOME_FANTASIA as 'Casa_Entrada',
     tti.DATA_TRANSFERENCIA as 'Data_Transferencia',
     tin5.ID as 'ID_Insumo_Nivel_5',

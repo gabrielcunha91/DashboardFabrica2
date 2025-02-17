@@ -634,6 +634,65 @@ def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
 ''')
 
 
+  # SELECT
+  #   subquery.tdr_ID AS tdr_ID,
+  #   subquery.ID_Loja AS ID_Loja,
+  #   subquery.Loja AS Loja,
+  #   subquery.Fornecedor AS Fornecedor,
+  #   subquery.Doc_Serie AS Doc_Serie,
+  #   subquery.Data_Emissao AS Data_Emissao,
+  #   subquery.Valor AS Valor,
+  #   subquery.Plano_de_Contas AS Plano_de_Contas,
+  #   subquery.Primeiro_Dia_Mes AS Primeiro_Dia_Mes
+  # FROM
+  #   (
+  #   SELECT
+  #     tdr.ID AS tdr_ID,
+  #     te.ID AS ID_Loja,
+  #     te.NOME_FANTASIA AS Loja,
+  #     tf.CORPORATE_NAME AS Fornecedor,
+  #     tdr.NF AS Doc_Serie,
+  #     tdr.COMPETENCIA AS Data_Emissao,
+  #     tdr.VENCIMENTO AS Data_Vencimento,
+  #     tccg2.DESCRICAO AS Class_Cont_Grupo_2,
+  #     tccg.DESCRICAO AS Class_Cont_Grupo_1,
+  #     tdr.OBSERVACAO AS Observacao,
+  #     tdr.VALOR_PAGAMENTO AS Valor,
+  #     tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
+  #     tsp2.DESCRICAO AS Status,
+  #     CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
+  #     ROW_NUMBER() OVER (PARTITION BY tdr.ID
+  #     ORDER BY
+  #       tds.ID DESC) AS row_num
+  #   FROM
+  #     T_DESPESA_RAPIDA tdr
+  #   JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
+  #   LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON tdr.FK_FORMA_PAGAMENTO = tfdp.ID
+  #   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
+  #   LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID
+  #   LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
+  #   LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID
+  #   LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON tdr.FK_APROVACAO_DIRETORIA = tsad.ID
+  #   LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON tdr.FK_APROVACAO_CAIXA = tsac.ID
+  #   LEFT JOIN T_STATUS_PAGAMENTO tsp ON tdr.FK_STATUS_PGTO = tsp.ID
+  #   LEFT JOIN T_CALENDARIO tc ON tdr.PREVISAO_PAGAMENTO = tc.ID
+  #   LEFT JOIN T_CALENDARIO tc2 ON tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID
+  #   LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
+  #   LEFT JOIN T_TEKNISA_CONTAS_A_PAGAR ttcap ON tdr.FK_DESPESA_TEKNISA = ttcap.ID
+  #   LEFT JOIN T_DESPESA_RAPIDA_ITEM tdri ON tdr.ID = tdri.FK_DESPESA_RAPIDA
+  #   LEFT JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA
+  #   LEFT JOIN T_STATUS ts ON tds.FK_STATUS_NAME = ts.ID
+  #   LEFT JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
+  #   WHERE
+  #     tdri.ID IS NULL
+  #     AND tdr.FK_DESPESA_TEKNISA IS NULL
+  #     AND tccg.ID IN (162, 205, 236)
+  #   ) subquery
+  # WHERE
+  #   subquery.row_num = 1;
+
+
+
 @st.cache_data
 def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
   return dataframe_query(f'''
@@ -661,7 +720,7 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
       tccg.DESCRICAO AS Class_Cont_Grupo_1,
       tdr.OBSERVACAO AS Observacao,
       tdr.VALOR_PAGAMENTO AS Valor,
-      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
+      tccg2.DESCRICAO AS Plano_de_Contas,
       tsp2.DESCRICAO AS Status,
       CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
       ROW_NUMBER() OVER (PARTITION BY tdr.ID
@@ -680,7 +739,6 @@ def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
     LEFT JOIN T_STATUS_PAGAMENTO tsp ON tdr.FK_STATUS_PGTO = tsp.ID
     LEFT JOIN T_CALENDARIO tc ON tdr.PREVISAO_PAGAMENTO = tc.ID
     LEFT JOIN T_CALENDARIO tc2 ON tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID
-    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
     LEFT JOIN T_TEKNISA_CONTAS_A_PAGAR ttcap ON tdr.FK_DESPESA_TEKNISA = ttcap.ID
     LEFT JOIN T_DESPESA_RAPIDA_ITEM tdri ON tdr.ID = tdri.FK_DESPESA_RAPIDA
     LEFT JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA

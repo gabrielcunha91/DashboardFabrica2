@@ -4,6 +4,7 @@ from utils.queries import *
 from utils.functions.dados_gerais import *
 from utils.functions.fluxo_de_caixa import *
 from workalendar.america import Brazil
+from utils.user import logout
 
 st.set_page_config(
     page_title="Fluxo_Caixa",
@@ -14,8 +15,15 @@ st.set_page_config(
 if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
     st.switch_page('Login.py')
 
+col, col2, col3 = st.columns([6, 1, 1])
+with col:
+  st.title('PROJEÇÃO - Fluxo de Caixa')
+with col2:
+  st.button(label="Atualizar", on_click = st.cache_data.clear)
+with col3:
+  if st.button("Logout"):
+    logout()
 
-st.title('PROJEÇÃO - Fluxo de Caixa')
 config_sidebar()
 
 
@@ -54,7 +62,7 @@ with st.container(border=True):
     multiplicador2 = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input2')
   st.markdown(
     """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
-    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Bar Brahma - Granja, Edificio Rolim*
+    Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Bar Brahma - Granja, Edificio Rolim, Girondino - CCBB, Girondino*
     """
   )
 
@@ -85,7 +93,7 @@ with st.container(border=True):
       lojasAgrupadas = [
         'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia -  Aeroporto ', 'Bar Brasilia -  Aeroporto', 'Delivery Bar Leo Centro', 
         'Delivery Fabrica de Bares', 'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 
-        'Escritório Fabrica de Bares', 'Priceless', 'Bar Brahma - Granja', 'Edificio Rolim'
+        'Escritório Fabrica de Bares', 'Priceless', 'Bar Brahma - Granja', 'Edificio Rolim', 'Girondino - CCBB', 'Girondino '
       ]
       lojasSelecionadas.extend(lojasAgrupadas)
     checkbox2 = st.checkbox(label='Apenas Pendentes', key='checkbox_despesas_pendentes')
@@ -123,7 +131,7 @@ with st.container(border=True):
             'Bar Brahma - Centro', 'Bar Léo - Centro', 'Bar Brasilia - Aeroporto',
             'Bar Brasilia - Aeroporto', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares',
             'Delivery Orfeu', 'Edificio Rolim', 'Hotel Maraba', 'Jacaré', 'Orfeu', 'Riviera Bar', 'Tempus', 
-            'Escritório Fabrica de Bares', 'Priceless', 'Bar Brahma - Granja', 'Edificio Rolim'
+            'Escritório Fabrica de Bares', 'Priceless', 'Bar Brahma - Granja', 'Edificio Rolim', 'Girondino - CCBB', 'Girondino '
       ]
       lojasSelecionadas2.extend(lojasAgrupadas)
   with col3:

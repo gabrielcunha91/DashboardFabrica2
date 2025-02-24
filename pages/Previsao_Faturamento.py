@@ -5,6 +5,7 @@ from utils.functions.dados_gerais import *
 from utils.functions.previsao_faturamento import *
 from workalendar.america import Brazil
 from streamlit_echarts import st_echarts
+from utils.user import logout
 
 
 st.set_page_config(
@@ -16,8 +17,15 @@ st.set_page_config(
 if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
     st.switch_page('Login.py')
 
+col, col2, col3 = st.columns([6, 1, 1])
+with col:
+  st.title('PREVISÃO DE FATURAMENTO')
+with col2:
+  st.button(label="Atualizar", on_click = st.cache_data.clear)
+with col3:
+  if st.button("Logout"):
+    logout()
 
-st.title('PREVISÃO DE FATURAMENTO')
 config_sidebar()
 st.divider()
 

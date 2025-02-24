@@ -4,6 +4,7 @@ from utils.queries import *
 from utils.functions.dados_gerais import *
 from utils.functions.fluxo_de_caixa import *
 from workalendar.america import Brazil
+from utils.user import logout
 
 st.set_page_config(
     page_title="Fluxo_Caixa",
@@ -14,8 +15,15 @@ st.set_page_config(
 if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
     st.switch_page('Login.py')
 
+col, col2, col3 = st.columns([6, 1, 1])
+with col:
+  st.title('PROJEÇÃO - Fluxo de Caixa')
+with col2:
+  st.button(label="Atualizar", on_click = st.cache_data.clear)
+with col3:
+  if st.button("Logout"):
+    logout()
 
-st.title('PROJEÇÃO - Fluxo de Caixa')
 config_sidebar()
 
 

@@ -19,10 +19,12 @@ if 'loggedIn' not in st.session_state or not st.session_state['loggedIn']:
 
 def main():
   config_sidebar()
-  col, colx = st.columns([5, 1])
+  col, col2, col3 = st.columns([6, 1, 1])
   with col:
     st.title('FATURAMENTO ZIGPAY')
-  with colx:
+  with col2:
+    st.button(label="Atualizar", on_click = st.cache_data.clear)
+  with col3:
     if st.button("Logout"):
       logout()
   st.divider()

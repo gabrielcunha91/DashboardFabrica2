@@ -53,21 +53,6 @@ def GET_PERMISSIONS(email):
   WHERE au.LOGIN = {emailStr}
   ''')
 
-# @st.cache_data
-# def GET_LOJAS_USER(email):
-#   emailStr = f"'{email}'"
-#   return dataframe_query(f'''
-#   SELECT 
-# 	  au.LOGIN AS 'Login',
-# 	  te.NOME_FANTASIA AS 'Loja'
-#   FROM
-#   	ADMIN_USERS au 
-# 	  LEFT JOIN T_USUARIOS_EMPRESAS tue ON au.ID = tue.FK_USUARIO 
-# 	  LEFT JOIN T_EMPRESAS te ON tue.FK_EMPRESA = te.ID
-# 	  LEFT JOIN T_LOJAS tl ON te.ID = tl.ID
-#   WHERE au.LOGIN = {emailStr}
-#   ''')
-
 @st.cache_data
 def GET_LOJAS_USER(email):
   emailStr = f"'{email}'"
@@ -109,36 +94,6 @@ def GET_LOJAS():
 ######## Faturamento zig #########
 
 
-
-# @st.cache_data
-# def GET_FATURAM_ZIG_AGREGADO():
-#   return dataframe_query(f''' 
-#   SELECT
-#     te.ID AS ID_Loja,
-#     te.NOME_FANTASIA AS Loja,
-#     CASE 
-#       WHEN te.ID IN (103, 112, 118, 139) THEN 'Delivery'
-#       ELSE tfza.CATEGORIA 
-#     END AS Categoria,
-#     cast(tfza.DATA_EVENTO as date) AS Data_Evento,
-#     cast(date_format(cast(tfza.DATA_EVENTO as date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
-#     concat(year(cast(tfza.DATA_EVENTO as date)), '-', month(cast(tfza.DATA_EVENTO as date))) AS Ano_Mes,
-#     sum(tfza.VALOR_TRANSACAO_BRUTO) AS Valor_Bruto,
-#     sum(tfza.DESCONTO) AS Desconto,
-#     sum(tfza.VALOR_TRANSACAO_LIQUIDO) AS Valor_Liquido
-#   FROM
-#     T_FATURAMENTO_ZIG_AGREGADO tfza
-#   JOIN 
-#     T_EMPRESAS te ON tfza.ID_LOJA = te.ID 
-#   GROUP BY
-#     tfza.ID_LOJA,
-#     Categoria,
-#     Primeiro_Dia_Mes
-#   ORDER BY
-#     Primeiro_Dia_Mes,
-#     Loja,
-#     Categoria;
-# ''')  
 
 
 @st.cache_data
@@ -634,64 +589,7 @@ def GET_INSUMOS_BLUE_ME_COM_PEDIDO():
 ''')
 
 
-  # SELECT
-  #   subquery.tdr_ID AS tdr_ID,
-  #   subquery.ID_Loja AS ID_Loja,
-  #   subquery.Loja AS Loja,
-  #   subquery.Fornecedor AS Fornecedor,
-  #   subquery.Doc_Serie AS Doc_Serie,
-  #   subquery.Data_Emissao AS Data_Emissao,
-  #   subquery.Valor AS Valor,
-  #   subquery.Plano_de_Contas AS Plano_de_Contas,
-  #   subquery.Primeiro_Dia_Mes AS Primeiro_Dia_Mes
-  # FROM
-  #   (
-  #   SELECT
-  #     tdr.ID AS tdr_ID,
-  #     te.ID AS ID_Loja,
-  #     te.NOME_FANTASIA AS Loja,
-  #     tf.CORPORATE_NAME AS Fornecedor,
-  #     tdr.NF AS Doc_Serie,
-  #     tdr.COMPETENCIA AS Data_Emissao,
-  #     tdr.VENCIMENTO AS Data_Vencimento,
-  #     tccg2.DESCRICAO AS Class_Cont_Grupo_2,
-  #     tccg.DESCRICAO AS Class_Cont_Grupo_1,
-  #     tdr.OBSERVACAO AS Observacao,
-  #     tdr.VALOR_PAGAMENTO AS Valor,
-  #     tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
-  #     tsp2.DESCRICAO AS Status,
-  #     CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-  #     ROW_NUMBER() OVER (PARTITION BY tdr.ID
-  #     ORDER BY
-  #       tds.ID DESC) AS row_num
-  #   FROM
-  #     T_DESPESA_RAPIDA tdr
-  #   JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
-  #   LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON tdr.FK_FORMA_PAGAMENTO = tfdp.ID
-  #   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
-  #   LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID
-  #   LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
-  #   LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID
-  #   LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON tdr.FK_APROVACAO_DIRETORIA = tsad.ID
-  #   LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON tdr.FK_APROVACAO_CAIXA = tsac.ID
-  #   LEFT JOIN T_STATUS_PAGAMENTO tsp ON tdr.FK_STATUS_PGTO = tsp.ID
-  #   LEFT JOIN T_CALENDARIO tc ON tdr.PREVISAO_PAGAMENTO = tc.ID
-  #   LEFT JOIN T_CALENDARIO tc2 ON tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID
-  #   LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
-  #   LEFT JOIN T_TEKNISA_CONTAS_A_PAGAR ttcap ON tdr.FK_DESPESA_TEKNISA = ttcap.ID
-  #   LEFT JOIN T_DESPESA_RAPIDA_ITEM tdri ON tdr.ID = tdri.FK_DESPESA_RAPIDA
-  #   LEFT JOIN T_DESPESA_STATUS tds ON tdr.ID = tds.FK_DESPESA_RAPIDA
-  #   LEFT JOIN T_STATUS ts ON tds.FK_STATUS_NAME = ts.ID
-  #   LEFT JOIN T_STATUS_PAGAMENTO tsp2 ON ts.FK_STATUS_PAGAMENTO = tsp2.ID
-  #   WHERE
-  #     tdri.ID IS NULL
-  #     AND tdr.FK_DESPESA_TEKNISA IS NULL
-  #     AND tccg.ID IN (162, 205, 236)
-  #   ) subquery
-  # WHERE
-  #   subquery.row_num = 1;
-
-
+ 
 
 @st.cache_data
 def GET_INSUMOS_BLUE_ME_SEM_PEDIDO():
@@ -782,73 +680,12 @@ def GET_VALORACAO_PRODUCAO(data):
 
 ######################## PARETO ##############################
 
-# @st.cache_data
-# def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
-#   return dataframe_query(f'''
-#   SELECT 	
-#   	tin5.ID AS 'ID Produto',
-#   	te.NOME_FANTASIA AS 'Loja', 
-#   	tf.FANTASY_NAME AS 'Fornecedor', 
-#   	tin5.DESCRICAO AS 'Nome Produto', 
-# 	tin.DESCRICAO AS 'Categoria',
-#   	tdri.QUANTIDADE AS 'Quantidade',
-#   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
-#   	tdri.VALOR AS 'Valor Total', 
-#     (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
-#   	tdr.COMPETENCIA AS 'Data Compra',
-#   	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
-#   FROM T_DESPESA_RAPIDA_ITEM tdri
-#   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
-#   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
-#   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
-#   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
-#   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
-#   LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tin5.ID = tice.FK_INSUMO_COMPRA 
-#   WHERE tdr.COMPETENCIA > '2024-01-01'
-# ''')
-  
 
 
-# def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
-#   return dataframe_query(f'''
-#   SELECT 	
-#   	tin5.ID AS 'ID Produto',
-#   	tin5.DESCRICAO AS 'Nome Produto', 
-# 	  tin.DESCRICAO AS 'Categoria',
-#   	te.NOME_FANTASIA AS 'Loja', 
-#   	tf.FANTASY_NAME AS 'Fornecedor', 
-#   	tdr.COMPETENCIA AS 'Data Compra',
-#   	tdri.QUANTIDADE AS 'Quantidade',
-#   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
-#   	tdri.VALOR AS 'Valor Total', 
-#     (tdri.VALOR / tdri.QUANTIDADE) AS 'Valor Unitário',
-#   	tps.DATA AS 'Data_Recebida'
-#   FROM T_DESPESA_RAPIDA_ITEM tdri
-#   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
-#   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_3 tin3 ON tin4.FK_INSUMOS_NIVEL_3 = tin3.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_2 tin2 ON tin3.FK_INSUMOS_NIVEL_2 = tin2.ID 
-#   LEFT JOIN T_INSUMOS_NIVEL_1 tin ON tin2.FK_INSUMOS_NIVEL_1 = tin.id
-#   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
-#   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
-#   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
-#   LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tin5.ID = tice.FK_INSUMO_COMPRA 
-#   LEFT JOIN T_PEDIDOS tp ON tp.ID = tdr.FK_PEDIDO
-#   LEFT JOIN T_PEDIDO_STATUS tps ON tps.FK_PEDIDO = tp.ID
-#   WHERE tdr.COMPETENCIA >= '{data_inicio}'
-#     AND tdr.COMPETENCIA <= '{data_fim}'
-#     AND tin.DESCRICAO = '{categoria}'
-#   GROUP BY 
-#     tin5.ID,
-#     tdr.COMPETENCIA
-#   ORDER BY
-#     tdr.COMPETENCIA DESC
-#   ''')
 
-
+#Essa query está com um problema: O fator de proporção. Ele estava em outra tabela, a qual foi descontinuada para a criação de duas: T_INSUMOS_ESTOQUE 
+# E T_ASSOCIATIVA_COMPRA_ESTOQUE. Ainda não foi feita a migração dos dados para essas tabelas, então a query não está funcionando.
+# Nas tabelas, o que está errado por conta do fator de proporção é o "Valor unitário" e tudo relacionado a ele.
 @st.cache_data
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   return dataframe_query(f'''
@@ -863,7 +700,7 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   	tdri.VALOR AS 'Valor Total', 
     (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
   	tdr.COMPETENCIA AS 'Data Compra',
-  	tice.FATOR_DE_PROPORCAO AS 'Fator de Proporção'
+  	1 AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
@@ -873,7 +710,6 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
-  LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tin5.ID = tice.FK_INSUMO_COMPRA 
   WHERE tdr.COMPETENCIA > '2024-01-01'
 ''')
   
@@ -902,7 +738,6 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   LEFT JOIN T_DESPESA_RAPIDA tdr ON tdri.FK_DESPESA_RAPIDA = tdr.ID 
   LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID 
   LEFT JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID 
-  LEFT JOIN T_INSUMOS_COMPRA_ESTOQUE tice ON tin5.ID = tice.FK_INSUMO_COMPRA 
   LEFT JOIN T_PEDIDOS tp ON tp.ID = tdr.FK_PEDIDO
   LEFT JOIN T_PEDIDO_STATUS tps ON tps.FK_PEDIDO = tp.ID
   WHERE tdr.COMPETENCIA >= '{data_inicio}'
@@ -928,14 +763,6 @@ AND Empresa IS NOT NULL
 ORDER BY `Data` ASC
 """)
 
-# def GET_VALOR_LIQUIDO_RECEBIDO():
-#   return dataframe_query(f'''
-# SELECT * FROM View_Receitas_Extratos_Manual
-# WHERE `Data` >= CURDATE() 
-# AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
-# AND Empresa IS NOT NULL
-# ORDER BY `Data` ASC
-# ''')
 
 def GET_VALOR_LIQUIDO_RECEBIDO():
   return dataframe_query(f'''
@@ -967,14 +794,7 @@ AND Empresa IS NOT NULL
 ORDER BY `Data` ASC
 ''')
 
-# def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
-#   return dataframe_query(f'''
-# SELECT * FROM View_Previsao_Receitas_Extraord
-# WHERE `Data` >= CURDATE() 
-# AND `Data` < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
-# AND Empresa IS NOT NULL
-# ORDER BY `Data` ASC
-# ''')
+
 
 def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
   return dataframe_query(f'''

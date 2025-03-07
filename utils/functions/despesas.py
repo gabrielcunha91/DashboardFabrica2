@@ -5,29 +5,25 @@ from utils.components import *
 
 
 def config_despesas_por_classe(df):
-  df = df[df['Class_Plano_de_Contas'] != 'a. Compras de Alimentos, Bebidas e Embalagens']
-  df = df.sort_values(by=['Class_Plano_de_Contas', 'Plano_de_Contas'])
-  df = df.groupby(['Class_Plano_de_Contas', 'Plano_de_Contas'], as_index=False).agg({
+  df = df.sort_values(by=['Classificacao_Contabil_1', 'Classificacao_Contabil_2'])
+  df = df.groupby(['Classificacao_Contabil_1', 'Classificacao_Contabil_2'], as_index=False).agg({
     'Orcamento': 'sum',
-    'ID': 'count',
     'Valor_Liquido': 'sum'
-  }).rename(columns={'ID': 'Qtd_Lancamentos'})
+  })
 
   df['Orcamento'] = df['Orcamento'].fillna(0)
-  df['Orcamento'] = df.apply(lambda row: row['Orcamento'] / row['Qtd_Lancamentos'] if row['Qtd_Lancamentos'] > 0 else row['Orcamento'], axis=1)
-
 
   formatted_rows = []
   current_category = None
 
   for _, row in df.iterrows():
-    if row['Class_Plano_de_Contas'] != current_category:
-      current_category = row['Class_Plano_de_Contas']
-      formatted_rows.append({'Class_Plano_de_Contas': current_category, 'Plano_de_Contas': '', 'Qtd_Lancamentos': None, 'Orcamento': None, 'Valor_Liquido': None})
-    formatted_rows.append({'Class_Plano_de_Contas': '', 'Plano_de_Contas': row['Plano_de_Contas'], 'Qtd_Lancamentos': row['Qtd_Lancamentos'], 'Orcamento': row['Orcamento'], 'Valor_Liquido': row['Valor_Liquido']})
+    if row['Classificacao_Contabil_1'] != current_category:
+      current_category = row['Classificacao_Contabil_1']
+      formatted_rows.append({'Classificacao_Contabil_1': current_category, 'Classificacao_Contabil_2': '', 'Orcamento': None, 'Valor_Liquido': None})
+    formatted_rows.append({'Classificacao_Contabil_1': '', 'Classificacao_Contabil_2': row['Classificacao_Contabil_2'], 'Orcamento': row['Orcamento'], 'Valor_Liquido': row['Valor_Liquido']})
 
   df = pd.DataFrame(formatted_rows)
-  df = df.rename(columns={'Class_Plano_de_Contas': 'Classe Plano de Contas', 'Plano_de_Contas': 'Plano de Contas', 'Qtd_Lancamentos': 'Qtd. de Lançamentos', 
+  df = df.rename(columns={'Classificacao_Contabil_1': 'Class. Contábil 1', 'Classificacao_Contabil_2': 'Class. Contábil 2',
                           'Orcamento': 'Orçamento', 'Valor_Liquido': 'Valor Realizado'})
 
   df['Orçamento'] = pd.to_numeric(df['Orçamento'], errors='coerce')
@@ -37,23 +33,19 @@ def config_despesas_por_classe(df):
   df['Valor Realizado'] = df['Valor Realizado'].astype(float)
 
   df['Orçamento - Realiz.'] = df['Orçamento'] - df['Valor Realizado']
+  df['Atingimento do Orçamento'] = (df['Valor Realizado']/df['Orçamento']) *100
 
-  df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.'])
-
-  # Converter 'Qtd. de Lançamentos' para int e substituir valores nas linhas das classes
-  df['Qtd. de Lançamentos'] = df['Qtd. de Lançamentos'].fillna(0).astype(int)
-  df['Qtd. de Lançamentos'] = df['Qtd. de Lançamentos'].astype(str)
-  df.loc[df['Plano de Contas'] == '', 'Qtd. de Lançamentos'] = ''
+  df = format_columns_brazilian(df, ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.', 'Atingimento do Orçamento'])
+  df['Atingimento do Orçamento'] = df['Atingimento do Orçamento'].apply(lambda x: x + '%')
 
   # Remover zeros nas linhas das classes
-  for col in ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.']:
-    df.loc[df['Plano de Contas'] == '', col] = ''
+  for col in ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.', 'Atingimento do Orçamento']:
+    df.loc[df['Class. Contábil 2'] == '', col] = ''
 
   return df
 
 def config_despesas_detalhado(df):
-  df.drop(['Orcamento', 'Class_Plano_de_Contas'], axis=1, inplace=True)
-  df = df.rename(columns = {'Loja': 'Loja', 'Plano_de_Contas' : 'Plano de Contas', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Evento': 'Data Emissão',
+  df = df.rename(columns = {'Loja': 'Loja', 'Classificacao_Contabil_1': 'Class. Contábil 1', 'Classificacao_Contabil_2': 'Class. Contábil 2', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão',
                              'Data_Vencimento': 'Data Vencimento', 'Descricao': 'Descrição', 'Status': 'Status', 'Valor_Liquido': 'Valor'})
 
   df = format_date_brazilian(df, 'Data Emissão')
@@ -63,6 +55,6 @@ def config_despesas_detalhado(df):
   df.fillna({'Valor': 0}, inplace=True)
   df['Valor'] = df['Valor'].astype(float)
 
-  cols = ['Loja', 'Fornecedor', 'Doc_Serie', 'Valor', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Plano de Contas', 'Status']
+  cols = ['Loja', 'Fornecedor', 'Doc_Serie', 'Valor', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Class. Contábil 1', 'Class. Contábil 2', 'Status']
   
   return df[cols]

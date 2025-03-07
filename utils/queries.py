@@ -7,7 +7,7 @@ LOGGER = get_logger(__name__)
 
 def mysql_connection():
   mysql_config = st.secrets["mysql"]
-  # Cria a conexão com MySQL
+  # Cria a conexão com MySQL
   conn = mysql.connector.connect(
     host=mysql_config['host'],
     port=mysql_config['port'],
@@ -141,7 +141,7 @@ def GET_ORCAM_FATURAM():
       WHEN tccg.DESCRICAO = 'VENDA DE ALIMENTO' THEN 'Alimentos'
       WHEN tccg.DESCRICAO = 'VENDA DE BEBIDAS' THEN 'Bebidas'
       WHEN tccg.DESCRICAO = 'VENDA DE COUVERT/ SHOWS' THEN 'Couvert'
-      WHEN tccg.DESCRICAO = 'SERVICO' THEN 'Serviço'
+      WHEN tccg.DESCRICAO = 'SERVICO' THEN 'Serviço'
       WHEN tccg.DESCRICAO = 'DELIVERY' THEN 'Delivery'
       WHEN tccg.DESCRICAO = 'GIFTS' THEN 'Gifts'
       ELSE tccg.DESCRICAO
@@ -187,11 +187,11 @@ def GET_FATURAM_ZIG(data_inicial, data_final):
 
 
 
-############### Receitas extraordinárias ################
+############### Receitas extraordinárias ################
 
 @st.cache_data
 def GET_RECEIT_EXTRAORD():
-  #'Data_Evento' é, na realidade, a data da competencia, eu só coloquei esse nome pra ficar mais fácil de programar
+  #'Data_Evento' é, na realidade, a data da competencia, eu só coloquei esse nome pra ficar mais fácil de programar
   return dataframe_query(f'''
   SELECT
     tre.ID as 'ID_receita',
@@ -232,96 +232,51 @@ def GET_CLSSIFICACAO():
 
 @st.cache_data
 def GET_DESPESAS():
-  #'Data_Evento' é, na realidade, a data da emissão, eu só coloquei esse nome pra ficar mais fácil de programar
-  #Vai mudar com a Vmarket
-  # Corrigir datas competencia e vencimento
   return dataframe_query(f'''
-    SELECT 
-      tdr.ID AS ID,
-      te.NOME_FANTASIA AS Loja,
-      tf.CORPORATE_NAME AS Fornecedor,
-      tdr.NF AS Doc_Serie,
-      STR_TO_DATE(tdr.COMPETENCIA, '%Y-%m-%d') AS Data_Evento,
-      STR_TO_DATE(tdr.VENCIMENTO, '%Y-%m-%d') AS Data_Vencimento,
-      tdr.OBSERVACAO AS Descricao,
-      tdr.VALOR_LIQUIDO AS Valor_Liquido,
-      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
-      tcpdc.DESCRICAO AS Class_Plano_de_Contas,
-      to2.VALOR AS Orcamento,
-      CASE 
-          WHEN tdr.FK_Status = 'Provisionado' THEN 'Provisionado'
-          ELSE 'Real'
-      END AS Status
-    FROM T_DESPESA_RAPIDA tdr
-    JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
-    LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
-    LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
-    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
-    LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
-    LEFT JOIN T_ORCAMENTOS to2 ON tapdc.FK_CLASSIFICACAO_GRUPO_2 = to2.FK_CLASSIFICACAO_2 
-      AND MONTH(CAST(tdr.COMPETENCIA AS DATE)) = to2.MES
-      AND to2.FK_EMPRESA = te.ID
-    WHERE tdr.FK_DESPESA_TEKNISA IS NULL
-      AND tdr.COMPETENCIA >= '2024-01-01 00:00:00'
-      AND tdr.VENCIMENTO >= '2024-01-01 00:00:00'
-      AND NOT EXISTS (
-        SELECT 1
-        FROM T_DESPESA_RAPIDA_ITEM tdri
-        WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID);
+  SELECT 
+    tdr.ID AS ID,
+    te.NOME_FANTASIA AS Loja,
+    tf.CORPORATE_NAME AS Fornecedor,
+    tdr.NF AS Doc_Serie,
+    STR_TO_DATE(tdr.COMPETENCIA, '%Y-%m-%d') AS Data_Emissao,
+    STR_TO_DATE(tdr.VENCIMENTO, '%Y-%m-%d') AS Data_Vencimento,
+    CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
+    tdr.OBSERVACAO AS Descricao,
+    tdr.VALOR_LIQUIDO AS Valor_Liquido,
+    tccg2.DESCRICAO AS Classificacao_Contabil_2,
+    tccg1.DESCRICAO AS Classificacao_Contabil_1,
+    CASE 
+      WHEN tdr.FK_Status = 'Provisionado' THEN 'Provisionado'
+      ELSE 'Real'
+    END AS Status
+  FROM T_DESPESA_RAPIDA tdr
+  JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
+  LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
+  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
+  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg1 ON tccg2.FK_GRUPO_1 = tccg1.ID
+  WHERE tccg1.FK_VERSAO_PLANO_CONTABIL = 103
+    AND NOT EXISTS (
+      SELECT 1
+      FROM T_DESPESA_RAPIDA_ITEM tdri
+      WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID);
 ''')
 
-
-
-@st.cache_data
-def GET_DESPESAS2():
-  return dataframe_query(f'''
-    SELECT 
-      tdr.ID AS ID,
-      te.NOME_FANTASIA AS Loja,
-      tf.CORPORATE_NAME AS Fornecedor,
-      tdr.NF AS Doc_Serie,
-      STR_TO_DATE(tdr.COMPETENCIA, '%Y-%m-%d') AS Data_Evento,
-      STR_TO_DATE(tdr.VENCIMENTO, '%Y-%m-%d') AS Data_Vencimento,
-      CAST(DATE_FORMAT(CAST(tdr.COMPETENCIA AS DATE), '%Y-%m-01') AS DATE) AS Primeiro_Dia_Mes,
-      tdr.OBSERVACAO AS Descricao,
-      tdr.VALOR_LIQUIDO AS Valor_Liquido,
-      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
-      tcpdc.DESCRICAO AS Class_Plano_de_Contas,
-      CASE 
-        WHEN tdr.FK_Status = 'Provisionado' THEN 'Provisionado'
-        ELSE 'Real'
-      END AS Status
-    FROM T_DESPESA_RAPIDA tdr
-    JOIN T_EMPRESAS te ON tdr.FK_LOJA = te.ID
-    LEFT JOIN T_FORNECEDOR tf ON tdr.FK_FORNECEDOR = tf.ID
-    LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID
-    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
-    LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
-    WHERE tdr.FK_DESPESA_TEKNISA IS NULL
-      AND tdr.COMPETENCIA >= '2024-01-01 00:00:00'
-      AND tdr.VENCIMENTO >= '2024-01-01 00:00:00'
-      AND NOT EXISTS (
-        SELECT 1
-        FROM T_DESPESA_RAPIDA_ITEM tdri
-        WHERE tdri.FK_DESPESA_RAPIDA = tdr.ID);
-''')
 
 @st.cache_data
 def GET_ORCAMENTOS_DESPESAS():
   return dataframe_query(f'''
-    SELECT
-      to2.ID AS ID_Orcamento,
-      te.NOME_FANTASIA AS Loja,
-      tapdc.DESCRICAO_PLANO_DE_CONTAS AS Plano_de_Contas,
-      tcpdc.DESCRICAO AS Class_Plano_de_Contas,
-      to2.VALOR AS Orcamento,
-      cast(date_format(cast(CONCAT(to2.ANO, '-', to2.MES, '-01') AS date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes
-    FROM
-      T_ORCAMENTOS to2 
-    LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON to2.FK_CLASSIFICACAO_2 = tccg2.ID
-    LEFT JOIN T_ASSOCIATIVA_PLANO_DE_CONTAS tapdc ON tccg2.ID = tapdc.FK_CLASSIFICACAO_GRUPO_2
-    LEFT JOIN T_CLASSIFICACAO_PLANO_DE_CONTAS tcpdc ON tapdc.FK_CLASSIFICACAO_PLANO_DE_CONTAS = tcpdc.ID
-    LEFT JOIN T_EMPRESAS te ON to2.FK_EMPRESA = te.ID;
+  SELECT
+    to2.ID AS ID_Orcamento,
+    te.NOME_FANTASIA AS Loja,
+    tccg2.DESCRICAO AS Classificacao_Contabil_2,
+    tccg1.DESCRICAO AS Classificacao_Contabil_1,
+    to2.VALOR AS Orcamento,
+    cast(date_format(cast(CONCAT(to2.ANO, '-', to2.MES, '-01') AS date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes
+  FROM
+    T_ORCAMENTOS to2 
+  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON to2.FK_CLASSIFICACAO_2 = tccg2.ID
+  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg1 ON tccg2.FK_GRUPO_1 = tccg1.ID
+  LEFT JOIN T_EMPRESAS te ON to2.FK_EMPRESA = te.ID;
 ''')
 
 ############################### CMV ###################################
@@ -394,11 +349,11 @@ def GET_EVENTOS_CMV(data_inicio, data_fim):
     te.ID AS 'ID_Loja',
    	te.NOME_FANTASIA AS 'Loja',
    	SUM(tec.VALOR_EVENTOS_A_B) AS 'Valor',
-   	tec.`DATA` AS 'Data',
-    cast(date_format(cast(tec.`DATA` AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes'
+   	tec.DATA AS 'Data',
+    cast(date_format(cast(tec.DATA AS date), '%Y-%m-01') AS date) AS 'Primeiro_Dia_Mes'
   FROM T_EVENTOS_CMV tec 
   LEFT JOIN T_EMPRESAS te ON tec.FK_EMPRESA = te.ID 
-  WHERE tec.`DATA` BETWEEN '{data_inicio}' AND '{data_fim}'
+  WHERE tec.DATA BETWEEN '{data_inicio}' AND '{data_fim}'
   GROUP BY te.ID
   ''')
 
@@ -683,9 +638,9 @@ def GET_VALORACAO_PRODUCAO(data):
 
 
 
-#Essa query está com um problema: O fator de proporção. Ele estava em outra tabela, a qual foi descontinuada para a criação de duas: T_INSUMOS_ESTOQUE 
-# E T_ASSOCIATIVA_COMPRA_ESTOQUE. Ainda não foi feita a migração dos dados para essas tabelas, então a query não está funcionando.
-# Nas tabelas, o que está errado por conta do fator de proporção é o "Valor unitário" e tudo relacionado a ele.
+#Essa query está com um problema: O fator de proporção. Ele estava em outra tabela, a qual foi descontinuada para a criação de duas: T_INSUMOS_ESTOQUE 
+# E T_ASSOCIATIVA_COMPRA_ESTOQUE. Ainda não foi feita a migração dos dados para essas tabelas, então a query não está funcionando.
+# Nas tabelas, o que está errado por conta do fator de proporção é o "Valor unitário" e tudo relacionado a ele.
 @st.cache_data
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   return dataframe_query(f'''
@@ -698,9 +653,9 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   	CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)) AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
+    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
   	tdr.COMPETENCIA AS 'Data Compra',
-  	1 AS 'Fator de Proporção'
+  	1 AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 
@@ -727,7 +682,7 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   	CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)) AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
+    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
   	tps.DATA AS 'Data_Recebida'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
@@ -757,10 +712,10 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
 def GET_SALDOS_BANCARIOS():
   return dataframe_query(f"""
 SELECT * FROM View_Saldos_Bancarios
-WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
+WHERE Data >= CURDATE() 
+AND Data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
-ORDER BY `Data` ASC
+ORDER BY Data ASC
 """)
 
 
@@ -788,10 +743,10 @@ ORDER BY tc.DATA ASC;
 def GET_PROJECAO_ZIG():
   return dataframe_query(f'''
 SELECT * FROM View_Projecao_Zig_Agrupadas
-WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
+WHERE Data >= CURDATE() 
+AND Data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
-ORDER BY `Data` ASC
+ORDER BY Data ASC
 ''')
 
 
@@ -885,11 +840,11 @@ def GET_RECEITAS_EXTRAORD_DO_DIA(data):
   FROM
     T_RECEITAS_EXTRAORDINARIAS tre)
   SELECT 
-    vpa.ID AS ID_Receita_Extraordinária,
+    vpa.ID AS ID_Receita_Extraordinária,
     te.NOME_FANTASIA AS Empresa,
     trec.NOME AS Nome_Cliente,
-    vpa.OBSERVACOES AS Observações,
-    trec2.CLASSIFICACAO AS Classificação,
+    vpa.OBSERVACOES AS Observações,
+    trec2.CLASSIFICACAO AS Classificação,
     vpa.DATA_VENCIMENTO AS Data_Vencimento_Parcela,
     vpa.VALOR_PARCELA AS Valor_Parcela
   FROM vpa
@@ -907,28 +862,28 @@ def GET_DESPESAS_APROVADAS():
   return dataframe_query(f'''
 SELECT
 vvap.Empresa as 'Empresa',
-vvap.`Data` as 'Data',
+vvap.Data as 'Data',
 SUM(vvap.Valores_Aprovados_Previsao) as 'Despesas_Aprovadas_Pendentes' 
 FROM View_Valores_Aprovados_Previsao vvap
-WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
+WHERE Data >= CURDATE() 
+AND Data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
-GROUP BY `Data`, Empresa  
-ORDER BY `Data` ASC
+GROUP BY Data, Empresa  
+ORDER BY Data ASC
 ''')
 
 def GET_DESPESAS_PAGAS():
   return dataframe_query(f'''
 SELECT
 vvap.Empresa as 'Empresa',
-vvap.`Data` as 'Data',
+vvap.Data as 'Data',
 SUM(vvap.Valores_Pagos) as 'Despesas_Pagas' 
 FROM View_Valores_Pagos_por_Previsao vvap
-WHERE `Data` >= CURDATE() 
-AND `Data` < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
+WHERE Data >= CURDATE() 
+AND Data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
 AND Empresa IS NOT NULL
-GROUP BY `Data`, Empresa  
-ORDER BY `Data` ASC
+GROUP BY Data, Empresa  
+ORDER BY Data ASC
 ''')
 
 def GET_FATURAMENTO_ZIG_FLUXO_CAIXA():
@@ -1034,8 +989,8 @@ te.NOME_FANTASIA as 'Casa',
 tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
 tdr.VALOR_LIQUIDO as 'Valor',
 tdr.VENCIMENTO as 'Data_Vencimento',
-tc.`DATA` as 'Previsao_Pgto',
-tc2.`DATA` as 'Realizacao_Pgto',    
+tc.DATA as 'Previsao_Pgto',
+tc2.DATA as 'Realizacao_Pgto',    
 tdr.COMPETENCIA as 'Data_Competencia',
 tdr.LANCAMENTO as 'Data_Lancamento',
 tfdp.DESCRICAO as 'Forma_Pagamento',
@@ -1067,9 +1022,9 @@ WHERE
     AND tdp.FK_DESPESA IS NULL
     AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
     AND tsp.DESCRICAO = "Pago"
-    AND tc2.`DATA` >= '2024-05-01 00:00:00'
+    AND tc2.DATA >= '2024-05-01 00:00:00'
 ORDER BY 
-    tc2.`DATA` DESC
+    tc2.DATA DESC
 ''')
 
 
@@ -1094,9 +1049,9 @@ def GET_CUSTOS_BLUEME_COM_PARCELAMENTO():
     END AS 'Qtd_Parcelas',
     tdp.PARCELA as 'Num_Parcela',
     tdp.VALOR as 'Valor_Parcela',
-    DATE_FORMAT(DATE_ADD(tdp.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') as 'Vencimento_Parcela',
-    DATE_FORMAT(DATE_ADD(tc.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Previsao_Parcela',
-    DATE_FORMAT(DATE_ADD(tc2.`DATA`, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Realiz_Parcela',
+    DATE_FORMAT(DATE_ADD(tdp.DATA, INTERVAL 30 SECOND), '%d/%m/%Y') as 'Vencimento_Parcela',
+    DATE_FORMAT(DATE_ADD(tc.DATA, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Previsao_Parcela',
+    DATE_FORMAT(DATE_ADD(tc2.DATA, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Realiz_Parcela',
     tdr.VALOR_PAGAMENTO as 'Valor_Original',
     tdr.VALOR_LIQUIDO as 'Valor_Liquido',
     DATE_ADD(STR_TO_DATE(tdr.LANCAMENTO, '%Y-%m-%d'), INTERVAL 30 SECOND) as 'Data_Lancamento',
@@ -1132,9 +1087,9 @@ def GET_CUSTOS_BLUEME_COM_PARCELAMENTO():
     tdp.FK_DESPESA IS NOT NULL
     AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
     AND tdp.PARCELA_PAGA = 1
-    AND tc2.`DATA` >= '2024-05-01 00:00:00'
+    AND tc2.DATA >= '2024-05-01 00:00:00'
   ORDER BY 
-    tc2.`DATA` DESC
+    tc2.DATA DESC
 ''')
 
 def GET_EXTRATOS_BANCARIOS():
@@ -1175,7 +1130,7 @@ def GET_MUTUOS():
   return dataframe_query(f'''
 SELECT
 tm.ID as 'Mutuo_ID',
-tm.`DATA` as 'Data_Mutuo',
+tm.DATA as 'Data_Mutuo',
 te.ID as 'ID_Loja_Saida',
 te.NOME_FANTASIA as 'Loja_Saida',
 te2.ID as 'ID_Loja_Entrada',
@@ -1185,7 +1140,7 @@ tm.TAG_FATURAM_ZIG as 'Tag_Faturam_Zig'
 FROM T_MUTUOS tm 
 LEFT JOIN T_EMPRESAS te ON (tm.FK_LOJA_SAIDA = te.ID)
 LEFT JOIN T_EMPRESAS te2 ON (tm.FK_LOJA_ENTRADA = te2.ID)
-ORDER BY tm.`DATA` DESC
+ORDER BY tm.DATA DESC
 ''')
 
 def GET_TESOURARIA_TRANSACOES():
@@ -1208,7 +1163,7 @@ def GET_AJUSTES_CONCILIACAO():
 	  tac.FK_EMPRESA AS 'ID_Loja',
 	  tac.DATA_AJUSTE AS 'Data Ajuste',
 	  tac.VALOR AS 'Valor',
-	  tac.DESCRICAO AS 'Descrição'
+	  tac.DESCRICAO AS 'Descrição'
   FROM T_AJUSTES_CONCILIACAO tac
 ''')
 
@@ -1218,7 +1173,7 @@ def GET_DESPESAS_PENDENTES(dataInicio, dataFim):
   # Formatando as datas para o formato de string com aspas simples
   dataStr = f"'{dataInicio.strftime('%Y-%m-%d %H:%M:%S')}'"
   datafimstr = f"'{dataFim.strftime('%Y-%m-%d %H:%M:%S')}'"
-######### NA PARTE DAS DESPESAS PARCELADAS, HÁ NA VIEW DO GABS UMA APROVAÇÃO DA DIRETORIA QUE PODE DAR DIFERENÇA #########
+######### NA PARTE DAS DESPESAS PARCELADAS, HÁ NA VIEW DO GABS UMA APROVAÇÃO DA DIRETORIA QUE PODE DAR DIFERENÇA #########
   return dataframe_query(f'''
   SELECT
     DATE_FORMAT(tc.DATA, '%Y-%m-%d') as 'Previsao_Pgto',
@@ -1265,7 +1220,7 @@ def GET_DESPESAS_PENDENTES(dataInicio, dataFim):
     AND tc.DATA <= {datafimstr}
 ''')
 
-###########################  Previsão Faturamento  #############################
+###########################  Previsão Faturamento  #############################
 
 
 def GET_PREVISOES_ZIG_AGRUPADAS():

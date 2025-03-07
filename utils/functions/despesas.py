@@ -8,8 +8,13 @@ def config_despesas_por_classe(df):
   df = df.drop(df[df['Classificacao_Contabil_1'].isin(['Custo Mercadoria Vendida', 'Faturamento Bruto'])].index)
 
   df = df.sort_values(by=['Classificacao_Contabil_1', 'Classificacao_Contabil_2'])
-  df = df.groupby(['Classificacao_Contabil_1', 'Classificacao_Contabil_2'], as_index=False).agg({
+  df = df.groupby(['Classificacao_Contabil_1', 'Classificacao_Contabil_2', 'Loja'], as_index=False).agg({
     'Orcamento': 'first',
+    'Valor_Liquido': 'sum'
+  })
+
+  df = df.groupby(['Classificacao_Contabil_1', 'Classificacao_Contabil_2'], as_index=False).agg({
+    'Orcamento': 'sum',
     'Valor_Liquido': 'sum'
   })
 
@@ -51,7 +56,7 @@ def config_despesas_por_classe(df):
   return df
 
 def config_despesas_detalhado(df):
-  df = df.rename(columns = {'Loja': 'Loja', 'Classificacao_Contabil_1': 'Class. Contábil 1', 'Classificacao_Contabil_2': 'Class. Contábil 2', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão',
+  df = df.rename(columns = {'ID': 'ID Despesa', 'Loja': 'Loja', 'Classificacao_Contabil_1': 'Class. Contábil 1', 'Classificacao_Contabil_2': 'Class. Contábil 2', 'Fornecedor': 'Fornecedor', 'Doc_Serie': 'Doc_Serie', 'Data_Emissao': 'Data Emissão',
                              'Data_Vencimento': 'Data Vencimento', 'Descricao': 'Descrição', 'Status': 'Status', 'Valor_Liquido': 'Valor'})
 
   df = format_date_brazilian(df, 'Data Emissão')
@@ -61,6 +66,6 @@ def config_despesas_detalhado(df):
   df.fillna({'Valor': 0}, inplace=True)
   df['Valor'] = df['Valor'].astype(float)
 
-  cols = ['Loja', 'Fornecedor', 'Doc_Serie', 'Valor', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Class. Contábil 1', 'Class. Contábil 2', 'Status']
+  cols = ['ID Despesa', 'Loja', 'Fornecedor', 'Doc_Serie', 'Valor', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Class. Contábil 1', 'Class. Contábil 2', 'Status']
   
   return df[cols]

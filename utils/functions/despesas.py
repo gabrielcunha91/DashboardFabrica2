@@ -5,9 +5,11 @@ from utils.components import *
 
 
 def config_despesas_por_classe(df):
+  df = df.drop(df[df['Classificacao_Contabil_1'].isin(['Custo Mercadoria Vendida', 'Faturamento Bruto'])].index)
+
   df = df.sort_values(by=['Classificacao_Contabil_1', 'Classificacao_Contabil_2'])
   df = df.groupby(['Classificacao_Contabil_1', 'Classificacao_Contabil_2'], as_index=False).agg({
-    'Orcamento': 'sum',
+    'Orcamento': 'first',
     'Valor_Liquido': 'sum'
   })
 
@@ -15,6 +17,8 @@ def config_despesas_por_classe(df):
 
   formatted_rows = []
   current_category = None
+
+  df = df.drop(df[(df['Orcamento'] == 0) & (df['Valor_Liquido'] == 0)].index)
 
   for _, row in df.iterrows():
     if row['Classificacao_Contabil_1'] != current_category:
@@ -41,6 +45,8 @@ def config_despesas_por_classe(df):
   # Remover zeros nas linhas das classes
   for col in ['Orçamento', 'Valor Realizado', 'Orçamento - Realiz.', 'Atingimento do Orçamento']:
     df.loc[df['Class. Contábil 2'] == '', col] = ''
+
+  df.loc[df['Atingimento do Orçamento'] == 'inf%', 'Atingimento do Orçamento'] = 'Não há Orçamento'
 
   return df
 

@@ -33,13 +33,15 @@ bares = preparar_dados_lojas_user()
 with st.container(border=True):
   col1, col2, col3 = st.columns([3, 1, 1])
   with col1:
-    bar = st.selectbox("Bar", bares)
+    bar = st.multiselect("Bares", bares)
   with col2:
     data_fim = st.date_input("Data de Fim", value=datetime.today()+timedelta(days=7), key='data_fim_input', format="DD/MM/YYYY", min_value=datetime.today()+timedelta(days=1), max_value=datetime.today()+timedelta(days=12))
   with col3:
     multiplicador = st.number_input("Selecione um multiplicador", value=1.0, key='multiplicador_input')
   df_projecao_bares = config_projecao_bares(multiplicador, data_fim)
-  df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"] == bar]
+  df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"].isin(bar)]
+  df_projecao_bar["Data"] = pd.to_datetime(df_projecao_bar["Data"], dayfirst=True)
+  df_projecao_bar = df_projecao_bar.sort_values(by=["Empresa", "Data"])
   df_projecao_bar_com_soma = somar_total(df_projecao_bar)
   columns_projecao_bar_com_soma = ['Data', 'Empresa', 'Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord',
                                  'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas', 'Saldo_Final']

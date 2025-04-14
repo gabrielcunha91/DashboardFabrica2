@@ -8,6 +8,3 @@ openpyxl
 jupyter
 mysql-connector-python
 
-
-
-Estoque$notie2025

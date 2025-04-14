@@ -138,12 +138,12 @@ def GET_ORCAM_FATURAM():
     cast(date_format(cast(CONCAT(to2.ANO, '-', to2.MES, '-01') AS date), '%Y-%m-01') as date) AS Primeiro_Dia_Mes,
     to2.VALOR AS Orcamento_Faturamento,
     CASE
-      WHEN tccg.DESCRICAO = 'VENDA DE ALIMENTO' THEN 'Alimentos'
-      WHEN tccg.DESCRICAO = 'VENDA DE BEBIDAS' THEN 'Bebidas'
-      WHEN tccg.DESCRICAO = 'VENDA DE COUVERT/ SHOWS' THEN 'Couvert'
-      WHEN tccg.DESCRICAO = 'SERVICO' THEN 'Serviço'
-      WHEN tccg.DESCRICAO = 'DELIVERY' THEN 'Delivery'
-      WHEN tccg.DESCRICAO = 'GIFTS' THEN 'Gifts'
+      WHEN tccg.DESCRICAO IN ('VENDA DE ALIMENTO', 'Alimentação') THEN 'Alimentos'
+      WHEN tccg.DESCRICAO IN ('VENDA DE BEBIDAS', 'Bebida') THEN 'Bebidas'
+      WHEN tccg.DESCRICAO IN ('VENDA DE COUVERT/ SHOWS', 'Artístico (couvert/shows)') THEN 'Couvert'
+      WHEN tccg.DESCRICAO IN ('SERVICO', 'Serviço') THEN 'Serviço'
+      WHEN tccg.DESCRICAO IN ('DELIVERY', 'Delivery') THEN 'Delivery'
+      WHEN tccg.DESCRICAO IN ('GIFTS', 'Gifts') THEN 'Gifts'
       ELSE tccg.DESCRICAO
     END AS Categoria
   FROM
@@ -153,7 +153,7 @@ def GET_ORCAM_FATURAM():
   JOIN
     T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg ON to2.FK_CLASSIFICACAO_2 = tccg.ID
   WHERE
-    to2.FK_CLASSIFICACAO_1 = 178
+    to2.FK_CLASSIFICACAO_1 IN (178, 245)
   ORDER BY
     ID_Loja,
     Ano_Mes;

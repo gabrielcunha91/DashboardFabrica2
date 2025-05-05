@@ -35,16 +35,16 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   OrcamFaturam = GET_ORCAM_FATURAM()
 
   # Conversão de tipos para a padronização de valores
-  FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].astype(str)
-  OrcamFaturam['ID_Loja'] = OrcamFaturam['ID_Loja'].astype(str)
   FaturamZigAgregado['Primeiro_Dia_Mes'] = pd.to_datetime(FaturamZigAgregado['Primeiro_Dia_Mes'], format='%y-%m-%d')
   OrcamFaturam['Primeiro_Dia_Mes'] = pd.to_datetime(OrcamFaturam['Primeiro_Dia_Mes'])
-
+  FaturamZigAgregado['Data_Evento'] = pd.to_datetime(FaturamZigAgregado['Data_Evento'], format='%y-%m-%d')
 
   # Padronização de categorias (para não aparecer as categorias não desejadas)
-  categorias_desejadas = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço', 'Delivery']
-  OrcamFaturam = OrcamFaturam[OrcamFaturam['Categoria'].isin(categorias_desejadas)]
-  FaturamZigAgregado = FaturamZigAgregado[FaturamZigAgregado['Categoria'].isin(categorias_desejadas)]
+  OrcamFaturam['Categoria'] = OrcamFaturam['Categoria'].str.replace('ç', 'c')
+  categorias_desejadas_orcamento = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Delivery', 'Serviço']
+  OrcamFaturam = OrcamFaturam[OrcamFaturam['Categoria'].isin(categorias_desejadas_orcamento)]
+  categorias_desejadas_faturamento = ['Alimentos', 'Bebidas', 'Couvert', 'Gifts', 'Serviço', 'Delivery']
+  FaturamZigAgregado = FaturamZigAgregado[FaturamZigAgregado['Categoria'].isin(categorias_desejadas_faturamento)]
 
   substituicoesIds = {
     103: 116,
@@ -63,28 +63,34 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
   }
 
   FaturamZigAgregado['Loja'] = FaturamZigAgregado['Loja'].replace(substituicoesNomes)
-  FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].replace(substituicoesIds)
-
+  FaturamZigAgregado['ID_Loja'] = FaturamZigAgregado['ID_Loja'].apply(lambda x: substituicoesIds.get(x, x))
   FaturamZigAgregado = filtrar_por_classe_selecionada(FaturamZigAgregado, 'Loja', lojas_selecionadas)
   OrcamFaturam = filtrar_por_classe_selecionada(OrcamFaturam, 'Loja', lojas_selecionadas)
 
-  # Faz o merge das tabelas
+  # Soma faturamentos de lojas equivalentes
+  FaturamZigAgregado = FaturamZigAgregado.groupby(['ID_Loja', 'Loja','Categoria', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Data_Evento']).agg({
+    'Valor_Bruto': 'sum',
+    'Desconto': 'sum',
+    'Valor_Liquido': 'sum'
+  }).reset_index()
+ 
+  # Normaliza as categorias para resolver problema com C cedilha da palavra "Serviço" e caracteres que têm a mesma aparência mas são representados de maneira diferente
+  FaturamZigAgregado['Categoria'] = FaturamZigAgregado['Categoria'].str.normalize('NFKD')
+  OrcamFaturam['Categoria'] = OrcamFaturam['Categoria'].str.normalize('NFKD')
+
+  # Merge das tabelas de faturamento e orçamento
   OrcamentoFaturamento = pd.merge(FaturamZigAgregado, OrcamFaturam, on=['ID_Loja', 'Loja', 'Primeiro_Dia_Mes', 'Ano_Mes', 'Categoria'], how='outer')
   OrcamentoFaturamento = OrcamentoFaturamento.dropna(subset=['Categoria'])
-
   OrcamentoFaturamento['Data_Evento'] = OrcamentoFaturamento['Data_Evento'].fillna(OrcamentoFaturamento['Primeiro_Dia_Mes'])
-  
   OrcamentoFaturamento['Data_Evento'] = pd.to_datetime(OrcamentoFaturamento['Data_Evento'])
-  
-  
-  # Agora filtra
-  OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
 
+  
+  # Filtra período de data
+  OrcamentoFaturamento = filtrar_por_datas(OrcamentoFaturamento, data_inicio, data_fim, 'Data_Evento')
   contagem_delivery = OrcamentoFaturamento[OrcamentoFaturamento['Categoria'] == 'Delivery'].shape[0]
   
-
   # Exclui colunas que não serão usadas na análise, agrupa tuplas de valores de categoria iguais e renomeia as colunas restantes
-  OrcamentoFaturamento.drop(['ID_Loja', 'Loja', 'Data_Evento', 'Primeiro_Dia_Mes'], axis=1, inplace=True)
+  OrcamentoFaturamento.drop(['ID_Loja', 'Loja', 'Data_Evento'], axis=1, inplace=True)
   OrcamentoFaturamento = OrcamentoFaturamento.groupby('Categoria').agg({
     'Orcamento_Faturamento': 'sum',
     'Valor_Bruto': 'sum',
@@ -119,7 +125,6 @@ def config_orcamento_faturamento(lojas_selecionadas, data_inicio, data_fim):
     'Atingimento %', 'Faturam - Orçamento'], axis=1)
 
   return OrcamentoFaturamento
-
 
 
 

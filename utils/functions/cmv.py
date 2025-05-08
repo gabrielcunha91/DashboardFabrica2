@@ -251,7 +251,9 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   if loja == 'Blue Note - Agregado':
     loja = 'Blue Note - São Paulo'
     loja2 = 'Blue Note SP (Novo)'
-
+  elif loja == 'Girondino - Agregado':
+    loja = 'Girondino '
+    loja2 = 'Girondino - CCBB'
 
   df_valoracao_estoque = GET_VALORACAO_ESTOQUE(loja, data_inicio_nova)
 

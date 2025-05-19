@@ -27,7 +27,7 @@ with col3:
 config_sidebar()
 
 
-bares = preparar_dados_lojas_user()
+bares = preparar_dados_lojas_user_projecao_fluxo()
 # bares = df_projecao_bares["Empresa"].unique()
 
 with st.container(border=True):
@@ -84,7 +84,7 @@ st.divider()
 
 with st.container(border=True):
   st.subheader('Despesas do dia')
-  lojasComDados = preparar_dados_lojas_user()
+  lojasComDados = preparar_dados_lojas_user_projecao_fluxo()
   col1, col2, col3, col4 = st.columns([5, 3, 4, 4])
   # Adiciona seletores
   with col1:
@@ -122,7 +122,7 @@ with st.container(border=True):
 
 with st.container(border=True):
   st.subheader('Receitas extraordinárias do dia')
-  lojasComDados = preparar_dados_lojas_user()
+  lojasComDados = preparar_dados_lojas_user_projecao_fluxo()
   col1, col2, col3 = st.columns([5, 2, 3])
   with col1:
     lojasSelecionadas2 = st.multiselect(label='Selecione Lojas', options=lojasComDados, key='lojas_multiselect2')

@@ -107,6 +107,42 @@ def preparar_dados_lojas_user():
   return lojas
 
 
+def preparar_dados_lojas_user_projecao_fluxo():
+  permissao, nomeuser, username = config_permissoes_user()
+  if 'Administrador' in permissao:
+    dflojas = GET_LOJAS()
+    lojasARemover = ['Casa Teste', 'Casa Teste 2', 'Casa Teste 3']
+    dflojas = dflojas[~dflojas['Loja'].isin(lojasARemover)]
+  else:
+    dflojas = GET_LOJAS_USER(username)
+
+  lojas = dflojas['Loja'].tolist()
+
+  lojasReais = ['Abaru - Priceless', 'Arcos', 'All bar', 'Bar Brahma Aeroclube', 'Brahma Aricanduva',
+                'Bar Brahma - Centro', 'Bar Brasilia -  Aeroporto', 'Bardassê', 'Bar Léo - Centro', 'Bar Léo - Vila Madalena', 'Blue Note - São Paulo', 'Blue Note SP (Novo)',
+                'Colorado Aeroporto BSB', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares', 'Delivery Jacaré', 'Delivery Orfeu', 'Duroc ', 'Edificio Rolim', 'Escritório Fabrica de Bares', 'FDB DIGITAL PARTICIPACOES LTDA', 'FDB HOLDING INFERIOR LTDA', 'FDB HOLDING SUPERIOR LTDA', 'Filial', 'Hbar participacoes e empreendimentos ', 'Ilha das Flores ', 'Lojinha - Brahma', 'Navarro', 'Patizal ',  'Piratininga', 'Tundra',
+                'Girondino ', 'Girondino - CCBB', 'Hotel Maraba', 'Jacaré', 'Love Cabaret', 'Notiê - Priceless', 'Orfeu', 'Priceless', 'Riviera Bar', 
+                'Sanduiche comunicação LTDA ', 'Tempus Fugit  Ltda ', 'Ultra Evil Premium Ltda ', 'Bar Brahma - Granja', 'Brahma - Ribeirão']
+
+  lojasReaisSet = set(lojasReais)
+  lojas = [loja for loja in lojas if loja in lojasReaisSet]
+
+  lojas.sort(key=str.lower)
+
+  # Verificar se ambas as lojas estão na lista
+  if 'Abaru - Priceless' in lojas and 'Notiê - Priceless' in lojas:
+    # Remover a 'loja 1' da lista
+    lojas.remove('Abaru - Priceless')
+    
+    # Encontrar o índice da 'loja 3' para inserir a 'loja 1' logo após
+    indice_loja_alvo = lojas.index('Notiê - Priceless')
+    
+    # Inserir a 'loja 1' após a 'loja 3'
+    lojas.insert(indice_loja_alvo + 1, 'Abaru - Priceless')
+
+  return lojas
+
+
 def preparar_dados_classe_selecionada(df, classe):
   dados = df[classe].dropna().unique().tolist() 
   dados.sort(key=str.lower)

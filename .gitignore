@@ -3,3 +3,6 @@
 
 # Specifically ignore the secrets.toml file
 .streamlit/secrets.toml
+
+# Ignore pycache files
+**/__pycache__/

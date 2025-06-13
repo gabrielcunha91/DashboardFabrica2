@@ -14,6 +14,7 @@ def criar_parciais(df):
   df_parciais = pd.DataFrame()
   for i in range(1, 5):
     parcial = df.copy()
+    parcial['Valor'] = parcial['Valor'].astype(float)
     parcial['Data_Parcial'] = parcial['Data'] + pd.DateOffset(days=7 * i)
     parcial['Valor_Parcial'] = (parcial['Valor'] / 4).round(2)
     parcial = parcial.rename(columns={'Data_Parcial': f'Data_Parcial_{i}', 'Valor_Parcial': f'Valor_Parcial_{i}'})

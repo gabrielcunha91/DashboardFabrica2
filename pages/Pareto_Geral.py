@@ -34,7 +34,7 @@ def main ():
     comparativo_entre_lojas(dfComparativo)
 
   with tab2:
-    dfNomeCompras, lojas, dfSemFiltroData, data_fim = config_tabela_para_pareto(GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA(), 'ALIMENTOS', 1)
+    dfNomeCompras, lojas, dfSemFiltroData, data_fim = config_tabela_para_pareto(dfComparativo, 'ALIMENTOS', 1)
     produto = config_diagramas_pareto(dfNomeCompras, 'ALIMENTOS', 'Alimentos')
     with st.container(border=True):
       dfNomeCompras = dfNomeCompras.drop(['Categoria'], axis=1)

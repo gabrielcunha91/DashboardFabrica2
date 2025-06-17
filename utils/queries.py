@@ -653,9 +653,9 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   	CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)) AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
   	tdri.VALOR AS 'Valor Total', 
-    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
+    (tdri.VALOR / (CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)))) AS 'Valor Unitário',
   	tdr.COMPETENCIA AS 'Data Compra',
-  	1 AS 'Fator de Proporção'
+  	1 AS 'Fator de Proporção'
   FROM T_DESPESA_RAPIDA_ITEM tdri
   LEFT JOIN T_INSUMOS_NIVEL_5 tin5 ON tdri.FK_INSUMO = tin5.ID
   LEFT JOIN T_INSUMOS_NIVEL_4 tin4 ON tin5.FK_INSUMOS_NIVEL_4 = tin4.ID 

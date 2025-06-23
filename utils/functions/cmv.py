@@ -211,9 +211,9 @@ def config_diferenca_producao(df_atual, df_anterior):
   df_anterior = df_anterior.copy()
   df_atual.rename(columns={'Valor_Total': 'Valor_Total_Atual', 'Quantidade': 'Quantidade_Atual'}, inplace=True)
   df_anterior.rename(columns={'Valor_Total': 'Valor_Total_Anterior', 'Quantidade': 'Quantidade_Anterior'}, inplace=True)
-  df_atual.drop(['Unidade_Medida', 'ID_Loja', 'Loja', 'Valor_Unidade_Medida'], axis=1, inplace=True)
-  df_anterior.drop(['Unidade_Medida', 'ID_Loja', 'Loja', 'Valor_Unidade_Medida'], axis=1, inplace=True)
-  df_diferenca_producao = pd.merge(df_atual, df_anterior, on=['Item_Produzido', 'Categoria'], how='outer')
+  df_atual.drop(['ID_Loja', 'Loja', 'Valor_Unidade_Medida'], axis=1, inplace=True)
+  df_anterior.drop(['ID_Loja', 'Loja', 'Valor_Unidade_Medida'], axis=1, inplace=True)
+  df_diferenca_producao = pd.merge(df_atual, df_anterior, on=['Item_Produzido', 'Categoria', 'Unidade_Medida'], how='outer')
   df_diferenca_producao.fillna(0, inplace=True)
   df_diferenca_producao['Valor_Total_Atual'] = df_diferenca_producao['Valor_Total_Atual'].astype(float)
   df_diferenca_producao['Valor_Total_Anterior'] = df_diferenca_producao['Valor_Total_Anterior'].astype(float)
@@ -223,7 +223,7 @@ def config_diferenca_producao(df_atual, df_anterior):
   df_diferenca_producao['Diferenca_Quantidade'] = df_diferenca_producao['Quantidade_Atual'] - df_diferenca_producao['Quantidade_Anterior']
   df_diferenca_producao.sort_values(by=['Diferenca_Valor_Total', 'Categoria'], inplace=True)
   df_diferenca_producao = format_columns_brazilian(df_diferenca_producao, ['Quantidade_Atual', 'Quantidade_Anterior', 'Valor_Total_Atual', 'Valor_Total_Anterior', 'Diferenca_Valor_Total', 'Diferenca_Quantidade'])
-  df_diferenca_producao.rename(columns={'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Anterior': 'Quantidade Anterior', 'Diferenca_Valor_Total': 'Diferença Valor Total', 'Diferenca_Quantidade': 'Diferença Quantidade', 'Valor_Total_Atual': 'Valor Total Atual', 'Valor_Total_Anterior': 'Valor Total Anterior'}, inplace=True)
+  df_diferenca_producao.rename(columns={'Unidade_Medida': 'Unidade de Medida', 'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Anterior': 'Quantidade Anterior', 'Diferenca_Valor_Total': 'Diferença Valor Total', 'Diferenca_Quantidade': 'Diferença Quantidade', 'Valor_Total_Atual': 'Valor Total Atual', 'Valor_Total_Anterior': 'Valor Total Anterior'}, inplace=True)
   return df_diferenca_producao
 
 
@@ -258,6 +258,7 @@ def config_valoracao_estoque(data_inicio, data_fim, loja):
   df_valoracao_estoque = GET_VALORACAO_ESTOQUE(loja, data_inicio_nova)
 
   df_valoracao_estoque.drop(['DATA_CONTAGEM'], axis=1, inplace=True)
+  
   return df_valoracao_estoque
 
 
@@ -267,19 +268,22 @@ def config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_me
   df_valoracao_estoque_mes_anterior = df_valoracao_estoque_mes_anterior.copy()
   df_valoracao_estoque_atual.rename(columns={'Valor_em_Estoque': 'Valor_em_Estoque_Atual', 'Quantidade': 'Quantidade_Atual'}, inplace=True)
   df_valoracao_estoque_mes_anterior.rename(columns={'Valor_em_Estoque': 'Valor_em_Estoque_Mes_Anterior', 'Quantidade': 'Quantidade_Mes_Anterior'}, inplace=True)
-  df_valoracao_estoque_atual.drop(['Unidade_Medida'], axis=1, inplace=True)
-  df_valoracao_estoque_mes_anterior.drop(['Unidade_Medida'], axis=1, inplace=True)
-  df_diferenca_estoque = pd.merge(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior, on=['ID_Loja', 'Loja', 'ID_Insumo', 'Insumo', 'ID_Nivel_4', 'Categoria'], how='outer')
-  df_diferenca_estoque.fillna(0, inplace=True)
+  df_diferenca_estoque = pd.merge(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior, on=['ID_Loja', 'Loja', 'ID_Insumo', 'Insumo', 'Unidade_Medida','ID_Nivel_4', 'Categoria'], how='outer')
+  df_diferenca_estoque[['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior']].fillna(0, inplace=True)
+  
   df_diferenca_estoque['Valor_em_Estoque_Atual'] = df_diferenca_estoque['Valor_em_Estoque_Atual'].astype(float)
   df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'] = df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'].astype(float)
   df_diferenca_estoque['Quantidade_Atual'] = df_diferenca_estoque['Quantidade_Atual'].astype(float)
   df_diferenca_estoque['Quantidade_Mes_Anterior'] = df_diferenca_estoque['Quantidade_Mes_Anterior'].astype(float)
+  df_diferenca_estoque['Preço Mês Atual'] = df_diferenca_estoque['Valor_em_Estoque_Atual'] / df_diferenca_estoque['Quantidade_Atual']
+  df_diferenca_estoque['Preço Mês Anterior'] = df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'] / df_diferenca_estoque['Quantidade_Mes_Anterior']
   df_diferenca_estoque['Diferenca_Estoque'] = df_diferenca_estoque['Valor_em_Estoque_Atual'] - df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior']
   df_diferenca_estoque.sort_values(by=['Diferenca_Estoque', 'Categoria'], inplace=True)
-  df_diferenca_estoque = format_columns_brazilian(df_diferenca_estoque, ['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior', 'Diferenca_Estoque'])
-  df_diferenca_estoque.rename(columns={'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Mes_Anterior': 'Quantidade Mes Anterior', 'Diferenca_Estoque': 'Diferença Valor Estoque', 'Valor_em_Estoque_Atual': 'Valor em Estoque Atual', 'Valor_em_Estoque_Mes_Anterior': 'Valor em Estoque Mes Anterior'}, inplace=True)
-  df_diferenca_estoque.drop(['ID_Loja', 'ID_Insumo', 'ID_Nivel_4'], axis=1, inplace=True)
+  df_diferenca_estoque = format_columns_brazilian(df_diferenca_estoque, ['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior', 'Diferenca_Estoque', 'Preço Mês Atual', 'Preço Mês Anterior'])
+  df_diferenca_estoque.drop(['ID_Loja', 'ID_Nivel_4'], axis=1, inplace=True)
+  df_diferenca_estoque.rename(columns={'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Mes_Anterior': 'Quantidade Mes Anterior', 'Diferenca_Estoque': 'Diferença Valor Estoque', 'Valor_em_Estoque_Atual': 'Valor em Estoque Atual', 'Valor_em_Estoque_Mes_Anterior': 'Valor em Estoque Mes Anterior', 'Unidade_Medida': 'Unidade de Medida', 'ID_Insumo': 'ID Insumo'}, inplace=True)
+  df_diferenca_estoque = df_diferenca_estoque[['Categoria', 'ID Insumo', 'Insumo', 'Unidade de Medida','Preço Mês Anterior', 'Quantidade Mes Anterior', 'Valor em Estoque Mes Anterior', 'Preço Mês Atual', 'Quantidade Atual', 'Valor em Estoque Atual', 'Diferença Valor Estoque']]
+      
   return df_diferenca_estoque
 
 

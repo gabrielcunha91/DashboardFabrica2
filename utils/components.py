@@ -215,9 +215,9 @@ def diagrama_pareto_por_categ_avaliada(df, categoria, key):
     st_echarts(options=options, key=key)
 
 
-def card_cmv(titulo, valor):
+def card_cmv(titulo, valor, is_estoque):
 
-  if valor.startswith('-'):
+  if valor.startswith('-') and is_estoque:
     html = f"""
     <div style="
         border: 1px solid #4A2F8C;
@@ -237,7 +237,7 @@ def card_cmv(titulo, valor):
     </div>
     """
 
-  else:
+  elif is_estoque:
     html = f"""
     <div style="
         border: 1px solid #4A2F8C;
@@ -254,6 +254,25 @@ def card_cmv(titulo, valor):
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
         <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: green">R$ {valor}</div>
+    </div>
+    """
+  else:
+    html = f"""
+    <div style="
+        border: 1px solid #4A2F8C;
+        border-radius: 12px;
+        padding: 16px;
+        width: 100%;
+        background-color: #f9f9f9;
+        color: #333;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 102px
+    ">
+        <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px;">R$ {valor}</div>
     </div>
     """
 

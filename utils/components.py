@@ -230,7 +230,7 @@ def card_cmv(titulo, valor, is_estoque):
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        min-height: 102px
+        min-height: 129px
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
         <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: red">R$ {valor}</div>
@@ -250,7 +250,7 @@ def card_cmv(titulo, valor, is_estoque):
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        min-height: 102px
+        min-height: 129px
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
         <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: green">R$ {valor}</div>
@@ -269,7 +269,7 @@ def card_cmv(titulo, valor, is_estoque):
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        min-height: 102px
+        min-height: 129px
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
         <div style="font-size: 24px; font-weight: 500; margin-top: 4px;">R$ {valor}</div>
@@ -293,7 +293,7 @@ def title_card_cmv(titulo):
       display: flex;
       flex-direction: column;
       justify-content: center;
-      min-height: 102px;
+      min-height: 129px;
   ">
       <div style="font-size: 20px; font-weight: bold; margin: auto 0; color: #f9f9f9">
         {titulo}

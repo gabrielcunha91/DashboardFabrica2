@@ -196,14 +196,7 @@ with colB:
   with col5:
     card_cmv('CMV Percentual Geral', cmv_percentual_geral, is_estoque=False)
 
-st.write('')
-
-with st.container(border=True):
-  col0, col1, col2 = st.columns([1, 12, 1])
-  with col1:
-    st.subheader('Faturamento Bruto por Categoria')
-    
-    st.dataframe(df_faturamento_total, hide_index=True)
+st.divider()
 
 with st.container(border=True):
   col0, col1, col2 = st.columns([1, 12, 1])

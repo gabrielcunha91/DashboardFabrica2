@@ -158,57 +158,6 @@ def plotar_grafico(df):
   st_echarts(options=option)
 
 
-
-# def diagrama_pareto_por_categ_avaliada(df, categoria, key):
-#   df = df.head(10)
-#   # Configuração do gráfico
-#   options = {
-#     "title": {
-#       "text": "",
-#       "left": "center"
-#     },
-#     "tooltip": {
-#       "trigger": "axis",
-#       "axisPointer": {
-#         "type": "shadow"
-#       }
-#     },
-#     "xAxis": [
-#       {
-#         "type": "category",
-#         "data": df['Nome Produto'].tolist()
-#       }
-#     ],
-#     "yAxis": [
-#       {
-#         "type": "value",
-#         "name": categoria
-#       },
-#       {
-#         "type": "value",
-#         "name": "Porcentagem Acumulada",
-#         "axisLabel": {
-#           "formatter": "{value} %"
-#         }
-#       }
-#     ],
-#     "series": [
-#       {
-#         "name": categoria,
-#         "type": "bar",
-#         "data": df[categoria].tolist()
-#       },
-#       {
-#         "name": "Porcentagem Acumulada",
-#         "type": "line",
-#         "yAxisIndex": 1,
-#         "data": df['Porcentagem Acumulada'].tolist()
-#       }
-#     ]
-#   }
-#   st_echarts(options=options, key=key)
-
-
 def diagrama_pareto_por_categ_avaliada(df, categoria, key):
     df = df.head(10)
     # Configuração do gráfico
@@ -225,9 +174,7 @@ def diagrama_pareto_por_categ_avaliada(df, categoria, key):
         },
         "grid": {
             "top": 30,
-            "bottom": 150,  # Aumenta a margem inferior para evitar cortes nas labels
-            # "left": 300,  # Reduz a margem esquerda para diminuir a largura total
-            # "right": 300  # Reduz a margem direita para diminuir a largura total
+            "bottom": 150,
        },
         "xAxis": [
             {
@@ -266,3 +213,91 @@ def diagrama_pareto_por_categ_avaliada(df, categoria, key):
         ],
     }
     st_echarts(options=options, key=key)
+
+
+def card_cmv(titulo, valor, is_estoque=False, is_percentual=False):
+
+  if valor.startswith('R$ -') and is_estoque:
+    html = f"""
+    <div style="
+        border: 1px solid #4A2F8C;
+        border-radius: 12px;
+        padding: 16px;
+        width: 100%;
+        background-color: #f9f9f9;
+        color: #333;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 129px
+    ">
+        <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: red">{valor}</div>
+    </div>
+    """
+
+  elif is_estoque:
+    html = f"""
+    <div style="
+        border: 1px solid #4A2F8C;
+        border-radius: 12px;
+        padding: 16px;
+        width: 100%;
+        background-color: #f9f9f9;
+        color: #333;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 129px
+    ">
+        <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: green">{valor}</div>
+    </div>
+    """
+  else:
+    html = f"""
+    <div style="
+        border: 1px solid #4A2F8C;
+        border-radius: 12px;
+        padding: 16px;
+        width: 100%;
+        background-color: #f9f9f9;
+        color: #333;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 129px
+    ">
+        <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px;">{valor}</div>
+    </div>
+    """
+
+  st.markdown(html, unsafe_allow_html=True)
+
+
+def title_card_cmv(titulo):
+  # HTML + CSS customizado
+  html = f"""
+  <div style="
+      border: 1px solid #4A2F8C;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      background-color: #4A2F8C;
+      color: #333;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 129px;
+  ">
+      <div style="font-size: 20px; font-weight: bold; margin: auto 0; color: #f9f9f9">
+        {titulo}
+      </div>
+  </div>
+  """
+  st.markdown(html, unsafe_allow_html=True)

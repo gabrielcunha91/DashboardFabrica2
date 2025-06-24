@@ -74,7 +74,6 @@ df_producao_total = config_producao_agregada(df_producao_alimentos, df_producao_
 df_producao_alimentos.drop(columns=['ID_Loja', 'Loja'], inplace=True)
 df_producao_bebidas.drop(columns=['ID_Loja', 'Loja'], inplace=True)
 df_valoracao_estoque_atual.drop(columns=['ID_Loja', 'Loja'], inplace=True)
-df_diferenca_estoque.drop(columns=['Loja'], inplace=True)
 
 
 df_faturamento_total = config_faturamento_total(df_faturamento_delivery, df_faturamento_zig, df_faturamento_eventos)
@@ -122,112 +121,82 @@ consumo_interno = format_brazilian(consumo_interno)
 diferenca_producao_alimentos = format_brazilian(diferenca_producao_alimentos)
 diferenca_producao_bebidas = format_brazilian(diferenca_producao_bebidas)
 
-
-col1, col2, col3, col4, col5, col6 = st.columns(6)
-with col1:
-  with st.container(border=True):
-    st.write('Faturam. Alimentos')
-    st.write('R$', faturamento_bruto_alimentos)
-with col2:
-  with st.container(border=True):
-    st.write('Faturam. Bebidas')
-    st.write('R$', faturamento_bruto_bebidas)  
-with col3:
-  with st.container(border=True):
-    st.write('Faturam. Alim. Delivery.')
-    st.write('R$', faturamento_alimentos_delivery)  
-with col4:
-  with st.container(border=True):
-    st.write('Faturam. Beb. Delivery.')
-    st.write('R$', faturamento_bebidas_delivery)
-with col5:
-  with st.container(border=True):
-    st.write('Faturam. Alim. Eventos.')
-    st.write('R$', faturamento_alimentos_eventos)
-with col6:
-  with st.container(border=True):
-    st.write('Faturam. Beb. Eventos.')
-    st.write('R$', faturamento_bebidas_eventos)
-
-col7, col8, col9, col10, col20 = st.columns(5)
-with col7:
-  with st.container(border=True):
-    st.write('Δ Estoque Alimentos')
-    st.write('R$', variacao_estoque_alimentos)
-with col8:
-  with st.container(border=True):
-    st.write('Δ Estoque Bebidas')
-    st.write('R$', variacao_estoque_bebidas)
-with col9:
-  with st.container(border=True):
-    st.write('Δ Produção Alimentos')
-    st.write('R$', diferenca_producao_alimentos)
-with col10:
-  with st.container(border=True):
-    st.write('Δ Produção Bebidas')
-    st.write('R$', diferenca_producao_bebidas)
-with col20:
-  with st.container(border=True):
-    st.write('Consumo Interno')
-    st.write('R$', consumo_interno)
+colA, colB = st.columns([1, 6])
+  
+with colA:
+  with st.container():
+      title_card_cmv('Faturamento')
+  st.write('')
+  with st.container():
+      title_card_cmv('Estoque e Produção')
+  st.write('')
+  with st.container():
+      title_card_cmv('Compras, Entradas e Saídas de A&B')
+  st.write('')
+  with st.container():
+      title_card_cmv('CMV')
 
 
-
-col11, col12, col18, col19, col21, col22 = st.columns(6)
-with col11:
-  with st.container(border=True):
-    st.write('Compras Alimentos')
-    st.write('R$', compras_alimentos)
-with col12:
-  with st.container(border=True):
-    st.write('Compras Bebidas')
-    st.write('R$', compras_bebidas)
-with col18:
-  with st.container(border=True):
-    st.write('Entrada Alimentos')
-    st.write('R$', entrada_alimentos)
-with col19:
-  with st.container(border=True):
-    st.write('Saída Alimentos')
-    st.write('R$', saida_alimentos)
-with col21:
-  with st.container(border=True):
-    st.write('Entrada Bebidas')
-    st.write('R$', entrada_bebidas)
-with col22:
-  with st.container(border=True):
-    st.write('Saída Bebidas')
-    st.write('R$', saida_bebidas)
-
-
-col13, col14, col15, col16, col17 = st.columns(5)
-with col13:
-  with st.container(border=True):
-    st.write('CMV Alimentos')
-    st.write(' R$', cmv_alimentos)
-with col14:
-  with st.container(border=True):
-    st.write('CMV Bebidas')
-    st.write('R$', cmv_bebidas)
-with col15:
-  with st.container(border=True):
-    st.write('CMV Percentual Alimentos')
-    st.write(cmv_percentual_alim, '%')
-with col16:
-  with st.container(border=True):
-    st.write('CMV Percentual Bebidas')
-    st.write(cmv_percentual_bebidas, '%')
-with col17:
-  with st.container(border=True):
-    st.write('CMV Percentual Geral')
-    st.write(cmv_percentual_geral, '%')
-
-with st.container(border=True):
-  col0, col1, col2 = st.columns([1, 12, 1])
+with colB:
+  col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 1], vertical_alignment='center')
   with col1:
-    st.subheader('Faturamento Bruto por Categoria')
-    
-    st.dataframe(df_faturamento_total, hide_index=True)
+    card_cmv('Faturamento Alimentos', f'R$ {faturamento_bruto_alimentos}', is_estoque=False)
+  with col2:
+    card_cmv('Faturamento Bebidas', f'R$ {faturamento_bruto_bebidas}', is_estoque=False)
+  with col3:
+    card_cmv('Faturam. Alim. Delivery', f'R$ {faturamento_alimentos_delivery}', is_estoque=False)
+  with col4:
+    card_cmv('Faturam. Beb. Delivery', f'R$ {faturamento_bebidas_delivery}', is_estoque=False)
+  with col5:
+    card_cmv('Faturam. Alim. Eventos', f'R$ {faturamento_alimentos_eventos}', is_estoque=False)
+  with col6:
+    card_cmv('Faturam. Beb. Eventos', f'R$ {faturamento_bebidas_eventos}', is_estoque=False)
+
+  st.write('')
+
+  col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1], vertical_alignment='center')
+  with col1:
+      card_cmv('Δ Estoque Alimentos', f'R$ {variacao_estoque_alimentos}', is_estoque=True)
+  with col2:
+      card_cmv('Δ Estoque Bebidas', f'R$ {variacao_estoque_bebidas}', is_estoque=True)
+  with col3:
+      card_cmv('Δ Produção Alimentos', f'R$ {diferenca_producao_alimentos}', is_estoque=True)
+  with col4:
+      card_cmv('Δ Produção Bebidas', f'R$ {diferenca_producao_bebidas}', is_estoque=True)
+  with col5:
+      card_cmv('Consumo Interno', f'R$ {consumo_interno}', is_estoque=True)
+
+  st.write('')
+
+  col1, col2, col3, col4, col5, col6 = st.columns(6)
+  with col1:
+    card_cmv('Compras Alimentos', f'R$ {compras_alimentos}', is_estoque=False)
+  with col2:
+    card_cmv('Compras Bebidas', f'R$ {compras_bebidas}', is_estoque=False)
+  with col3:
+    card_cmv('Entrada Alimentos', f'R$ {entrada_alimentos}', is_estoque=False)
+  with col4:
+    card_cmv('Saída Alimentos', f'R$ {saida_alimentos}', is_estoque=False)
+  with col5:
+    card_cmv('Entrada Bebidas', f'R$ {entrada_bebidas}', is_estoque=False)
+  with col6:
+    card_cmv('Saída Bebidas', f'R$ {saida_bebidas}', is_estoque=False)
+
+  st.write('')
+
+  col1, col2, col3, col4, col5 = st.columns(5)
+  with col1:
+    card_cmv('CMV Alimentos', f'R$ {cmv_alimentos}', is_estoque=False)
+  with col2:
+    card_cmv('CMV Bebidas', f'R$ {cmv_bebidas}', is_estoque=False)
+  with col3:
+    card_cmv('CMV Percentual Alimentos', f'{cmv_percentual_alim} %', is_estoque=False)
+  with col4:
+    card_cmv('CMV Percentual Bebidas', f'{cmv_percentual_bebidas} %', is_estoque=False)
+  with col5:
+    card_cmv('CMV Percentual Geral', f'{cmv_percentual_geral} %', is_estoque=False)
+
+st.divider()
 
 with st.container(border=True):
   col0, col1, col2 = st.columns([1, 12, 1])
@@ -283,7 +252,12 @@ with st.container(border=True):
         f"Valor Outros = R\\$ {valor_outros}"
       )
 
-
+df_valoracao_estoque_atual = df_valoracao_estoque_atual.rename(columns={
+    'ID_Insumo': 'ID Insumo',
+    'Valor_em_Estoque': 'Valor em Estoque',
+    'Unidade_Medida': 'Unidade de Medida'
+})
+df_valoracao_estoque_atual = df_valoracao_estoque_atual[['Categoria', 'ID Insumo', 'Insumo', 'Unidade de Medida', 'Quantidade', 'Valor em Estoque']]
 with st.container(border=True):
   col0, col1, col2 = st.columns([1, 12, 1])
   with col1:
@@ -293,6 +267,30 @@ with st.container(border=True):
       st.dataframe(df_valoracao_estoque_atual, use_container_width=True, hide_index=True)
     with st.expander("Diferença de Estoque"):
       st.dataframe(df_diferenca_estoque, use_container_width=True, hide_index=True)
+
+df_producao_alimentos = df_producao_alimentos.rename(columns={
+    'Item_Produzido': 'Item Produzido',
+    'Unidade_Medida': 'Unidade de Medida',
+    'Valor_Unidade_Medida': 'Valor Unidade de Medida',
+    'Valor_Total': 'Valor Total'
+})
+df_producao_alimentos = df_producao_alimentos[['Categoria', 'Item Produzido', 'Unidade de Medida', 'Valor Unidade de Medida', 'Quantidade', 'Valor Total']]
+df_producao_bebidas = df_producao_bebidas.rename(columns={
+    'Item_Produzido': 'Item Produzido',
+    'Unidade_Medida': 'Unidade de Medida',
+    'Valor_Unidade_Medida': 'Valor Unidade Medida',
+    'Valor_Total': 'Valor Total'
+})
+df_producao_bebidas = df_producao_bebidas[['Categoria', 'Item Produzido', 'Unidade de Medida', 'Valor Unidade Medida', 'Quantidade', 'Valor Total']]
+
+df_diferenca_producao_alimentos = df_diferenca_producao_alimentos.rename(columns={
+    'Item_Produzido': 'Item Produzido'
+})
+df_diferenca_producao_alimentos = df_diferenca_producao_alimentos[['Categoria', 'Item Produzido', 'Unidade de Medida', 'Quantidade Anterior', 'Valor Total Anterior', 'Quantidade Atual', 'Valor Total Atual', 'Diferença Quantidade', 'Diferença Valor Total']]
+df_diferenca_producao_bebidas = df_diferenca_producao_bebidas.rename(columns={
+    'Item_Produzido': 'Item Produzido'
+})
+df_diferenca_producao_bebidas = df_diferenca_producao_bebidas[['Categoria', 'Item Produzido', 'Unidade de Medida', 'Quantidade Anterior', 'Valor Total Anterior', 'Quantidade Atual', 'Valor Total Atual', 'Diferença Quantidade', 'Diferença Valor Total']]
 
 with st.container(border=True):
   col0, col1, col2 = st.columns([1, 12, 1])
@@ -320,3 +318,40 @@ with st.container(border=True):
     with st.expander("Detalhes Transferências Saídas"):
       st.dataframe(df_transf_saidas, use_container_width=True, hide_index=True)
 
+# Seções de cards
+sections = {
+    "Faturamento": {
+        'Faturamento Alimentos': faturamento_bruto_alimentos,
+        'Faturamento Bebidas': faturamento_bruto_bebidas,
+        'Faturamento Alim. Delivery': faturamento_alimentos_delivery,
+        'Faturamento Beb. Delivery': faturamento_bebidas_delivery,
+        'Faturamento Alim. Eventos': faturamento_alimentos_eventos,
+        'Faturamento Beb. Eventos': faturamento_bebidas_eventos
+    },
+    "Estoque e Produção": {
+        'Δ Estoque Alimentos': variacao_estoque_alimentos,
+        'Δ Estoque Bebidas': variacao_estoque_bebidas,
+        'Δ Produção Alimentos': diferenca_producao_alimentos,
+        'Δ Produção Bebidas': diferenca_producao_bebidas,
+        'Consumo Interno': consumo_interno
+    },
+    "Compras, Entradas e Saídas de A&B": {
+        'Compras Alimentos': compras_alimentos,
+        'Compras Bebidas': compras_bebidas,
+        'Entradas Alimentos': entrada_alimentos,
+        'Entradas Bebidas': entrada_bebidas,
+        'Saídas Alimentos': saida_alimentos,
+        'Saídas Bebidas': saida_bebidas
+    },
+    "CMV": {
+        'CMV Alimentos': cmv_alimentos,
+        'CMV Bebidas': cmv_bebidas,
+        'CMV Percentual Alimentos': f'{cmv_percentual_alim} %',
+        'CMV Percentual Bebidas': f'{cmv_percentual_bebidas} %',
+        'CMV Percentual Geral': f'{cmv_percentual_geral} %'
+    }
+}
+
+# Botão para gerar PDF
+pdf_buffer = gerar_pdf_reportlab(sections, data_inicio, data_fim, lojas_selecionadas, df_compras, df_variacao_estoque, df_producao_total, df_transf_e_gastos)
+st.download_button("Baixar Relatório", pdf_buffer, file_name="relatorio_cmv.pdf", mime="application/pdf")

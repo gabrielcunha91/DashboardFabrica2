@@ -7,5 +7,5 @@ workalendar==17.0.0
 openpyxl==3.1.5
 jupyter==1.1.1
 mysql-connector-python==9.3.0
-reportlab == 4.4.2
+reportlab==4.4.2
 

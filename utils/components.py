@@ -215,9 +215,9 @@ def diagrama_pareto_por_categ_avaliada(df, categoria, key):
     st_echarts(options=options, key=key)
 
 
-def card_cmv(titulo, valor, is_estoque):
+def card_cmv(titulo, valor, is_estoque=False, is_percentual=False):
 
-  if valor.startswith('-') and is_estoque:
+  if valor.startswith('R$ -') and is_estoque:
     html = f"""
     <div style="
         border: 1px solid #4A2F8C;
@@ -233,7 +233,7 @@ def card_cmv(titulo, valor, is_estoque):
         min-height: 129px
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
-        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: red">R$ {valor}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: red">{valor}</div>
     </div>
     """
 
@@ -253,7 +253,7 @@ def card_cmv(titulo, valor, is_estoque):
         min-height: 129px
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
-        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: green">R$ {valor}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: green">{valor}</div>
     </div>
     """
   else:
@@ -272,7 +272,7 @@ def card_cmv(titulo, valor, is_estoque):
         min-height: 129px
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
-        <div style="font-size: 24px; font-weight: 500; margin-top: 4px;">R$ {valor}</div>
+        <div style="font-size: 24px; font-weight: 500; margin-top: 4px;">{valor}</div>
     </div>
     """
 

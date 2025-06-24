@@ -4,6 +4,12 @@ from utils.queries import *
 from utils.components import *
 import calendar
 from babel.dates import format_date
+from reportlab.lib.pagesizes import landscape, A3
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.pdfgen import canvas
+import io
 
 def substituicao_ids(df, colNome, colID):
   substituicoesIds = {
@@ -269,8 +275,8 @@ def config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_me
   df_valoracao_estoque_atual.rename(columns={'Valor_em_Estoque': 'Valor_em_Estoque_Atual', 'Quantidade': 'Quantidade_Atual'}, inplace=True)
   df_valoracao_estoque_mes_anterior.rename(columns={'Valor_em_Estoque': 'Valor_em_Estoque_Mes_Anterior', 'Quantidade': 'Quantidade_Mes_Anterior'}, inplace=True)
   df_diferenca_estoque = pd.merge(df_valoracao_estoque_atual, df_valoracao_estoque_mes_anterior, on=['ID_Loja', 'Loja', 'ID_Insumo', 'Insumo', 'Unidade_Medida','ID_Nivel_4', 'Categoria'], how='outer')
-  df_diferenca_estoque[['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior']].fillna(0, inplace=True)
-  
+  cols = ['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior']
+  df_diferenca_estoque[cols] = df_diferenca_estoque[cols].fillna(0)
   df_diferenca_estoque['Valor_em_Estoque_Atual'] = df_diferenca_estoque['Valor_em_Estoque_Atual'].astype(float)
   df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'] = df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'].astype(float)
   df_diferenca_estoque['Quantidade_Atual'] = df_diferenca_estoque['Quantidade_Atual'].astype(float)
@@ -446,3 +452,124 @@ def config_transferencias_detalhadas(data_inicio, data_fim, loja):
   df_entradas = format_columns_brazilian(df_entradas, ['Valor Transferência'])
   df_saidas = format_columns_brazilian(df_saidas, ['Valor Transferência'])
   return df_entradas, df_saidas
+
+
+def set_pdf_metadata(canvas_obj, doc):
+    canvas_obj.setTitle("Relatório CMV")
+    canvas_obj.setSubject("Relatório de Custo de Mercadoria Vendida")
+
+def criar_cards_table(cards_dict):
+    data = []
+    for label, valor in cards_dict.items():
+        # Formatando valor como R$ e com 2 casas decimais
+        if isinstance(valor, (float, int)):
+            valor_formatado = f"R$ {valor:,.2f}"
+        else:
+            valor_formatado = str(valor)
+        data.append([Paragraph(label, style_card_label), Paragraph(valor_formatado, style_card_value)])
+    return data
+
+# --- Estilos ---
+styles = getSampleStyleSheet()
+
+style_title = ParagraphStyle(
+    'title',
+    fontName='Helvetica-Bold',
+    fontSize=24,
+    textColor=colors.HexColor("#2c2e70"),
+    alignment=1,
+    spaceAfter=14
+)
+
+style_normal = ParagraphStyle(
+    'normal',
+    fontName='Helvetica',
+    fontSize=12,
+    spaceAfter=6
+)
+
+style_header = ParagraphStyle(
+    'header',
+    fontName='Helvetica-Bold',
+    fontSize=24,
+    textColor=colors.HexColor("#2c2e70"),
+    spaceAfter=14,
+    alignment=1  # Centralizado
+)
+
+style_subheader = ParagraphStyle(
+    'subheader',
+    fontName='Helvetica-Bold',
+    fontSize=16,
+    textColor=colors.HexColor("#2c2e70"),
+    spaceAfter=12
+)
+
+style_card_label = ParagraphStyle(
+    'card_label',
+    fontName='Helvetica',
+    fontSize=12,
+    textColor=colors.black
+)
+
+style_card_value = ParagraphStyle(
+    'card_value',
+    fontName='Helvetica',
+    fontSize=12,
+    textColor=colors.HexColor("#2c2e70"),
+    spaceAfter=6
+)
+
+def gerar_pdf_reportlab(sections, data_inicio, data_fim, casa, df_compras, df_variacao_estoque, df_producao_total, df_transf_e_gastos):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A3),
+                            rightMargin=30,leftMargin=30,
+                            topMargin=30,bottomMargin=18)
+
+    elements = []
+
+    # Cabeçalho
+    elements.append(Paragraph(f"CMV - {casa}", style_header))
+    periodo_formatado = f"{pd.to_datetime(data_inicio).strftime('%d/%m/%Y')} a {pd.to_datetime(data_fim).strftime('%d/%m/%Y')}"
+    elements.append(Paragraph(f"Período: {periodo_formatado}", style_normal))
+    elements.append(Spacer(1, 20))
+
+    for secao, cards_dict in sections.items():
+        elements.append(Paragraph(secao, style_subheader))
+        data = criar_cards_table(cards_dict)
+        table = Table(data, colWidths=[250, 100])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke),
+            ('BOX', (0,0), (-1,-1), 1, colors.grey),
+            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 15))
+
+    # Agora as tabelas dos DataFrames (Compras, Variação de Estoque, Produção, Transferências e Gastos)
+    dfs = {
+        "Compras": df_compras,
+        "Valoração e Variação de Estoque": df_variacao_estoque,
+        "Inventário de Produção": df_producao_total,
+        "Transferências e Gastos Extras": df_transf_e_gastos
+    }
+
+    for titulo, df in dfs.items():
+        elements.append(Paragraph(titulo, style_subheader))
+        data = [df.columns.to_list()] + df.values.tolist()
+        t = Table(data, repeatRows=1)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#2c2e70")),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('ALIGN', (1,1), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ]))
+        elements.append(t)
+        elements.append(Spacer(1, 20))
+
+    # Construir o PDF
+    doc.build(elements, onFirstPage=set_pdf_metadata)
+    buffer.seek(0)
+    return buffer

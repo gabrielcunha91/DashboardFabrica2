@@ -140,61 +140,61 @@ with colA:
 with colB:
   col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 1], vertical_alignment='center')
   with col1:
-    card_cmv('Faturamento Alimentos', faturamento_bruto_alimentos, is_estoque=False)
+    card_cmv('Faturamento Alimentos', f'R$ {faturamento_bruto_alimentos}', is_estoque=False)
   with col2:
-    card_cmv('Faturamento Bebidas', faturamento_bruto_bebidas, is_estoque=False)
+    card_cmv('Faturamento Bebidas', f'R$ {faturamento_bruto_bebidas}', is_estoque=False)
   with col3:
-    card_cmv('Faturam. Alim. Delivery', faturamento_alimentos_delivery, is_estoque=False)
+    card_cmv('Faturam. Alim. Delivery', f'R$ {faturamento_alimentos_delivery}', is_estoque=False)
   with col4:
-    card_cmv('Faturam. Beb. Delivery', faturamento_bebidas_delivery, is_estoque=False)
+    card_cmv('Faturam. Beb. Delivery', f'R$ {faturamento_bebidas_delivery}', is_estoque=False)
   with col5:
-    card_cmv('Faturam. Alim. Eventos', faturamento_alimentos_eventos, is_estoque=False)
+    card_cmv('Faturam. Alim. Eventos', f'R$ {faturamento_alimentos_eventos}', is_estoque=False)
   with col6:
-    card_cmv('Faturam. Beb. Eventos', faturamento_bebidas_eventos, is_estoque=False)
+    card_cmv('Faturam. Beb. Eventos', f'R$ {faturamento_bebidas_eventos}', is_estoque=False)
 
   st.write('')
 
   col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1], vertical_alignment='center')
   with col1:
-      card_cmv('Δ Estoque Alimentos', variacao_estoque_alimentos, is_estoque=True)
+      card_cmv('Δ Estoque Alimentos', f'R$ {variacao_estoque_alimentos}', is_estoque=True)
   with col2:
-      card_cmv('Δ Estoque Bebidas', variacao_estoque_bebidas, is_estoque=True)
+      card_cmv('Δ Estoque Bebidas', f'R$ {variacao_estoque_bebidas}', is_estoque=True)
   with col3:
-      card_cmv('Δ Produção Alimentos', diferenca_producao_alimentos, is_estoque=True)
+      card_cmv('Δ Produção Alimentos', f'R$ {diferenca_producao_alimentos}', is_estoque=True)
   with col4:
-      card_cmv('Δ Produção Bebidas', diferenca_producao_bebidas, is_estoque=True)
+      card_cmv('Δ Produção Bebidas', f'R$ {diferenca_producao_bebidas}', is_estoque=True)
   with col5:
-      card_cmv('Consumo Interno', consumo_interno, is_estoque=True)
+      card_cmv('Consumo Interno', f'R$ {consumo_interno}', is_estoque=True)
 
   st.write('')
 
   col1, col2, col3, col4, col5, col6 = st.columns(6)
   with col1:
-    card_cmv('Compras Alimentos', compras_alimentos, is_estoque=False)
+    card_cmv('Compras Alimentos', f'R$ {compras_alimentos}', is_estoque=False)
   with col2:
-    card_cmv('Compras Bebidas', compras_bebidas, is_estoque=False)
+    card_cmv('Compras Bebidas', f'R$ {compras_bebidas}', is_estoque=False)
   with col3:
-    card_cmv('Entrada Alimentos', entrada_alimentos, is_estoque=False)
+    card_cmv('Entrada Alimentos', f'R$ {entrada_alimentos}', is_estoque=False)
   with col4:
-    card_cmv('Saída Alimentos', saida_alimentos, is_estoque=False)
+    card_cmv('Saída Alimentos', f'R$ {saida_alimentos}', is_estoque=False)
   with col5:
-    card_cmv('Entrada Bebidas', entrada_bebidas, is_estoque=False)
+    card_cmv('Entrada Bebidas', f'R$ {entrada_bebidas}', is_estoque=False)
   with col6:
-    card_cmv('Saída Bebidas', saida_bebidas, is_estoque=False)
+    card_cmv('Saída Bebidas', f'R$ {saida_bebidas}', is_estoque=False)
 
   st.write('')
 
   col1, col2, col3, col4, col5 = st.columns(5)
   with col1:
-    card_cmv('CMV Alimentos', cmv_alimentos, is_estoque=False)
+    card_cmv('CMV Alimentos', f'R$ {cmv_alimentos}', is_estoque=False)
   with col2:
-    card_cmv('CMV Bebidas', cmv_bebidas, is_estoque=False)
+    card_cmv('CMV Bebidas', f'R$ {cmv_bebidas}', is_estoque=False)
   with col3:
-    card_cmv('CMV Percentual Alimentos', cmv_percentual_alim, is_estoque=False)
+    card_cmv('CMV Percentual Alimentos', f'{cmv_percentual_alim} %', is_estoque=False)
   with col4:
-    card_cmv('CMV Percentual Bebidas', cmv_percentual_bebidas, is_estoque=False)
+    card_cmv('CMV Percentual Bebidas', f'{cmv_percentual_bebidas} %', is_estoque=False)
   with col5:
-    card_cmv('CMV Percentual Geral', cmv_percentual_geral, is_estoque=False)
+    card_cmv('CMV Percentual Geral', f'{cmv_percentual_geral} %', is_estoque=False)
 
 st.divider()
 
@@ -318,3 +318,40 @@ with st.container(border=True):
     with st.expander("Detalhes Transferências Saídas"):
       st.dataframe(df_transf_saidas, use_container_width=True, hide_index=True)
 
+# Seções de cards
+sections = {
+    "Faturamento": {
+        'Faturamento Alimentos': faturamento_bruto_alimentos,
+        'Faturamento Bebidas': faturamento_bruto_bebidas,
+        'Faturamento Alim. Delivery': faturamento_alimentos_delivery,
+        'Faturamento Beb. Delivery': faturamento_bebidas_delivery,
+        'Faturamento Alim. Eventos': faturamento_alimentos_eventos,
+        'Faturamento Beb. Eventos': faturamento_bebidas_eventos
+    },
+    "Estoque e Produção": {
+        'Δ Estoque Alimentos': variacao_estoque_alimentos,
+        'Δ Estoque Bebidas': variacao_estoque_bebidas,
+        'Δ Produção Alimentos': diferenca_producao_alimentos,
+        'Δ Produção Bebidas': diferenca_producao_bebidas,
+        'Consumo Interno': consumo_interno
+    },
+    "Compras, Entradas e Saídas de A&B": {
+        'Compras Alimentos': compras_alimentos,
+        'Compras Bebidas': compras_bebidas,
+        'Entradas Alimentos': entrada_alimentos,
+        'Entradas Bebidas': entrada_bebidas,
+        'Saídas Alimentos': saida_alimentos,
+        'Saídas Bebidas': saida_bebidas
+    },
+    "CMV": {
+        'CMV Alimentos': cmv_alimentos,
+        'CMV Bebidas': cmv_bebidas,
+        'CMV Percentual Alimentos': f'{cmv_percentual_alim} %',
+        'CMV Percentual Bebidas': f'{cmv_percentual_bebidas} %',
+        'CMV Percentual Geral': f'{cmv_percentual_geral} %'
+    }
+}
+
+# Botão para gerar PDF
+pdf_buffer = gerar_pdf_reportlab(sections, data_inicio, data_fim, lojas_selecionadas, df_compras, df_variacao_estoque, df_producao_total, df_transf_e_gastos)
+st.download_button("Baixar Relatório", pdf_buffer, file_name="relatorio_cmv.pdf", mime="application/pdf")

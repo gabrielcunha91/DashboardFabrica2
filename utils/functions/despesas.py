@@ -13,21 +13,52 @@ def config_despesas_por_classe(df):
         ].index
     )
 
+    # Sua lista com a ordem desejada
+    ordem_DRE = [
+        "Impostos sobre Venda",
+        "Custos Artístico Geral",
+        "Custos de Eventos",
+        "Deduções sobre Venda",
+        "Mão de Obra - PJ",
+        "Mão de Obra - Salários",
+        "Mão de Obra - Extra",
+        "Mão de Obra - Encargos e Provisões",
+        "Mão de Obra - Benefícios",
+        "Mão de Obra - Pro Labores",
+        "Gorjeta",
+        "Custo de Ocupação",
+        "Utilidades",
+        "Informática e TI",
+        "Despesas com Transporte / Hospedagem",
+        "Manutenção",
+        "Marketing",
+        "Serviços de Terceiros",
+        "Locação de Equipamentos",
+        "Sistema de Franquias",
+        "Despesas Financeiras",
+        "Patrocínio",
+        "Dividendos e Remunerações Variáveis",
+        "Endividamento",
+        "Imposto de Renda",
+        "Investimento - CAPEX"
+    ]
+
     df = df.sort_values(by=["Classificacao_Contabil_1", "Classificacao_Contabil_2"])
-    df = df.groupby(
-        ["Classificacao_Contabil_1", "Classificacao_Contabil_2", "Loja"], as_index=False
-    ).agg({"Orcamento": "first", "Valor_Liquido": "sum"})
 
     df = df.groupby(
         ["Classificacao_Contabil_1", "Classificacao_Contabil_2"], as_index=False
     ).agg({"Orcamento": "sum", "Valor_Liquido": "sum"})
 
     df["Orcamento"] = df["Orcamento"].fillna(0)
-
+    df['Classificacao_Contabil_1'] = pd.Categorical(df['Classificacao_Contabil_1'], categories=ordem_DRE, ordered=True)
+    df = df.sort_values('Classificacao_Contabil_1', na_position='last')
+    
     formatted_rows = []
     current_category = None
 
     for _, row in df.iterrows():
+        
+		# Coloca as categorias no formato agregado
         if row["Classificacao_Contabil_1"] != current_category:
             current_category = row["Classificacao_Contabil_1"]
             formatted_rows.append(
@@ -64,6 +95,7 @@ def config_despesas_por_classe(df):
     df["Valor Realizado"] = df["Valor Realizado"].astype(float)
 
     df["Orçamento - Realiz."] = df["Orçamento"] - df["Valor Realizado"]
+    
     df["Atingimento do Orçamento"] = (df["Valor Realizado"] / df["Orçamento"]) * 100
 
     df = format_columns_brazilian(
@@ -88,12 +120,13 @@ def config_despesas_por_classe(df):
     ]:
         df.loc[df["Class. Contábil 2"] == "", col] = ""
 
-    df.loc[df["Atingimento do Orçamento"] == "inf%", "Atingimento do Orçamento"] = (
+    df.loc[df["Orçamento"] == '0,00', "Atingimento do Orçamento"] = (
         "Não há Orçamento"
     )
+    df = df[~((df['Orçamento'] == '0,00') & (df['Valor Realizado'] == '0,00'))]
+    df = df[~((df['Class. Contábil 1'] != '') & (df['Class. Contábil 1'].shift(-1) != ''))]
 
     return df
-
 
 def config_despesas_detalhado(df):
     df = df.rename(

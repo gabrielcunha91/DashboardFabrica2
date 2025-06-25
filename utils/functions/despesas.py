@@ -53,32 +53,6 @@ def config_despesas_por_classe(df):
     df['Classificacao_Contabil_1'] = pd.Categorical(df['Classificacao_Contabil_1'], categories=ordem_DRE, ordered=True)
     df = df.sort_values('Classificacao_Contabil_1', na_position='last')
     
-    formatted_rows = []
-    current_category = None
-
-    for _, row in df.iterrows():
-        
-		# Coloca as categorias no formato agregado
-        if row["Classificacao_Contabil_1"] != current_category:
-            current_category = row["Classificacao_Contabil_1"]
-            formatted_rows.append(
-                {
-                    "Classificacao_Contabil_1": current_category,
-                    "Classificacao_Contabil_2": "",
-                    "Orcamento": None,
-                    "Valor_Liquido": None,
-                }
-            )
-        formatted_rows.append(
-            {
-                "Classificacao_Contabil_1": "",
-                "Classificacao_Contabil_2": row["Classificacao_Contabil_2"],
-                "Orcamento": row["Orcamento"],
-                "Valor_Liquido": row["Valor_Liquido"],
-            }
-        )
-
-    df = pd.DataFrame(formatted_rows)
     df = df.rename(
         columns={
             "Classificacao_Contabil_1": "Class. Contábil 1",
@@ -87,45 +61,14 @@ def config_despesas_por_classe(df):
             "Valor_Liquido": "Valor Realizado",
         }
     )
-
-    df["Orçamento"] = pd.to_numeric(df["Orçamento"], errors="coerce")
-    df["Valor Realizado"] = pd.to_numeric(df["Valor Realizado"], errors="coerce")
-    df.fillna({"Orçamento": 0, "Valor Realizado": 0}, inplace=True)
+    
     df["Orçamento"] = df["Orçamento"].astype(float)
     df["Valor Realizado"] = df["Valor Realizado"].astype(float)
 
     df["Orçamento - Realiz."] = df["Orçamento"] - df["Valor Realizado"]
     
     df["Atingimento do Orçamento"] = (df["Valor Realizado"] / df["Orçamento"]) * 100
-
-    df = format_columns_brazilian(
-        df,
-        [
-            "Orçamento",
-            "Valor Realizado",
-            "Orçamento - Realiz.",
-            "Atingimento do Orçamento",
-        ],
-    )
-    df["Atingimento do Orçamento"] = df["Atingimento do Orçamento"].apply(
-        lambda x: x + "%"
-    )
-
-    # Remover zeros nas linhas das classes
-    for col in [
-        "Orçamento",
-        "Valor Realizado",
-        "Orçamento - Realiz.",
-        "Atingimento do Orçamento",
-    ]:
-        df.loc[df["Class. Contábil 2"] == "", col] = ""
-
-    df.loc[df["Orçamento"] == '0,00', "Atingimento do Orçamento"] = (
-        "Não há Orçamento"
-    )
-    df = df[~((df['Orçamento'] == '0,00') & (df['Valor Realizado'] == '0,00'))]
-    df = df[~((df['Class. Contábil 1'] != '') & (df['Class. Contábil 1'].shift(-1) != ''))]
-
+    
     return df
 
 def config_despesas_detalhado(df):

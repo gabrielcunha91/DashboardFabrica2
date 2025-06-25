@@ -46,37 +46,96 @@ Despesas['Data_Emissao'] = Despesas['Data_Emissao'].fillna(Despesas['Primeiro_Di
 Despesas = filtrar_por_datas(Despesas, data_inicio, data_fim, 'Data_Emissao')
 Despesas = filtrar_por_classe_selecionada(Despesas, 'Loja', lojas_selecionadas)
 despesasConfig = config_despesas_por_classe(Despesas)
-despesasConfigStyled = despesasConfig.style.map(highlight_values, subset=['Orçamento - Realiz.'])
 
-with st.container(border=True):
-  col0, col1, col2 = st.columns([1, 10, 1])
-  with col1:
-    st.subheader("Despesas:")
-    st.dataframe(despesasConfigStyled, height=500, use_container_width=True, hide_index=True)
+tab1, tab2 = st.tabs(['Despesas', 'Despesas Detalhadas'])
+
+with tab1:
+    with st.container(border=True):
+        col0, col1, col2 = st.columns([1, 15, 1])
+        with col1:
+            st.write("")
+            st.markdown("## Despesas")
+            st.write("")
+            despesasConfig = despesasConfig[~((despesasConfig['Orçamento'] == 0) & (despesasConfig['Valor Realizado'] == 0))]
+            lista_class_contabil_1 = despesasConfig['Class. Contábil 1'].dropna().unique().tolist()
+            altura_linha = 35
+            for classe in lista_class_contabil_1:
+                df_classe = despesasConfig[despesasConfig['Class. Contábil 1'] == classe]
+                df_classe = df_classe.drop(columns=['Class. Contábil 1']).reset_index(drop=True)
+                orcamento_total = df_classe['Orçamento'].sum()
+                realizado_total = df_classe['Valor Realizado'].sum()
+                orc_realiz_total = df_classe['Orçamento - Realiz.'].sum()
+                if orcamento_total != 0:
+                    atingimento = (realizado_total / orcamento_total) * 100
+                else:
+                    atingimento = "Não há orçamento"
+                linha_total = pd.DataFrame({
+					"Class. Contábil 2": ["Total"],
+					"Orçamento": [orcamento_total],
+					"Valor Realizado": [realizado_total],
+					"Orçamento - Realiz.": [orc_realiz_total],
+					"Atingimento do Orçamento": [atingimento],
+				})
+
+
+                df_classe = pd.concat([df_classe, linha_total], ignore_index=True)
+                df_classe = format_columns_brazilian(
+                    df_classe,
+                    [
+                        "Orçamento",
+                        "Valor Realizado",
+                        "Orçamento - Realiz.",
+                        "Atingimento do Orçamento",
+                    ]
+                )
+                df_classe["Atingimento do Orçamento"] = df_classe["Atingimento do Orçamento"].apply(
+					lambda x: f"{x} %"
+				)
+                
+                df_classe.loc[df_classe["Orçamento"] == '0,00', "Atingimento do Orçamento"] = (
+					"Não há Orçamento"
+				)
+                
+                df_despesas_styled = df_classe.style.map(highlight_values, subset=['Orçamento - Realiz.'])
+
+                st.markdown(f"#### {classe}")
+                st.dataframe(
+                    df_despesas_styled,
+                    height=altura_linha * len(df_classe) + 35,
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                
 
 despesaDetalhadaConfig = config_despesas_detalhado(despesasDetalhadas)
 
 classificacoes1 = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 1')
 
-with st.container(border=True):
-  col0, col1, col2 = st.columns([1, 15, 1])
-  with col1:
-    col3, col4, col5, col6 = st.columns([2, 1, 1, 1])
-    with col3:
-      st.subheader("Despesas Detalhadas:")
-    with col4:
-      classificacoes_1_selecionadas = st.multiselect(label='Selecione Classificação Contábil 1', options=classificacoes1)
-      despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 1', classificacoes_1_selecionadas)
-    with col5:
-      classificacoes2 = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2')
-      classificacoes_2_selecionadas = st.multiselect(label='Selecione Classificação Contábil 2', options=classificacoes2)
-      despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2', classificacoes_2_selecionadas)
-    with col6:
-      fornecedores = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor')
-      fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores)
-      despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor', fornecedores_selecionados)
-    valorTotal = despesaDetalhadaConfig['Valor'].sum()
-    valorTotal = format_brazilian(valorTotal)
-    despesaDetalhadaConfig = format_columns_brazilian(despesaDetalhadaConfig, ['Valor'])
-    st.dataframe(despesaDetalhadaConfig, height=500, use_container_width=True, hide_index=True)
-    st.write('Valor Total = R$', valorTotal)
+with tab2:
+  with st.container(border=True):
+    st.write("")
+    col0, col1, col2 = st.columns([1, 15, 1])
+    with col1:
+      col3, col4, col5, col6 = st.columns([2, 1, 1, 1], vertical_alignment='center')
+      with col3:
+        st.markdown("## Despesas Detalhadas")
+      with col4:
+        classificacoes_1_selecionadas = st.multiselect(label='Selecione Classificação Contábil 1', options=classificacoes1)
+        despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 1', classificacoes_1_selecionadas)
+      with col5:
+        classificacoes2 = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2')
+        classificacoes_2_selecionadas = st.multiselect(label='Selecione Classificação Contábil 2', options=classificacoes2)
+        despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2', classificacoes_2_selecionadas)
+      with col6:
+        fornecedores = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor')
+        fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores)
+        despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor', fornecedores_selecionados)
+      st.write("")
+      valorTotal = despesaDetalhadaConfig['Valor'].sum()
+      valorTotal = format_brazilian(valorTotal)
+      despesaDetalhadaConfig = format_columns_brazilian(despesaDetalhadaConfig, ['Valor'])
+      despesaDetalhadaConfig = despesaDetalhadaConfig.rename(columns={'Doc_Serie': 'Doc. Série'})
+      despesaDetalhadaConfig = despesaDetalhadaConfig[['ID Despesa', 'Loja', 'Class. Contábil 1', 'Class. Contábil 2',  'Fornecedor', 'Doc. Série', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Status',  'Valor' ]]
+      st.dataframe(despesaDetalhadaConfig, height=500, use_container_width=True, hide_index=True)
+      st.markdown(f"**Valor Total = R$ {valorTotal}**")

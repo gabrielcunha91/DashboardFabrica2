@@ -53,58 +53,16 @@ with tab1:
     with st.container(border=True):
         col0, col1, col2 = st.columns([1, 15, 1])
         with col1:
-            st.write("")
-            st.markdown("## Despesas")
-            st.write("")
-            despesasConfig = despesasConfig[~((despesasConfig['Orçamento'] == 0) & (despesasConfig['Valor Realizado'] == 0))]
-            lista_class_contabil_1 = despesasConfig['Class. Contábil 1'].dropna().unique().tolist()
-            altura_linha = 35
-            for classe in lista_class_contabil_1:
-                df_classe = despesasConfig[despesasConfig['Class. Contábil 1'] == classe]
-                df_classe = df_classe.drop(columns=['Class. Contábil 1']).reset_index(drop=True)
-                orcamento_total = df_classe['Orçamento'].sum()
-                realizado_total = df_classe['Valor Realizado'].sum()
-                orc_realiz_total = df_classe['Orçamento - Realiz.'].sum()
-                if orcamento_total != 0:
-                    atingimento = (realizado_total / orcamento_total) * 100
-                else:
-                    atingimento = "Não há orçamento"
-                linha_total = pd.DataFrame({
-					"Class. Contábil 2": ["Total"],
-					"Orçamento": [orcamento_total],
-					"Valor Realizado": [realizado_total],
-					"Orçamento - Realiz.": [orc_realiz_total],
-					"Atingimento do Orçamento": [atingimento],
-				})
-
-
-                df_classe = pd.concat([df_classe, linha_total], ignore_index=True)
-                df_classe = format_columns_brazilian(
-                    df_classe,
-                    [
-                        "Orçamento",
-                        "Valor Realizado",
-                        "Orçamento - Realiz.",
-                        "Atingimento do Orçamento",
-                    ]
-                )
-                df_classe["Atingimento do Orçamento"] = df_classe["Atingimento do Orçamento"].apply(
-					lambda x: f"{x} %"
-				)
-                
-                df_classe.loc[df_classe["Orçamento"] == '0,00', "Atingimento do Orçamento"] = (
-					"Não há Orçamento"
-				)
-                
-                df_despesas_styled = df_classe.style.map(highlight_values, subset=['Orçamento - Realiz.'])
-
-                st.markdown(f"#### {classe}")
-                st.dataframe(
-                    df_despesas_styled,
-                    height=altura_linha * len(df_classe) + 35,
-                    use_container_width=True,
-                    hide_index=True
-                )
+            
+            col1, col2= st.columns([4, 1], vertical_alignment='center')
+            with col1:
+              st.write("")
+              st.markdown("## Despesas")
+              st.write("")
+            with col2:
+              exibir_detalhamento = st.toggle(label='Exibir Detalhamento', key='toggle_despesas', value=True)
+            
+            exibir_despesas(despesasConfig, exibir_detalhamento=exibir_detalhamento)
 
                 
 

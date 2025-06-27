@@ -46,37 +46,54 @@ Despesas['Data_Emissao'] = Despesas['Data_Emissao'].fillna(Despesas['Primeiro_Di
 Despesas = filtrar_por_datas(Despesas, data_inicio, data_fim, 'Data_Emissao')
 Despesas = filtrar_por_classe_selecionada(Despesas, 'Loja', lojas_selecionadas)
 despesasConfig = config_despesas_por_classe(Despesas)
-despesasConfigStyled = despesasConfig.style.map(highlight_values, subset=['Orçamento - Realiz.'])
 
-with st.container(border=True):
-  col0, col1, col2 = st.columns([1, 10, 1])
-  with col1:
-    st.subheader("Despesas:")
-    st.dataframe(despesasConfigStyled, height=500, use_container_width=True, hide_index=True)
+tab1, tab2 = st.tabs(['Despesas', 'Despesas Detalhadas'])
+
+with tab1:
+    with st.container(border=True):
+        col0, col1, col2 = st.columns([1, 15, 1])
+        with col1:
+            
+            col1, col2= st.columns([4, 1], vertical_alignment='center')
+            with col1:
+              st.write("")
+              st.markdown("## Despesas")
+              st.write("")
+            with col2:
+              exibir_detalhamento = st.toggle(label='Exibir Detalhamento', key='toggle_despesas', value=True)
+            
+            exibir_despesas(despesasConfig, exibir_detalhamento=exibir_detalhamento)
+
+                
 
 despesaDetalhadaConfig = config_despesas_detalhado(despesasDetalhadas)
 
 classificacoes1 = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 1')
 
-with st.container(border=True):
-  col0, col1, col2 = st.columns([1, 15, 1])
-  with col1:
-    col3, col4, col5, col6 = st.columns([2, 1, 1, 1])
-    with col3:
-      st.subheader("Despesas Detalhadas:")
-    with col4:
-      classificacoes_1_selecionadas = st.multiselect(label='Selecione Classificação Contábil 1', options=classificacoes1)
-      despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 1', classificacoes_1_selecionadas)
-    with col5:
-      classificacoes2 = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2')
-      classificacoes_2_selecionadas = st.multiselect(label='Selecione Classificação Contábil 2', options=classificacoes2)
-      despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2', classificacoes_2_selecionadas)
-    with col6:
-      fornecedores = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor')
-      fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores)
-      despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor', fornecedores_selecionados)
-    valorTotal = despesaDetalhadaConfig['Valor'].sum()
-    valorTotal = format_brazilian(valorTotal)
-    despesaDetalhadaConfig = format_columns_brazilian(despesaDetalhadaConfig, ['Valor'])
-    st.dataframe(despesaDetalhadaConfig, height=500, use_container_width=True, hide_index=True)
-    st.write('Valor Total = R$', valorTotal)
+with tab2:
+  with st.container(border=True):
+    st.write("")
+    col0, col1, col2 = st.columns([1, 15, 1])
+    with col1:
+      col3, col4, col5, col6 = st.columns([2, 1, 1, 1], vertical_alignment='center')
+      with col3:
+        st.markdown("## Despesas Detalhadas")
+      with col4:
+        classificacoes_1_selecionadas = st.multiselect(label='Selecione Classificação Contábil 1', options=classificacoes1)
+        despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 1', classificacoes_1_selecionadas)
+      with col5:
+        classificacoes2 = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2')
+        classificacoes_2_selecionadas = st.multiselect(label='Selecione Classificação Contábil 2', options=classificacoes2)
+        despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Class. Contábil 2', classificacoes_2_selecionadas)
+      with col6:
+        fornecedores = preparar_dados_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor')
+        fornecedores_selecionados = st.multiselect(label='Selecione Fornecedores', options=fornecedores)
+        despesaDetalhadaConfig = filtrar_por_classe_selecionada(despesaDetalhadaConfig, 'Fornecedor', fornecedores_selecionados)
+      st.write("")
+      valorTotal = despesaDetalhadaConfig['Valor'].sum()
+      valorTotal = format_brazilian(valorTotal)
+      despesaDetalhadaConfig = format_columns_brazilian(despesaDetalhadaConfig, ['Valor'])
+      despesaDetalhadaConfig = despesaDetalhadaConfig.rename(columns={'Doc_Serie': 'Doc. Série'})
+      despesaDetalhadaConfig = despesaDetalhadaConfig[['ID Despesa', 'Loja', 'Class. Contábil 1', 'Class. Contábil 2',  'Fornecedor', 'Doc. Série', 'Data Emissão', 'Data Vencimento', 'Descrição', 'Status',  'Valor' ]]
+      st.dataframe(despesaDetalhadaConfig, height=500, use_container_width=True, hide_index=True)
+      st.markdown(f"**Valor Total = R$ {valorTotal}**")

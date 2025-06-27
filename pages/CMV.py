@@ -197,6 +197,7 @@ with colB:
     card_cmv('CMV Percentual Geral', f'{cmv_percentual_geral} %', is_estoque=False)
 
 st.divider()
+st.markdown('<div style="page-break-before: always;"></div>', unsafe_allow_html=True)
 
 with st.container(border=True):
   col0, col1, col2 = st.columns([1, 12, 1])
@@ -351,7 +352,3 @@ sections = {
         'CMV Percentual Geral': f'{cmv_percentual_geral} %'
     }
 }
-
-# Botão para gerar PDF
-pdf_buffer = gerar_pdf_reportlab(sections, data_inicio, data_fim, lojas_selecionadas, df_compras, df_variacao_estoque, df_producao_total, df_transf_e_gastos)
-st.download_button("Baixar Relatório", pdf_buffer, file_name="relatorio_cmv.pdf", mime="application/pdf")

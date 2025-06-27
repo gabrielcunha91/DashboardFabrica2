@@ -230,10 +230,11 @@ def card_cmv(titulo, valor, is_estoque=False, is_percentual=False):
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        min-height: 129px
+        min-height: 129px;
+        text-align: center;
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
-        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: red">{valor}</div>
+        <div style="font-size: 20px; font-weight: 500; margin-top: 4px; color: red">{valor}</div>
     </div>
     """
 
@@ -250,10 +251,11 @@ def card_cmv(titulo, valor, is_estoque=False, is_percentual=False):
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        min-height: 129px
+        min-height: 129px;
+        text-align: center;
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
-        <div style="font-size: 24px; font-weight: 500; margin-top: 4px; color: green">{valor}</div>
+        <div style="font-size: 20px; font-weight: 500; margin-top: 4px; color: green">{valor}</div>
     </div>
     """
   else:
@@ -269,13 +271,13 @@ def card_cmv(titulo, valor, is_estoque=False, is_percentual=False):
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        min-height: 129px
+        min-height: 129px;
+        text-align: center;
     ">
         <div style="font-size: 16px; font-weight: bold;">{titulo}</div>
-        <div style="font-size: 24px; font-weight: 500; margin-top: 4px;">{valor}</div>
+        <div style="font-size: 20px; font-weight: 500; margin-top: 4px;">{valor}</div>
     </div>
     """
-
   st.markdown(html, unsafe_allow_html=True)
 
 

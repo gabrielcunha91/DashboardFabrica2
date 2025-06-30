@@ -55,21 +55,29 @@ def main():
     with col2:
       st.subheader("Valores Líquidos:")
       Grafico_Donut(OrcamentoFaturamento)
+  
+  st.markdown('<div style="page-break-before: always;"></div>', unsafe_allow_html=True)
 
   FaturamentoZig = config_Faturamento_zig(lojas_selecionadas, data_inicio, data_fim)
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
-      st.subheader("Top 10 Alimentos:")
-      st.markdown("*Sem delivery")
+      col1, col2 = st.columns([6, 1], vertical_alignment='bottom')
+      with col1:
+        st.subheader("Top 10 Alimentos:")
+      with col2:
+        st.markdown("*Sem delivery")
       top_dez(FaturamentoZig, 'Alimentos')
 
   with st.container(border=True):
     col0, col1, col2 = st.columns([1, 10, 1])
     with col1:
-      st.subheader("Top 10 Bebidas:")
-      st.markdown("*Sem delivery")
+      col1, col2 = st.columns([6, 1], vertical_alignment='bottom')
+      with col1:
+        st.subheader("Top 10 Bebidas:")
+      with col2:
+        st.markdown("*Sem delivery")
       top_dez(FaturamentoZig, 'Bebidas')
 
   with st.container(border=True):

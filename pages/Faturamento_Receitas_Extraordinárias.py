@@ -48,6 +48,8 @@ with st.container(border=True):
     st.dataframe(Totais, use_container_width=True, hide_index=True)
 
 
+st.markdown('<div style="page-break-before: always;"></div>', unsafe_allow_html=True)
+
 classificacoes = ['Eventos', 'Coleta de Óleo', 'Bilheteria', 'Patrocínio', 'Premium Corp']
 
 with st.container(border=True):

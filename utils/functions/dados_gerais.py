@@ -191,3 +191,13 @@ def format_date_brazilian(df, date_column):
 def highlight_values(val):
   color = 'red' if '-' in val else 'green'
   return f'color: {color}'
+
+
+def highlight_values_inverse(val):
+  if '-' in val:
+    color = 'green' 
+  elif val == '0,00' or val == 'nan':
+    color = 'black'
+  else:
+    color = 'red'
+  return f'color: {color}'

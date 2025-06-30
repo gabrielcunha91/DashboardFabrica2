@@ -283,13 +283,15 @@ def config_diferenca_estoque(df_valoracao_estoque_atual, df_valoracao_estoque_me
   df_diferenca_estoque['Quantidade_Mes_Anterior'] = df_diferenca_estoque['Quantidade_Mes_Anterior'].astype(float)
   df_diferenca_estoque['Preço Mês Atual'] = df_diferenca_estoque['Valor_em_Estoque_Atual'] / df_diferenca_estoque['Quantidade_Atual']
   df_diferenca_estoque['Preço Mês Anterior'] = df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior'] / df_diferenca_estoque['Quantidade_Mes_Anterior']
+  df_diferenca_estoque['Diferença Preço'] = round(df_diferenca_estoque['Preço Mês Atual'] - df_diferenca_estoque['Preço Mês Anterior'], 2)
   df_diferenca_estoque['Diferenca_Estoque'] = df_diferenca_estoque['Valor_em_Estoque_Atual'] - df_diferenca_estoque['Valor_em_Estoque_Mes_Anterior']
   df_diferenca_estoque.sort_values(by=['Diferenca_Estoque', 'Categoria'], inplace=True)
-  df_diferenca_estoque = format_columns_brazilian(df_diferenca_estoque, ['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior', 'Diferenca_Estoque', 'Preço Mês Atual', 'Preço Mês Anterior'])
+  df_diferenca_estoque = format_columns_brazilian(df_diferenca_estoque, ['Quantidade_Atual', 'Quantidade_Mes_Anterior', 'Valor_em_Estoque_Atual', 'Valor_em_Estoque_Mes_Anterior', 'Diferenca_Estoque', 'Preço Mês Atual', 'Preço Mês Anterior', 'Diferença Preço'])
   df_diferenca_estoque.drop(['ID_Loja', 'ID_Nivel_4'], axis=1, inplace=True)
   df_diferenca_estoque.rename(columns={'Quantidade_Atual': 'Quantidade Atual', 'Quantidade_Mes_Anterior': 'Quantidade Mes Anterior', 'Diferenca_Estoque': 'Diferença Valor Estoque', 'Valor_em_Estoque_Atual': 'Valor em Estoque Atual', 'Valor_em_Estoque_Mes_Anterior': 'Valor em Estoque Mes Anterior', 'Unidade_Medida': 'Unidade de Medida', 'ID_Insumo': 'ID Insumo'}, inplace=True)
-  df_diferenca_estoque = df_diferenca_estoque[['Categoria', 'ID Insumo', 'Insumo', 'Unidade de Medida','Preço Mês Anterior', 'Quantidade Mes Anterior', 'Valor em Estoque Mes Anterior', 'Preço Mês Atual', 'Quantidade Atual', 'Valor em Estoque Atual', 'Diferença Valor Estoque']]
-      
+  df_diferenca_estoque = df_diferenca_estoque[['Categoria', 'ID Insumo', 'Insumo', 'Unidade de Medida','Preço Mês Anterior', 'Quantidade Mes Anterior', 'Valor em Estoque Mes Anterior', 'Preço Mês Atual', 'Quantidade Atual', 'Valor em Estoque Atual', 'Diferença Preço', 'Diferença Valor Estoque']]
+  df_diferenca_estoque = df_diferenca_estoque.style.map(highlight_values_inverse, subset=['Diferença Preço'])
+
   return df_diferenca_estoque
 
 

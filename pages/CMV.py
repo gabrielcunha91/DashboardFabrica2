@@ -318,37 +318,3 @@ with st.container(border=True):
       st.dataframe(df_transf_entradas, use_container_width=True, hide_index=True)
     with st.expander("Detalhes Transferências Saídas"):
       st.dataframe(df_transf_saidas, use_container_width=True, hide_index=True)
-
-# Seções de cards
-sections = {
-    "Faturamento": {
-        'Faturamento Alimentos': faturamento_bruto_alimentos,
-        'Faturamento Bebidas': faturamento_bruto_bebidas,
-        'Faturamento Alim. Delivery': faturamento_alimentos_delivery,
-        'Faturamento Beb. Delivery': faturamento_bebidas_delivery,
-        'Faturamento Alim. Eventos': faturamento_alimentos_eventos,
-        'Faturamento Beb. Eventos': faturamento_bebidas_eventos
-    },
-    "Estoque e Produção": {
-        'Δ Estoque Alimentos': variacao_estoque_alimentos,
-        'Δ Estoque Bebidas': variacao_estoque_bebidas,
-        'Δ Produção Alimentos': diferenca_producao_alimentos,
-        'Δ Produção Bebidas': diferenca_producao_bebidas,
-        'Consumo Interno': consumo_interno
-    },
-    "Compras, Entradas e Saídas de A&B": {
-        'Compras Alimentos': compras_alimentos,
-        'Compras Bebidas': compras_bebidas,
-        'Entradas Alimentos': entrada_alimentos,
-        'Entradas Bebidas': entrada_bebidas,
-        'Saídas Alimentos': saida_alimentos,
-        'Saídas Bebidas': saida_bebidas
-    },
-    "CMV": {
-        'CMV Alimentos': cmv_alimentos,
-        'CMV Bebidas': cmv_bebidas,
-        'CMV Percentual Alimentos': f'{cmv_percentual_alim} %',
-        'CMV Percentual Bebidas': f'{cmv_percentual_bebidas} %',
-        'CMV Percentual Geral': f'{cmv_percentual_geral} %'
-    }
-}

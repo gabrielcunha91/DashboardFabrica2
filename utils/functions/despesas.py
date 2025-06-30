@@ -47,7 +47,7 @@ def config_despesas_por_classe(df):
 
     df = df.groupby(
         ["Classificacao_Contabil_1", "Classificacao_Contabil_2"], as_index=False
-    ).agg({"Orcamento": "sum", "Valor_Liquido": "sum"})
+    ).agg({"Orcamento": "first", "Valor_Liquido": "sum"})
 
     df["Orcamento"] = df["Orcamento"].fillna(0)
     df['Classificacao_Contabil_1'] = pd.Categorical(df['Classificacao_Contabil_1'], categories=ordem_DRE, ordered=True)
@@ -110,38 +110,6 @@ def config_despesas_detalhado(df):
     ]
 
     return df[cols]
-
-
-def df_ordem_DRE(df):
-    ordem_DRE = [
-        "Custo Artístico Geral",
-        "Custos de Eventos",
-        "Deduções sobre Venda",
-        "Mão de Obra - PJ"
-        "Mão de Obra - Benefícios",
-        "Mão de Obra - Extra",
-        "Mão de Obra - Salários",
-        "Custo de Ocupação",
-        "Utilidades",
-        "Informática e TI",
-        "Manutenção",
-        "Despesas com Transporte / Hospedagem",
-        "Marketing",
-        "Serviços de Terceiros",
-        "Locação de Equipamentos",
-        "Despesas Financeiras",
-        "Investimento - CAPEX",
-        "Dividendos e Remunerações Variáveis",
-        "Gorjeta",
-		"Endividamento"
-    ]
-    
-	# Dataframe com as classificações na ordem da DRE
-    df_ordenado = pd.DataFrame()
-    for idx, tuple in df.iterrows():
-        if tuple['Class. Contábil 1'] in ordem_DRE:
-            df_ordenado = pd.concat([df_ordenado, pd.DataFrame([tuple])], ignore_index=True)
-         
 
 def exibir_despesas(despesasConfig, exibir_detalhamento=True, layout_impressao=False):
     despesasConfig = despesasConfig[~((despesasConfig['Orçamento'] == 0) & (despesasConfig['Valor Realizado'] == 0))]

@@ -28,7 +28,6 @@ def config_sidebar():
       st.sidebar.subheader('Fluxo de caixa:')
       st.sidebar.page_link("pages/Previsao_Faturamento.py", label="Previsão de Faturamento")
       st.sidebar.page_link("pages/Projecao_fluxo_caixa.py", label="Projeção")
-      st.sidebar.page_link("pages/Conciliacao_fluxo_caixa.py", label="Conciliação")
     elif 'Aprovador' in permissao:
       st.sidebar.title("Menu")
       st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")

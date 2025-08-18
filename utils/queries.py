@@ -753,107 +753,143 @@ ORDER BY Data ASC
 
 def GET_RECEITAS_EXTRAORD_FLUXO_CAIXA():
   return dataframe_query(f'''
-  SELECT
-    tc.DATA AS Data,
-    te.NOME_FANTASIA AS Empresa,
-    SUM(vpa.VALOR_PARCELA) AS Receita_Projetada_Extraord
-  FROM
-    T_CALENDARIO tc
-  LEFT JOIN View_Parcelas_Agrupadas vpa ON tc.DATA = vpa.DATA_VENCIMENTO
-  LEFT JOIN T_EMPRESAS te ON vpa.FK_EMPRESA = te.ID
-  WHERE
-    vpa.DATA_VENCIMENTO IS NOT NULL
-    AND vpa.DATA_RECEBIMENTO IS NULL
-    AND Data >= CURDATE() 
-    AND Data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
-    AND te.NOME_FANTASIA IS NOT NULL
-  GROUP BY
-    te.NOME_FANTASIA,
-    vpa.DATA_VENCIMENTO
-  ORDER BY
-    te.NOME_FANTASIA,
-    vpa.DATA_VENCIMENTO,
-    Data ASC;
+    SELECT
+      tc.DATA AS Data,
+      te.NOME_FANTASIA AS Empresa,
+      SUM(parcelas.VALOR_PARCELA) AS Receita_Projetada_Extraord
+    FROM
+        T_CALENDARIO tc
+    LEFT JOIN (
+        -- Subquery unificada de parcelas e eventos
+        SELECT CONCAT('R-', vpa.ID) AS ID_UNIFICADO,	
+              vpa.FK_EMPRESA,
+              vpa.FK_CLIENTE,
+              vpa.DATA_VENCIMENTO,
+              vpa.DATA_RECEBIMENTO,
+              vpa.VALOR_PARCELA
+        FROM View_Parcelas_Agrupadas vpa
+
+        UNION ALL
+
+        SELECT CONCAT('E-', tep.ID) AS ID_UNIFICADO,
+              te.ID AS FK_EMPRESA,
+              trec.ID AS FK_CLIENTE,
+              tpep.DATA_VENCIMENTO_PARCELA AS DATA_VENCIMENTO,
+              tpep.DATA_RECEBIMENTO_PARCELA AS DATA_RECEBIMENTO,
+              tpep.VALOR_PARCELA
+        FROM T_PARCELAS_EVENTOS_PRICELESS tpep
+        LEFT JOIN T_EVENTOS_PRICELESS tep ON tep.ID = tpep.FK_EVENTO_PRICELESS
+        LEFT JOIN T_EMPRESAS te ON te.ID = tep.FK_EMPRESA
+        LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLIENTE trec ON trec.ID = tep.FK_CLIENTE
+    ) AS parcelas ON tc.DATA = parcelas.DATA_VENCIMENTO
+    LEFT JOIN T_EMPRESAS te ON parcelas.FK_EMPRESA = te.ID
+    WHERE
+        parcelas.DATA_VENCIMENTO IS NOT NULL
+        AND parcelas.DATA_RECEBIMENTO IS NULL
+        AND tc.DATA >= CURDATE() 
+        AND tc.DATA < DATE_ADD(CURDATE(), INTERVAL 14 DAY)
+        AND te.NOME_FANTASIA IS NOT NULL
+    GROUP BY
+        te.NOME_FANTASIA,
+        parcelas.DATA_VENCIMENTO
+    ORDER BY
+        te.NOME_FANTASIA,
+        parcelas.DATA_VENCIMENTO,
+        Data ASC;
 ''')
 
 
 def GET_RECEITAS_EXTRAORD_DO_DIA(data):
   return dataframe_query(f'''
-  WITH vpa AS 
-  (SELECT
-    tre.ID,
-    tre.FK_EMPRESA,
-    tre.FK_CLIENTE,
-    tre.OBSERVACOES,
-    tre.FK_CLASSIFICACAO,
-    tre.DATA_VENCIMENTO_PARCELA_1 AS DATA_VENCIMENTO,
-    tre.DATA_RECEBIMENTO_PARCELA_1 AS DATA_RECEBIMENTO,
-    tre.VALOR_PARCELA_1 AS VALOR_PARCELA
-  FROM
-    T_RECEITAS_EXTRAORDINARIAS tre
-  UNION ALL
-  SELECT
-    tre.ID,
-    tre.FK_EMPRESA,
-    tre.FK_CLIENTE,
-    tre.OBSERVACOES,
-    tre.FK_CLASSIFICACAO,
-    tre.DATA_VENCIMENTO_PARCELA_2 AS DATA_VENCIMENTO,
-    tre.DATA_RECEBIMENTO_PARCELA_2 AS DATA_RECEBIMENTO,
-    tre.VALOR_PARCELA_2 AS VALOR_PARCELA
-  FROM
-    T_RECEITAS_EXTRAORDINARIAS tre
-  UNION ALL
-  SELECT
-    tre.ID,
-    tre.FK_EMPRESA,
-    tre.FK_CLIENTE,
-    tre.OBSERVACOES,
-    tre.FK_CLASSIFICACAO,
-    tre.DATA_VENCIMENTO_PARCELA_3 AS DATA_VENCIMENTO,
-    tre.DATA_RECEBIMENTO_PARCELA_3 AS DATA_RECEBIMENTO,
-    tre.VALOR_PARCELA_3 AS VALOR_PARCELA
-  FROM
-    T_RECEITAS_EXTRAORDINARIAS tre
-  UNION ALL
-  SELECT
-    tre.ID,
-    tre.FK_EMPRESA,
-    tre.FK_CLIENTE,
-    tre.OBSERVACOES,
-    tre.FK_CLASSIFICACAO,
-    tre.DATA_VENCIMENTO_PARCELA_4 AS DATA_VENCIMENTO,
-    tre.DATA_RECEBIMENTO_PARCELA_4 AS DATA_RECEBIMENTO,
-    tre.VALOR_PARCELA_4 AS VALOR_PARCELA
-  FROM
-    T_RECEITAS_EXTRAORDINARIAS tre
-  UNION ALL
-  SELECT
-    tre.ID,
-    tre.FK_EMPRESA,
-    tre.FK_CLIENTE,
-    tre.OBSERVACOES,
-    tre.FK_CLASSIFICACAO,
-    tre.DATA_VENCIMENTO_PARCELA_5 AS DATA_VENCIMENTO,
-    tre.DATA_RECEBIMENTO_PARCELA_5 AS DATA_RECEBIMENTO,
-    tre.VALOR_PARCELA_5 AS VALOR_PARCELA
-  FROM
-    T_RECEITAS_EXTRAORDINARIAS tre)
   SELECT 
-    vpa.ID AS ID_Receita_Extraordinária,
+    vpa.ID AS ID_Receita_Extraordinária,
     te.NOME_FANTASIA AS Empresa,
     trec.NOME AS Nome_Cliente,
-    vpa.OBSERVACOES AS Observações,
-    trec2.CLASSIFICACAO AS Classificação,
+    vpa.OBSERVACOES AS Observações,
+    trec2.CLASSIFICACAO AS Classificação,
     vpa.DATA_VENCIMENTO AS Data_Vencimento_Parcela,
     vpa.VALOR_PARCELA AS Valor_Parcela
-  FROM vpa
-  LEFT JOIN T_EMPRESAS te ON vpa.FK_EMPRESA = te.ID
-  LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLIENTE trec ON vpa.FK_CLIENTE = trec.ID
-  LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLASSIFICACAO trec2 ON vpa.FK_CLASSIFICACAO = trec2.ID 
-  WHERE
+FROM (
+    SELECT
+        tre.ID,
+        tre.FK_EMPRESA,
+        tre.FK_CLIENTE,
+        tre.OBSERVACOES,
+        tre.FK_CLASSIFICACAO,
+        tre.DATA_VENCIMENTO_PARCELA_1 AS DATA_VENCIMENTO,
+        tre.DATA_RECEBIMENTO_PARCELA_1 AS DATA_RECEBIMENTO,
+        tre.VALOR_PARCELA_1 AS VALOR_PARCELA
+    FROM T_RECEITAS_EXTRAORDINARIAS tre
+    UNION ALL
+    SELECT
+        tre.ID,
+        tre.FK_EMPRESA,
+        tre.FK_CLIENTE,
+        tre.OBSERVACOES,
+        tre.FK_CLASSIFICACAO,
+        tre.DATA_VENCIMENTO_PARCELA_2 AS DATA_VENCIMENTO,
+        tre.DATA_RECEBIMENTO_PARCELA_2 AS DATA_RECEBIMENTO,
+        tre.VALOR_PARCELA_2 AS VALOR_PARCELA
+    FROM T_RECEITAS_EXTRAORDINARIAS tre
+    UNION ALL
+    SELECT
+        tre.ID,
+        tre.FK_EMPRESA,
+        tre.FK_CLIENTE,
+        tre.OBSERVACOES,
+        tre.FK_CLASSIFICACAO,
+        tre.DATA_VENCIMENTO_PARCELA_3 AS DATA_VENCIMENTO,
+        tre.DATA_RECEBIMENTO_PARCELA_3 AS DATA_RECEBIMENTO,
+        tre.VALOR_PARCELA_3 AS VALOR_PARCELA
+    FROM T_RECEITAS_EXTRAORDINARIAS tre
+    UNION ALL
+    SELECT
+        tre.ID,
+        tre.FK_EMPRESA,
+        tre.FK_CLIENTE,
+        tre.OBSERVACOES,
+        tre.FK_CLASSIFICACAO,
+        tre.DATA_VENCIMENTO_PARCELA_4 AS DATA_VENCIMENTO,
+        tre.DATA_RECEBIMENTO_PARCELA_4 AS DATA_RECEBIMENTO,
+        tre.VALOR_PARCELA_4 AS VALOR_PARCELA
+    FROM T_RECEITAS_EXTRAORDINARIAS tre
+    UNION ALL
+    SELECT
+        tre.ID,
+        tre.FK_EMPRESA,
+        tre.FK_CLIENTE,
+        tre.OBSERVACOES,
+        tre.FK_CLASSIFICACAO,
+        tre.DATA_VENCIMENTO_PARCELA_5 AS DATA_VENCIMENTO,
+        tre.DATA_RECEBIMENTO_PARCELA_5 AS DATA_RECEBIMENTO,
+        tre.VALOR_PARCELA_5 AS VALOR_PARCELA
+    FROM T_RECEITAS_EXTRAORDINARIAS tre
+) AS vpa
+LEFT JOIN T_EMPRESAS te ON vpa.FK_EMPRESA = te.ID
+LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLIENTE trec ON vpa.FK_CLIENTE = trec.ID
+LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLASSIFICACAO trec2 ON vpa.FK_CLASSIFICACAO = trec2.ID 
+WHERE
     vpa.DATA_VENCIMENTO IS NOT NULL
-    AND vpa.DATA_RECEBIMENTO IS NULL 
+    AND vpa.DATA_RECEBIMENTO IS NULL
+    AND te.NOME_FANTASIA IS NOT NULL
+
+UNION ALL
+
+SELECT 
+    CONCAT('E-', tep.ID) AS ID_Receita_Extraordinária,
+    te.NOME_FANTASIA AS Empresa,
+    trec.NOME AS Nome_Cliente,
+    tep.OBSERVACOES AS Observações,
+    'Eventos' AS Classificação,
+    tpep.DATA_VENCIMENTO_PARCELA AS Data_Vencimento_Parcela,
+    tpep.VALOR_PARCELA AS Valor_Parcela
+FROM T_PARCELAS_EVENTOS_PRICELESS tpep
+LEFT JOIN T_EVENTOS_PRICELESS tep ON tep.ID = tpep.FK_EVENTO_PRICELESS
+LEFT JOIN T_EMPRESAS te ON te.ID = tep.FK_EMPRESA
+LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLIENTE trec ON tep.FK_CLIENTE = trec.ID
+WHERE
+    tpep.DATA_VENCIMENTO_PARCELA IS NOT NULL
+    AND tpep.DATA_RECEBIMENTO_PARCELA IS NULL 
     AND te.NOME_FANTASIA IS NOT NULL;
 ''')
 
@@ -886,20 +922,6 @@ GROUP BY Data, Empresa
 ORDER BY Data ASC
 ''')
 
-def GET_FATURAMENTO_ZIG_FLUXO_CAIXA():
-  return dataframe_query(f'''
-SELECT
-tzf.ID AS 'tzf_ID',
-te.ID as 'ID_Loja',
-te.NOME_FANTASIA AS 'Loja',
-tzf.DATA AS 'Data_Faturamento',
-tzf.VALOR AS 'Valor_Faturado',
-tzf.TIPO_PAGAMENTO AS 'Tipo_Pagamento'
-FROM T_ZIG_FATURAMENTO tzf
-LEFT JOIN T_EMPRESAS te ON (tzf.FK_LOJA = te.ID)
-WHERE (tzf.DATA >= '2024-05-01 00:00:00' AND tzf.VALOR > 0)
-ORDER BY te.NOME_FANTASIA, tzf.DATA;
-''')
 
 def GET_LOJAS():
   return dataframe_query(f'''
@@ -908,265 +930,6 @@ te.ID as 'ID_Loja',
 te.NOME_FANTASIA as 'Loja'
 FROM T_EMPRESAS te
 ''')
-
-
-def GET_RECEITAS_EXTRAORD_CONCILIACAO():
-  return dataframe_query(f'''
-SELECT
-tre.ID as 'ID_receita',
-te.ID as 'ID_Loja',
-te.NOME_FANTASIA as 'Loja',
-trec3.NOME as 'Cliente',
-trec.CLASSIFICACAO as 'Classificacao',
-tep.ID as 'ID_Evento',
-tep.NOME_EVENTO as 'Nome_Evento',
-tre.VALOR as 'Valor_Total',
-tfdp.DESCRICAO as 'Forma_de_Pagamento',
-CAST(tre.DATA_OCORRENCIA AS DATE) as 'Data_Competencia',
-tsp.DESCRICAO as 'Status_Pgto',
-tre.VALOR_CATEGORIA_AB as 'Categ_AB',
-tre.VALOR_CATEGORIA_ALUGUEL as 'Categ_Aluguel',
-tre.VALOR_CATEGORIA_ARTISTICO as 'Categ_Artist',
-tre.VALOR_CATEGORIA_COUVERT as 'Categ_Couvert',
-tre.VALOR_CATEGORIA_LOCACAO as 'Categ_Locacao',
-tre.VALOR_CATEGORIA_PATROCINIO as 'Categ_Patroc',
-tre.VALOR_CATEGORIA_TAXA_SERVICO as 'Categ_Taxa_Serv',
-tre.VALOR_PARCELA_1 as 'Valor_Parc_1',
-tre.DATA_VENCIMENTO_PARCELA_1 as 'Data_Venc_Parc_1',
-tre.DATA_RECEBIMENTO_PARCELA_1 as 'Data_Receb_Parc_1',
-tre.VALOR_PARCELA_2 as 'Valor_Parc_2',
-tre.DATA_VENCIMENTO_PARCELA_2 as 'Data_Venc_Parc_2',
-tre.DATA_RECEBIMENTO_PARCELA_2 as 'Data_Receb_Parc_2',
-tre.VALOR_PARCELA_3 as 'Valor_Parc_3',
-tre.DATA_VENCIMENTO_PARCELA_3 as 'Data_Venc_Parc_3',
-tre.DATA_RECEBIMENTO_PARCELA_3 as 'Data_Receb_Parc_3',
-tre.VALOR_PARCELA_4 as 'Valor_Parc_4',
-tre.DATA_VENCIMENTO_PARCELA_4 as 'Data_Venc_Parc_4',
-tre.DATA_RECEBIMENTO_PARCELA_4 as 'Data_Receb_Parc_4',
-tre.VALOR_PARCELA_5 as 'Valor_Parc_5',
-tre.DATA_VENCIMENTO_PARCELA_5 as 'Data_Venc_Parc_5',
-tre.DATA_RECEBIMENTO_PARCELA_5 as 'Data_Receb_Parc_5'
-FROM T_RECEITAS_EXTRAORDINARIAS tre
-INNER JOIN T_EMPRESAS te ON (tre.FK_EMPRESA = te.ID)
-LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLASSIFICACAO trec ON (tre.FK_CLASSIFICACAO = trec.ID)
-LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLIENTE trec3 ON (tre.FK_CLIENTE = trec3.ID)
-LEFT JOIN T_EVENTO_PRE tep ON (tre.FK_EVENTO = tep.ID)
-LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tre.FK_STATUS_PGTO = tsp.ID)
-LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tep.FK_FORMA_PAGAMENTO = tfdp.ID)
-''')
-
-def GET_VIEW_PARC_AGRUP():
-  return dataframe_query(f'''
-SELECT 
-ROW_NUMBER() OVER (ORDER BY te.NOME_FANTASIA ASC, vpa.DATA_VENCIMENTO ASC) AS 'Numero_Linha',
-vpa.ID as 'ID_Receita',
-te.ID as 'ID_Loja',
-te.NOME_FANTASIA as 'Loja',
-trec.NOME as 'Cliente',
-vpa.DATA_VENCIMENTO as 'Data_Vencimento',
-vpa.DATA_RECEBIMENTO as 'Data_Recebimento',
-vpa.VALOR_PARCELA as 'Valor_Parcela',
-tre.DATA_OCORRENCIA as 'Data_Ocorrencia',
-trec2.CONCAT_CATEGORIA_CLASSIFICACAO as 'Categoria_Class'
-FROM View_Parcelas_Agrupadas vpa
-INNER JOIN T_EMPRESAS te ON (vpa.FK_EMPRESA = te.ID)
-LEFT JOIN T_RECEITAS_EXTRAORDINARIAS tre ON (vpa.ID = tre.ID)
-LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLIENTE trec ON (vpa.FK_CLIENTE = trec.ID)
-LEFT JOIN T_RECEITAS_EXTRAORDINARIAS_CLASSIFICACAO trec2 ON (tre.FK_CLASSIFICACAO = trec2.ID)
-WHERE vpa.DATA_VENCIMENTO IS NOT NULL
-ORDER BY vpa.DATA_RECEBIMENTO DESC;
-''')
-
-
-
-def GET_CUSTOS_BLUEME_SEM_PARCELAMENTO():
-  return dataframe_query(f'''
-SELECT 
-tdr.ID as 'ID_Despesa',
-tdr.FK_DESPESA_TEKNISA as 'FK_Despesa_Teknisa',
-te.ID as 'ID_Loja',
-te.NOME_FANTASIA as 'Casa',
-tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
-tdr.VALOR_LIQUIDO as 'Valor',
-tdr.VENCIMENTO as 'Data_Vencimento',
-tc.DATA as 'Previsao_Pgto',
-tc2.DATA as 'Realizacao_Pgto',    
-tdr.COMPETENCIA as 'Data_Competencia',
-tdr.LANCAMENTO as 'Data_Lancamento',
-tfdp.DESCRICAO as 'Forma_Pagamento',
-tccg.DESCRICAO as 'Class_Cont_1',
-tccg2.DESCRICAO as 'Class_Cont_2',
-CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Vencimento', 
-tscd.DESCRICAO as 'Status_Conf_Document',
-tsad.DESCRICAO as 'Status_Aprov_Diret',
-tsac.DESCRICAO as 'Status_Aprov_Caixa',
-tsp.DESCRICAO as 'Status_Pgto',
-tcb.NOME_DA_CONTA as 'Conta_Bancaria',
-tdr.FK_LOJA_CNPJ as 'CNPJ_Loja'
-FROM T_DESPESA_RAPIDA tdr
-INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
-LEFT JOIN T_CONTAS_BANCARIAS tcb ON (tdr.FK_CONTA_BANCARIA = tcb.ID)
-LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
-LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
-LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
-LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID)
-LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON (tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID)
-LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsad.ID)
-LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
-LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
-LEFT JOIN T_CALENDARIO tc ON (tdr.PREVISAO_PAGAMENTO = tc.ID)	
-LEFT JOIN T_CALENDARIO tc2 ON (tdr.FK_DATA_REALIZACAO_PGTO = tc2.ID)
-LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
-WHERE 
-    te.ID IS NOT NULL
-    AND tdp.FK_DESPESA IS NULL
-    AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
-    AND tsp.DESCRICAO = "Pago"
-    AND tc2.DATA >= '2024-05-01 00:00:00'
-ORDER BY 
-    tc2.DATA DESC
-''')
-
-
-def GET_CUSTOS_BLUEME_COM_PARCELAMENTO():
-  return dataframe_query(f'''
-  SELECT
-    tdp.ID as 'ID_Parcela',
-    tdr.ID as 'ID_Despesa',
-    te.NOME_FANTASIA as 'Empresa',
-    te.ID as 'ID_Loja',
-    tdr.FK_LOJA_CNPJ as 'CNPJ_Loja',
-    tf.CORPORATE_NAME as 'Fornecedor_Razao_Social',
-    CASE
-        WHEN tdp.FK_DESPESA IS NOT NULL
-            THEN 'True'
-        ELSE 'False'
-    END AS 'Parcelamento',
-    CASE 
-        WHEN tdp.FK_DESPESA IS NOT NULL
-            THEN COUNT(tdp.ID) OVER (PARTITION BY tdr.ID)
-        ELSE NULL 
-    END AS 'Qtd_Parcelas',
-    tdp.PARCELA as 'Num_Parcela',
-    tdp.VALOR as 'Valor_Parcela',
-    DATE_FORMAT(DATE_ADD(tdp.DATA, INTERVAL 30 SECOND), '%d/%m/%Y') as 'Vencimento_Parcela',
-    DATE_FORMAT(DATE_ADD(tc.DATA, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Previsao_Parcela',
-    DATE_FORMAT(DATE_ADD(tc2.DATA, INTERVAL 30 SECOND), '%d/%m/%Y') AS 'Realiz_Parcela',
-    tdr.VALOR_PAGAMENTO as 'Valor_Original',
-    tdr.VALOR_LIQUIDO as 'Valor_Liquido',
-    DATE_ADD(STR_TO_DATE(tdr.LANCAMENTO, '%Y-%m-%d'), INTERVAL 30 SECOND) as 'Data_Lancamento',
-    tfdp.DESCRICAO as 'Forma_Pagamento',
-    tccg.DESCRICAO as 'Class_Cont_1',
-    tccg2.DESCRICAO as 'Class_Cont_2',
-    CONCAT(YEAR(tdr.VENCIMENTO),'-',WEEKOFYEAR(tdr.VENCIMENTO)) as 'Ano_Semana_Vencimento', 
-    tscd.DESCRICAO as 'Status_Conf_Document',
-    tsad.DESCRICAO as 'Status_Aprov_Diret',
-    tsac.DESCRICAO as 'Status_Aprov_Caixa',
-    CASE
-        WHEN tdp.PARCELA_PAGA = 1 
-            THEN 'Parcela_Paga'
-        ELSE 'Parcela_Pendente'
-    END as 'Status_Pgto',
-    tcb.NOME_DA_CONTA as 'Conta_Bancaria'
-  FROM 
-    T_DESPESA_RAPIDA tdr
-  INNER JOIN T_EMPRESAS te ON (tdr.FK_LOJA = te.ID)
-  LEFT JOIN T_FORMAS_DE_PAGAMENTO tfdp ON (tdr.FK_FORMA_PAGAMENTO = tfdp.ID)
-  LEFT JOIN T_FORNECEDOR tf ON (tdr.FK_FORNECEDOR = tf.ID)
-  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_1 tccg ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_1 = tccg.ID)
-  LEFT JOIN T_CLASSIFICACAO_CONTABIL_GRUPO_2 tccg2 ON (tdr.FK_CLASSIFICACAO_CONTABIL_GRUPO_2 = tccg2.ID)
-  LEFT JOIN T_STATUS_CONFERENCIA_DOCUMENTACAO tscd ON (tdr.FK_CONFERENCIA_DOCUMENTACAO = tscd.ID)
-  LEFT JOIN T_STATUS_APROVACAO_DIRETORIA tsad ON (tdr.FK_APROVACAO_DIRETORIA = tsad.ID)
-  LEFT JOIN T_STATUS_APROVACAO_CAIXA tsac ON (tdr.FK_APROVACAO_CAIXA = tsac.ID)
-  LEFT JOIN T_STATUS_PAGAMENTO tsp ON (tdr.FK_STATUS_PGTO = tsp.ID)
-  LEFT JOIN T_DEPESA_PARCELAS tdp ON (tdp.FK_DESPESA = tdr.ID)
-  LEFT JOIN T_CONTAS_BANCARIAS tcb ON (tdp.FK_CONTA_BANCARIA = tcb.ID)
-  LEFT JOIN T_CALENDARIO tc ON (tdp.FK_PREVISAO_PGTO = tc.ID)
-  LEFT JOIN T_CALENDARIO tc2 ON (tdp.FK_DATA_REALIZACAO_PGTO = tc2.ID)
-  WHERE 
-    tdp.FK_DESPESA IS NOT NULL
-    AND (tdr.FK_DESPESA_TEKNISA IS NULL OR tdr.BIT_DESPESA_TEKNISA_PENDENTE = 1)
-    AND tdp.PARCELA_PAGA = 1
-    AND tc2.DATA >= '2024-05-01 00:00:00'
-  ORDER BY 
-    tc2.DATA DESC
-''')
-
-def GET_EXTRATOS_BANCARIOS():
-  return dataframe_query(f'''
-   SELECT
-teb.ID as 'ID_Extrato_Bancario',
-tcb.ID as 'ID_Conta_Bancaria',
-tcb.NOME_DA_CONTA as 'Nome_Conta_Bancaria',
-te.ID as 'ID_Loja',
-te.NOME_FANTASIA as 'Loja',
-teb.DATA_TRANSACAO as 'Data_Transacao',
-CASE 
-    WHEN teb.FK_TIPO_CREDITO_DEBITO = 100 THEN 'CREDITO'
-    ELSE 'DEBITO'
-END as 'Tipo_Credito_Debito',
-teb.DESCRICAO_TRANSACAO as 'Descricao_Transacao',
-teb.VALOR as 'Valor'
-FROM T_EXTRATOS_BANCARIOS teb
-INNER JOIN T_CONTAS_BANCARIAS tcb ON (teb.FK_CONTA_BANCARIA = tcb.ID)
-INNER JOIN T_EMPRESAS te ON (tcb.FK_LOJA = te.ID)
-WHERE teb.DESCRICAO_TRANSACAO NOT LIKE '%RESG AUTOMATICO%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLICACAO AUTOMATICA%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLIC.AUTOM.INVESTFACIL*%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RESG.AUTOM.INVEST FACIL*%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RESGATE INVEST FACIL%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLICACAO CONTAMAX%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%Pix Enviado-Conta Transacional%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RESGATE CONTAMAX AUTOMATICO%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%APLIC.INVEST FACIL%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%RENTAB.INVEST FACILCRED*%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%BB RENDE FACIL - RENDE FACIL%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%BB RENDE FCIL - RENDE FACIL%'
-AND teb.DESCRICAO_TRANSACAO NOT LIKE '%BB RENDE FCIL%'
-ORDER BY teb.DATA_TRANSACAO DESC
-''')
-
-def GET_MUTUOS():
-  return dataframe_query(f'''
-SELECT
-tm.ID as 'Mutuo_ID',
-tm.DATA as 'Data_Mutuo',
-te.ID as 'ID_Loja_Saida',
-te.NOME_FANTASIA as 'Loja_Saida',
-te2.ID as 'ID_Loja_Entrada',
-te2.NOME_FANTASIA as 'Loja_Entrada',
-tm.VALOR as 'Valor',
-tm.TAG_FATURAM_ZIG as 'Tag_Faturam_Zig'
-FROM T_MUTUOS tm 
-LEFT JOIN T_EMPRESAS te ON (tm.FK_LOJA_SAIDA = te.ID)
-LEFT JOIN T_EMPRESAS te2 ON (tm.FK_LOJA_ENTRADA = te2.ID)
-ORDER BY tm.DATA DESC
-''')
-
-def GET_TESOURARIA_TRANSACOES():
-  return dataframe_query(f'''
-SELECT
-ttt.ID as 'tes_ID',
-te.ID as 'ID_Loja',
-te.NOME_FANTASIA as 'Loja',
-ttt.DATA_TRANSACAO as 'Data_Transacao',
-ttt.VALOR as 'Valor',
-ttt.DESCRICAO as 'Descricao'
-FROM T_TESOURARIA_TRANSACOES ttt 
-INNER JOIN T_EMPRESAS te ON (ttt.FK_LOJA = te.ID)   
-''')
-
-
-def GET_AJUSTES_CONCILIACAO():
-  return dataframe_query(f'''
-  SELECT 
-	  tac.FK_EMPRESA AS 'ID_Loja',
-	  tac.DATA_AJUSTE AS 'Data Ajuste',
-	  tac.VALOR AS 'Valor',
-	  tac.DESCRICAO AS 'Descrição'
-  FROM T_AJUSTES_CONCILIACAO tac
-''')
-
 
 
 def GET_DESPESAS_PENDENTES(dataInicio, dataFim):

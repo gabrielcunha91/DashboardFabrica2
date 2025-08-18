@@ -28,7 +28,6 @@ def config_sidebar():
       st.sidebar.subheader('Fluxo de caixa:')
       st.sidebar.page_link("pages/Previsao_Faturamento.py", label="Previsão de Faturamento")
       st.sidebar.page_link("pages/Projecao_fluxo_caixa.py", label="Projeção")
-      st.sidebar.page_link("pages/Conciliacao_fluxo_caixa.py", label="Conciliação")
     elif 'Aprovador' in permissao:
       st.sidebar.title("Menu")
       st.sidebar.page_link("pages/Faturamento_Zig.py", label="Faturamento Zig")
@@ -183,7 +182,8 @@ def format_columns_brazilian(df, numeric_columns):
   return df
 
 def format_date_brazilian(df, date_column):
-  df[date_column] = pd.to_datetime(df[date_column])
+  df = df.copy() 
+  df[date_column] = pd.to_datetime(df[date_column], format="%d-%m-%Y", errors="coerce")
   df[date_column] = df[date_column].dt.strftime('%d-%m-%Y')
   return df
 

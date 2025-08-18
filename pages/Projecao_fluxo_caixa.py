@@ -45,7 +45,7 @@ with st.container(border=True):
         )
     df_projecao_bares = config_projecao_bares(multiplicador, data_fim)
     df_projecao_bar = df_projecao_bares[df_projecao_bares["Empresa"].isin(bar)]
-    df_projecao_bar["Data"] = pd.to_datetime(df_projecao_bar["Data"], dayfirst=True)
+    df_projecao_bar = format_date_brazilian(df_projecao_bar, "Data")
     df_projecao_bar = df_projecao_bar.sort_values(by=["Empresa", "Data"])
     df_projecao_bar_com_soma = somar_total(df_projecao_bar)
     columns_projecao_bar_com_soma = [

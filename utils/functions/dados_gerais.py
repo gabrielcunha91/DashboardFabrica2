@@ -182,7 +182,8 @@ def format_columns_brazilian(df, numeric_columns):
   return df
 
 def format_date_brazilian(df, date_column):
-  df[date_column] = pd.to_datetime(df[date_column])
+  df = df.copy() 
+  df[date_column] = pd.to_datetime(df[date_column], format="%d-%m-%Y", errors="coerce")
   df[date_column] = df[date_column].dt.strftime('%d-%m-%Y')
   return df
 

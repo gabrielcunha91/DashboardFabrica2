@@ -644,11 +644,12 @@ def GET_VALORACAO_PRODUCAO(data):
 @st.cache_data
 def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
   return dataframe_query(f'''
-  SELECT 	
-  	tin4.ID AS 'ID Produto Nivel 4',	
+  SELECT
+  	tin4.ID AS 'ID Produto Nivel 4',
+    tin5.ID AS 'ID Produto Nivel 5',
+  	tin5.DESCRICAO AS 'Nome Produto',	
   	te.NOME_FANTASIA AS 'Loja', 
-  	tf.FANTASY_NAME AS 'Fornecedor', 
-  	tin4.DESCRICAO AS 'Nome Produto', 
+  	tf.FANTASY_NAME AS 'Fornecedor',
 	  tin.DESCRICAO AS 'Categoria',
   	CAST(REPLACE(tdri.QUANTIDADE, ',', '.') AS DECIMAL(10, 2)) AS 'Quantidade',
   	tdri.UNIDADE_MEDIDA AS 'Unidade de Medida',
@@ -673,8 +674,8 @@ def GET_COMPRAS_PRODUTOS_QUANTIA_NOME_COMPRA():
 def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
   return dataframe_query(f'''
   SELECT 	
-  	tin4.ID AS 'ID Produto Nivel 4',
-  	tin4.DESCRICAO AS 'Nome Produto', 
+  	tin5.ID AS 'ID Produto Nivel 5',
+  	tin5.DESCRICAO AS 'Nome Produto', 
 	  tin.DESCRICAO AS 'Categoria',
   	te.NOME_FANTASIA AS 'Loja', 
   	tf.FANTASY_NAME AS 'Fornecedor', 
@@ -700,6 +701,8 @@ def GET_COMPRAS_PRODUTOS_COM_RECEBIMENTO(data_inicio, data_fim, categoria):
     AND tin.DESCRICAO = '{categoria}'
   GROUP BY 
     tin5.ID,
+    te.ID,
+    tf.ID,
     tdr.COMPETENCIA
   ORDER BY
     tdr.COMPETENCIA DESC

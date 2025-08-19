@@ -19,7 +19,7 @@ def config_media_anterior(df, data_inicio, data_fim, lojas_selecionadas):
   df2 = filtrar_por_classe_selecionada(df2, 'Loja', lojas_selecionadas)
   df2['V. Unit. 3 Meses Ant.'] = df2['Valor Total'] / df2['Quantidade']
 
-  df2 = df2.groupby(['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
+  df2 = df2.groupby(['ID Produto Nivel 5', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
     'V. Unit. 3 Meses Ant.': 'first',
   })
 
@@ -41,7 +41,7 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
 
   df = filtrar_por_datas(df, data_inicio, data_fim, 'Data Compra')
 
-  df = df.groupby(['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
+  df = df.groupby(['ID Produto Nivel 5', 'Nome Produto', 'Loja', 'Categoria'], as_index=False).agg({
     'Quantidade': 'sum',
     'Valor Total': 'sum',
     'Valor Unitário': 'mean',
@@ -49,7 +49,7 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
     'Fator de Proporção': 'first'
   })
 
-  df = df.merge(df2, how='left', on=['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria'])
+  df = df.merge(df2, how='left', on=['ID Produto Nivel 5', 'Nome Produto', 'Loja', 'Categoria'])
   df = df.sort_values(by='Nome Produto', ascending=True)
 
   df['Valor Unitário'] = df['Valor Total'] / df['Quantidade']
@@ -58,7 +58,7 @@ def config_compras_quantias(df, data_inicio, data_fim, lojas_selecionadas):
   df['Valor Total'] = df['Valor Total'].round(2)
   df['Valor Unitário'] = df['Valor Unitário'].round(2)
   df['V. Unit. 3 Meses Anteriores'] = df['V. Unit. 3 Meses Ant.'].round(2)
-  nova_ordem = ['ID Produto Nivel 4', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário', 'V. Unit. 3 Meses Anteriores']
+  nova_ordem = ['ID Produto Nivel 5', 'Nome Produto', 'Loja', 'Categoria', 'Quantidade', 'Valor Total', 'Unidade de Medida', 'Valor Unitário', 'V. Unit. 3 Meses Anteriores']
   df = df[nova_ordem]
 
   return df, dfSemFiltroData

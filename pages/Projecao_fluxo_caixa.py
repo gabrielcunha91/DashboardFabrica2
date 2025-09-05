@@ -55,6 +55,7 @@ with st.container(border=True):
         "Valor_Liquido_Recebido",
         "Valor_Projetado_Zig",
         "Receita_Projetada_Extraord",
+        "Receita_Projetada_Eventos",
         "Despesas_Aprovadas_Pendentes",
         "Despesas_Pagas",
         "Saldo_Final",
@@ -67,6 +68,7 @@ with st.container(border=True):
             "Valor_Liquido_Recebido",
             "Valor_Projetado_Zig",
             "Receita_Projetada_Extraord",
+            "Receita_Projetada_Eventos",
             "Despesas_Aprovadas_Pendentes",
             "Despesas_Pagas",
             "Saldo_Final",
@@ -111,6 +113,7 @@ with st.container(border=True):
         "Valor_Liquido_Recebido",
         "Valor_Projetado_Zig",
         "Receita_Projetada_Extraord",
+        "Receita_Projetada_Eventos",
         "Despesas_Aprovadas_Pendentes",
         "Despesas_Pagas",
         "Saldo_Final",
@@ -125,6 +128,7 @@ with st.container(border=True):
             "Valor_Liquido_Recebido",
             "Valor_Projetado_Zig",
             "Receita_Projetada_Extraord",
+            "Receita_Projetada_Eventos",
             "Despesas_Aprovadas_Pendentes",
             "Despesas_Pagas",
             "Saldo_Final",
@@ -208,7 +212,7 @@ with st.container(border=True):
 
 
 with st.container(border=True):
-    st.subheader("Receitas extraordinárias do dia")
+    st.subheader("Receitas Extraordinárias do Dia")
     lojasComDados = preparar_dados_lojas_user_projecao_fluxo()
     col1, col2, col3 = st.columns([5, 2, 3])
     with col1:
@@ -261,3 +265,58 @@ with st.container(border=True):
     df = format_columns_brazilian(df, ["Valor_Parcela"])
     st.dataframe(df, use_container_width=True, hide_index=True)
     st.write("Valor total das receitas extraordinárias selecionadas = R$", valorTotal)
+    
+with st.container(border=True):
+    st.subheader("Receitas de Eventos do Dia")
+    lojasComDados = preparar_dados_lojas_user_projecao_fluxo()
+    col1, col2, col3 = st.columns([5, 2, 3])
+    with col1:
+        lojasSelecionadas2 = st.multiselect(
+            label="Selecione Lojas", options=lojasComDados, key="lojas_multiselect3"
+        )
+    with col2:
+        checkboxLojas = st.checkbox(
+            label="Adicionar lojas agrupadas", key="checkbox_lojas_eventos"
+        )
+        if checkboxLojas:
+            lojasAgrupadas = [
+                "Bar Brahma - Centro",
+                "Bar Léo - Centro",
+                "Bar Brasilia - Aeroporto",
+                "Bar Brasilia - Aeroporto",
+                "Delivery Bar Leo Centro",
+                "Delivery Fabrica de Bares",
+                "Delivery Orfeu",
+                "Edificio Rolim",
+                "Hotel Maraba",
+                "Jacaré",
+                "Orfeu",
+                "Riviera Bar",
+                "Tempus",
+                "Escritório Fabrica de Bares",
+                "Priceless",
+                "Bar Brahma - Granja",
+                "Edificio Rolim",
+                "Girondino - CCBB",
+                "Girondino ",
+            ]
+            lojasSelecionadas2.extend(lojasAgrupadas)
+    with col3:
+        dataSelecionada2 = st.date_input(
+            "Selecione uma Data",
+            value=datetime.today(),
+            key="data_inicio_input3",
+            format="DD/MM/YYYY",
+        )
+
+    dataSelecionada2 = pd.to_datetime(dataSelecionada2)
+    df = GET_RECEITAS_EVENTOS_DO_DIA(dataSelecionada2)
+    df = filtrar_por_classe_selecionada(df, "Empresa", lojasSelecionadas2)
+    df = filtrar_por_datas(
+        df, dataSelecionada2, dataSelecionada2, "Data_Vencimento_Parcela"
+    )
+    valorTotal = df["Valor_Parcela"].sum()
+    valorTotal = format_brazilian(valorTotal)
+    df = format_columns_brazilian(df, ["Valor_Parcela"])
+    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.write("Valor total das receitas de eventos selecionadas = R$", valorTotal)

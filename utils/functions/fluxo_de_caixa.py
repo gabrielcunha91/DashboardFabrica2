@@ -46,18 +46,19 @@ def config_projecao_bares(multiplicador, data_fim):
   df_valor_liquido = GET_VALOR_LIQUIDO_RECEBIDO()
   df_projecao_zig = GET_PROJECAO_ZIG()
   df_receitas_extraord_proj = GET_RECEITAS_EXTRAORD_FLUXO_CAIXA()
+  df_receitas_eventos_proj = GET_EVENTOS_FLUXO_CAIXA()
   df_despesas_aprovadas = GET_DESPESAS_APROVADAS()
   df_despesas_pagas = GET_DESPESAS_PAGAS()
 
   df_projecao_zig = prolongar_projecao(df_projecao_zig, dias_prolongados=7)
   # Converter colunas de data
-  dfs = [df_saldos_bancarios, df_valor_liquido, df_projecao_zig, df_receitas_extraord_proj, df_despesas_aprovadas, df_despesas_pagas]
+  dfs = [df_saldos_bancarios, df_valor_liquido, df_projecao_zig, df_receitas_extraord_proj, df_receitas_eventos_proj, df_despesas_aprovadas, df_despesas_pagas]
   for df in dfs:
     df = convert_to_datetime(df, ['Data'])
 
   # Merge dataframes
   merged_df = df_saldos_bancarios
-  for df in [df_valor_liquido, df_projecao_zig, df_receitas_extraord_proj, df_despesas_aprovadas, df_despesas_pagas]:
+  for df in [df_valor_liquido, df_projecao_zig, df_receitas_extraord_proj, df_receitas_eventos_proj, df_despesas_aprovadas, df_despesas_pagas]:
     merged_df = pd.merge(merged_df, df, on=['Data', 'Empresa'], how='outer')
 
   # Preenchendo valores nulos com 0 e renomeando colunas
@@ -69,14 +70,14 @@ def config_projecao_bares(multiplicador, data_fim):
   merged_df = filtrar_data_fim(merged_df, data_fim, 'Data')
 
   # Ajustando formatação
-  cols = ['Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord', 'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas']
+  cols = ['Saldo_Inicio_Dia', 'Valor_Liquido_Recebido', 'Valor_Projetado_Zig', 'Receita_Projetada_Extraord', 'Receita_Projetada_Eventos', 'Despesas_Aprovadas_Pendentes', 'Despesas_Pagas']
   merged_df[cols] = merged_df[cols].astype(float).round(2)
 
   # Aplicando lógica de negócios
   merged_df['Valor_Projetado_Zig'] = merged_df.apply(lambda row: 0 if row['Valor_Liquido_Recebido'] > 0 else row['Valor_Projetado_Zig'], axis=1)
   merged_df['Valor_Projetado_Zig'] = merged_df['Valor_Projetado_Zig'] * multiplicador
 
-  merged_df['Saldo_Final'] = merged_df['Saldo_Inicio_Dia'] + merged_df['Valor_Liquido_Recebido'] + merged_df['Valor_Projetado_Zig'] + merged_df['Receita_Projetada_Extraord'] - merged_df['Despesas_Aprovadas_Pendentes'] - merged_df['Despesas_Pagas']
+  merged_df['Saldo_Final'] = merged_df['Saldo_Inicio_Dia'] + merged_df['Valor_Liquido_Recebido'] + merged_df['Valor_Projetado_Zig'] + merged_df['Receita_Projetada_Extraord'] + merged_df['Receita_Projetada_Eventos'] - merged_df['Despesas_Aprovadas_Pendentes'] - merged_df['Despesas_Pagas']
   merged_df = format_date_brazilian(merged_df, 'Data')
   return merged_df
 

@@ -80,15 +80,12 @@ def preparar_dados_lojas_user():
   else:
     dflojas = GET_LOJAS_USER(username)
 
-  lojas = dflojas['Loja'].tolist()
-
-  lojasReais = ['Abaru - Priceless', 'Arcos', 'Bar Brahma - Centro', 'Bar Léo - Centro', 'Blue Note - São Paulo', 'Blue Note SP (Novo)',
+  lojasReais = ['Abaru - Priceless', 'Arcos', 'Bar Brahma - Centro', 'Bar Brahma Paulista', 'Bar Léo - Centro', 'Blue Note - São Paulo', 'Blue Note SP (Novo)',
                 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares', 'Delivery Jacaré', 'Delivery Orfeu', 'Edificio Rolim', 'Escritório Fabrica de Bares', 
                 'Girondino ', 'Girondino - CCBB', 'Hotel Maraba', 'Jacaré', 'Love Cabaret', 'Notiê - Priceless', 'Orfeu', 'Priceless', 'Riviera Bar', 
                 'Sanduiche comunicação LTDA ', 'Tempus Fugit  Ltda ', 'Ultra Evil Premium Ltda ', 'Bar Brahma - Granja', 'Brahma - Ribeirão']
 
-  lojasReaisSet = set(lojasReais)
-  lojas = [loja for loja in lojas if loja in lojasReaisSet]
+  lojas = dflojas[dflojas['Loja'].isin(set(lojasReais))]['Loja'].tolist()
 
   lojas.sort(key=str.lower)
 
@@ -115,17 +112,13 @@ def preparar_dados_lojas_user_projecao_fluxo():
   else:
     dflojas = GET_LOJAS_USER(username)
 
-  lojas = dflojas['Loja'].tolist()
-
   lojasReais = ['Abaru - Priceless', 'Arcos', 'All bar', 'Bar Brahma Aeroclube', 'Brahma Aricanduva',
-                'Bar Brahma - Centro', 'Bar Brasilia -  Aeroporto', 'Bardassê', 'Bar Léo - Centro', 'Bar Léo - Vila Madalena', 'Blue Note - São Paulo', 'Blue Note SP (Novo)',
+                'Bar Brahma - Centro', 'Bar Brahma Paulista', 'Bar Brasilia -  Aeroporto', 'Bardassê', 'Bar Léo - Centro', 'Bar Léo - Vila Madalena', 'Blue Note - São Paulo', 'Blue Note SP (Novo)',
                 'Colorado Aeroporto BSB', 'Delivery Bar Leo Centro', 'Delivery Fabrica de Bares', 'Delivery Jacaré', 'Delivery Orfeu', 'Duroc ', 'Edificio Rolim', 'Escritório Fabrica de Bares', 'FDB DIGITAL PARTICIPACOES LTDA', 'FDB HOLDING INFERIOR LTDA', 'FDB HOLDING SUPERIOR LTDA', 'Filial', 'Hbar participacoes e empreendimentos ', 'Ilha das Flores ', 'Lojinha - Brahma', 'Navarro', 'Patizal ',  'Piratininga', 'Tundra',
                 'Girondino ', 'Girondino - CCBB', 'Hotel Maraba', 'Jacaré', 'Love Cabaret', 'Notiê - Priceless', 'Orfeu', 'Priceless', 'Riviera Bar', 
                 'Sanduiche comunicação LTDA ', 'Tempus Fugit  Ltda ', 'Ultra Evil Premium Ltda ', 'Bar Brahma - Granja', 'Brahma - Ribeirão']
-
-  lojasReaisSet = set(lojasReais)
-  lojas = [loja for loja in lojas if loja in lojasReaisSet]
-
+  
+  lojas = dflojas[dflojas['Loja'].isin(set(lojasReais))]['Loja'].tolist()
   lojas.sort(key=str.lower)
 
   # Verificar se ambas as lojas estão na lista

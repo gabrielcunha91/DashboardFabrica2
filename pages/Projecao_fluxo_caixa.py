@@ -98,7 +98,7 @@ with st.container(border=True):
             "Selecione um multiplicador", value=1.0, key="multiplicador_input2"
         )
     st.markdown(
-        """*Bar Brahma, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
+        """*Bar Brahma, Bar Brahma Paulista, Bar Léo, Bar Brasilia, Edificio Rolim, Hotel Maraba, 
     Jacaré, Orfeu, Riviera, Tempus, Escritorio Fabrica de Bares, Priceless, Bar Brahma - Granja, Edificio Rolim, Girondino - CCBB, Girondino, Brahma Ribeirao*
     """
     )
@@ -176,6 +176,7 @@ with st.container(border=True):
                 "Girondino - CCBB",
                 "Girondino ",
                 "Brahma - Ribeirão",
+                "Bar Brahma Paulista"
             ]
             lojasSelecionadas.extend(lojasAgrupadas)
         checkbox2 = st.checkbox(
@@ -244,6 +245,7 @@ with st.container(border=True):
                 "Edificio Rolim",
                 "Girondino - CCBB",
                 "Girondino ",
+                "Bar Brahma Paulista"
             ]
             lojasSelecionadas2.extend(lojasAgrupadas)
     with col3:
@@ -299,6 +301,7 @@ with st.container(border=True):
                 "Edificio Rolim",
                 "Girondino - CCBB",
                 "Girondino ",
+                "Bar Brahma Paulista"
             ]
             lojasSelecionadas2.extend(lojasAgrupadas)
     with col3:
